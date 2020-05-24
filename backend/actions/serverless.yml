@@ -1,0 +1,27 @@
+service: actions
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+  environment:
+    JWT_SECRET: 3EK6FD+o0+c7tzBNVfjpMkNDi2yARAAKzQlk8O2IKoxQu4nF7EdAh8s3TwpHwrdWT6R
+    HASURA_ADMIN_SECRET: ilovebread
+    HASURA_GRAPHQL_ENDPOINT: http://localhost:8080/v1/graphql
+
+functions:
+  login:
+    handler: auth/login.handler
+    events:
+      - http:
+          path: login
+          method: post
+  signup:
+    handler: auth/signup.handler
+    events:
+      - http:
+          path: signup
+          method: post
+
+plugins:
+  - serverless-offline
+  - serverless-plugin-typescript

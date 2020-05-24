@@ -1,0 +1,15 @@
+- table:
+    schema: public
+    name: users
+  select_permissions:
+  - role: anonymous
+    permission:
+      columns:
+      - username
+      filter: {}
+  - role: user
+    permission:
+      columns:
+      - email
+      - username
+      filter: {}
