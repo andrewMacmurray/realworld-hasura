@@ -1,15 +1,13 @@
 module Main exposing (main)
 
-import Api
-import Api.Mutation
-import Api.Object.Token
-import Browser exposing (Document)
+import Browser exposing (Document, UrlRequest)
+import Browser.Navigation as Navigation
 import Element exposing (..)
-import Element.Button as Button
-import Element.Input as Input
-import Element.Scale as Scale
-import Element.Text as Text
-import Html exposing (Html)
+import Page.Home as Home
+import Page.NotFound as NotFound
+import Page.Signup as Signup
+import Route
+import Url exposing (Url)
 
 
 
@@ -18,11 +16,13 @@ import Html exposing (Html)
 
 main : Program Flags Model Msg
 main =
-    Browser.document
+    Browser.application
         { init = init
         , update = update
         , subscriptions = subscriptions
         , view = view
+        , onUrlRequest = UrlRequest
+        , onUrlChange = UrlChange
         }
 
 
@@ -31,22 +31,22 @@ main =
 
 
 type alias Model =
-    { inputs : Inputs
-    , token : Maybe Token
+    { page : Page
+    , navKey : Navigation.Key
     }
 
 
-type alias Inputs =
-    { email : String
-    , username : String
-    , password : String
-    }
+type Page
+    = Home Home.Model
+    | Signup Signup.Model
+    | NotFound
 
 
 type Msg
-    = InputsChanged Inputs
-    | SignupClicked
-    | SignupResponseReceived (Api.Response Token)
+    = UrlRequest UrlRequest
+    | UrlChange Url
+    | HomeMsg Home.Msg
+    | SignupMsg Signup.Msg
 
 
 type alias Flags =
@@ -57,23 +57,15 @@ type alias Flags =
 -- Init
 
 
-init : Flags -> ( Model, Cmd Msg )
-init flags =
-    ( initialModel flags, Cmd.none )
+init : Flags -> Url -> Navigation.Key -> ( Model, Cmd Msg )
+init _ url key =
+    initialModel key |> changePageTo url
 
 
-initialModel : Flags -> Model
-initialModel _ =
-    { inputs = emptyInputs
-    , token = Nothing
-    }
-
-
-emptyInputs : Inputs
-emptyInputs =
-    { email = ""
-    , username = ""
-    , password = ""
+initialModel : Navigation.Key -> Model
+initialModel key =
+    { page = Signup Signup.init
+    , navKey = key
     }
 
 
@@ -83,27 +75,52 @@ emptyInputs =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
-        InputsChanged inputs ->
-            ( { model | inputs = inputs }, Cmd.none )
+    case ( msg, model.page ) of
+        ( UrlRequest urlRequest, _ ) ->
+            handleUrl model urlRequest
 
-        SignupClicked ->
-            ( model, signUp model.inputs )
+        ( UrlChange url, _ ) ->
+            changePageTo url model
 
-        SignupResponseReceived (Ok token) ->
-            ( { model | token = Just token }, Cmd.none )
+        ( HomeMsg msg_, Home model_ ) ->
+            Home.update msg_ model_
+                |> updateWith Home HomeMsg model
 
-        SignupResponseReceived (Err _) ->
+        ( SignupMsg msg_, Signup model_ ) ->
+            Signup.update msg_ model_
+                |> updateWith Signup SignupMsg model
+
+        ( _, _ ) ->
             ( model, Cmd.none )
 
 
-signUp inputs =
-    Api.Mutation.signup inputs Api.Object.Token.token
-        |> Api.mutate SignupResponseReceived
+handleUrl : Model -> UrlRequest -> ( Model, Cmd Msg )
+handleUrl model request =
+    case request of
+        Browser.Internal url ->
+            ( model, Navigation.pushUrl model.navKey (Url.toString url) )
+
+        Browser.External url ->
+            ( model, Navigation.load url )
 
 
-type alias Token =
-    String
+updateWith modelF msgF model ( m, c ) =
+    ( { model | page = modelF m }
+    , Cmd.map msgF c
+    )
+
+
+changePageTo : Url -> Model -> ( Model, Cmd Msg )
+changePageTo url model =
+    case Route.fromUrl url of
+        Just Route.Home ->
+            Home.init |> updateWith Home HomeMsg model
+
+        Just Route.Signup ->
+            ( { model | page = Signup Signup.init }, Cmd.none )
+
+        Nothing ->
+            ( { model | page = NotFound }, Cmd.none )
 
 
 
@@ -121,112 +138,19 @@ subscriptions _ =
 
 view : Model -> Document Msg
 view model =
-    { title = "App"
-    , body = [ page model ]
+    { title = "Conduit"
+    , body = [ layout [] (view_ model) ]
     }
 
 
-page : Model -> Html Msg
-page model =
-    layout []
-        (column [ width fill ]
-            [ navbar
-            , signup model
-            ]
-        )
+view_ : Model -> Element Msg
+view_ model =
+    case model.page of
+        Home model_ ->
+            Home.view model_ |> Element.map HomeMsg
 
+        Signup model_ ->
+            Signup.view model_ |> Element.map SignupMsg
 
-signup model =
-    el [ constrain, paddingXY Scale.medium 0, centerX ]
-        (column
-            [ paddingXY 0 Scale.large
-            , spacing Scale.large
-            , width fill
-            ]
-            [ Text.title [ centerX ] "Sign Up"
-            , column
-                [ centerX
-                , width (fill |> maximum (maxPageWidth // 2))
-                , spacing Scale.medium
-                ]
-                [ username model.inputs
-                , email model.inputs
-                , password model.inputs
-                , el [ alignRight ] signupButton
-                , viewToken model
-                ]
-            ]
-        )
-
-
-viewToken model =
-    model.token
-        |> Maybe.map (\t -> el [] (text ("Erhmagerrd terrkerrn!: " ++ t)))
-        |> Maybe.withDefault none
-
-
-signupButton =
-    Button.primary SignupClicked "Sign Up"
-        |> Button.toElement
-
-
-email =
-    textInput
-        { label = "Email"
-        , value = .email
-        , update = \i v -> { i | email = v }
-        }
-
-
-username =
-    textInput
-        { label = "Username"
-        , value = .username
-        , update = \i v -> { i | username = v }
-        }
-
-
-password =
-    textInput
-        { label = "Password"
-        , value = .password
-        , update = \i v -> { i | password = v }
-        }
-
-
-textInput config inputs =
-    Input.text []
-        { onChange = config.update inputs >> InputsChanged
-        , text = config.value inputs
-        , placeholder = Just (Input.placeholder [] (text config.label))
-        , label = Input.labelHidden config.label
-        }
-
-
-navbar =
-    el
-        [ centerX
-        , constrain
-        , paddingXY Scale.medium 0
-        ]
-        (row [ width fill ]
-            [ Text.subtitle [ paddingXY 0 Scale.medium ] "conduit"
-            , navItems
-            ]
-        )
-
-
-navItems =
-    row [ alignRight, spacing Scale.medium ]
-        [ Text.link [] "Home"
-        , Text.link [] "Sign In"
-        , Text.link [] "Sign Up"
-        ]
-
-
-constrain =
-    width (fill |> maximum maxPageWidth)
-
-
-maxPageWidth =
-    1110
+        NotFound ->
+            NotFound.view

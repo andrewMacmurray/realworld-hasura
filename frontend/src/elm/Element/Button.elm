@@ -1,7 +1,6 @@
 module Element.Button exposing
     ( Button
     , primary
-    , toElement
     )
 
 import Element exposing (..)
@@ -34,14 +33,16 @@ type Fill
     | Hollow
 
 
-primary : msg -> String -> Button msg
+primary : msg -> String -> Element msg
 primary msg text =
-    Button
-        { fill = Solid
-        , text = text
-        , icon = Nothing
-        , onClick = msg
-        }
+    toElement
+        (Button
+            { fill = Solid
+            , text = text
+            , icon = Nothing
+            , onClick = msg
+            }
+        )
 
 
 toElement : Button msg -> Element msg
