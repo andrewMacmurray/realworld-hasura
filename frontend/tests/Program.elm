@@ -4,7 +4,6 @@ module Program exposing
     , baseUrl
     , fillField
     , start
-    , withDefaults
     , withGlobalFeed
     )
 
@@ -14,7 +13,7 @@ import Effect exposing (Effect(..))
 import Element.Anchor as Anchor
 import Json.Encode as Encode
 import Main
-import ProgramTest exposing (ProgramDefinition, ProgramTest, SimulatedEffect)
+import ProgramTest exposing (ProgramDefinition, ProgramTest, SimulatedEffect, SimulatedTask)
 import Route exposing (Route)
 import SimulatedEffect.Cmd
 import SimulatedEffect.Navigation
@@ -25,12 +24,12 @@ import Test.Html.Selector
 import Url
 
 
-
--- Test Program
-
-
 type alias BlogProgramTest =
-    ProgramTest (Main.Model ()) Main.Msg (Effect Main.Msg)
+    ProgramTest (Main.Model FakeNavKey) Main.Msg (Effect Main.Msg)
+
+
+type alias FakeNavKey =
+    ()
 
 
 type alias Options =
@@ -41,8 +40,8 @@ type alias Options =
 
 
 asGuest : Route -> Options
-asGuest route =
-    defaultOptions route
+asGuest =
+    defaultOptions
 
 
 start : Options -> BlogProgramTest
@@ -56,11 +55,6 @@ start options =
 withGlobalFeed : List Article -> Options -> Options
 withGlobalFeed feed options =
     { options | globalFeed = Ok feed }
-
-
-withDefaults : Options -> Options
-withDefaults =
-    identity
 
 
 toFlags : Options -> Main.Flags
@@ -82,26 +76,40 @@ baseUrl =
 
 
 type alias BlogProgramDefinition =
-    ProgramDefinition Main.Flags (Main.Model ()) Main.Msg (Effect Main.Msg)
+    ProgramDefinition Main.Flags (Main.Model FakeNavKey) Main.Msg (Effect Main.Msg)
 
 
 program : BlogProgramDefinition
 program =
     ProgramTest.createApplication
-        { init = init
-        , update = update
+        { init = init_
+        , update = update_
         , view = Main.view
         , onUrlRequest = Main.UrlRequest
         , onUrlChange = Main.UrlChange
         }
 
 
-update msg model =
-    Main.update msg model |> Effect.applyUpdate
+init_ : Main.Flags -> Url.Url -> FakeNavKey -> ( Main.Model FakeNavKey, Effect Main.Msg )
+init_ flags url key =
+    performModelEffect (Main.init flags url key)
 
 
-init flags_ url key =
-    Main.init flags_ url key |> Effect.applyUpdate
+update_ : Main.Msg -> Main.Model FakeNavKey -> ( Main.Model FakeNavKey, Effect Main.Msg )
+update_ model msg =
+    performModelEffect (Main.update model msg)
+
+
+performModelEffect : ( Main.Model FakeNavKey, Effect msg ) -> ( Main.Model FakeNavKey, Effect msg )
+performModelEffect state =
+    ( Tuple.first (Effect.perform fakePushUrl state)
+    , Tuple.second state
+    )
+
+
+fakePushUrl : FakeNavKey -> String -> Cmd msg
+fakePushUrl _ _ =
+    Cmd.none
 
 
 simulateEffects : Options -> Effect Main.Msg -> SimulatedEffect Main.Msg
@@ -135,6 +143,7 @@ simulateEffects options eff =
             taskFromResult options.globalFeed |> SimulatedEffect.Task.attempt msg
 
 
+taskFromResult : Result error data -> SimulatedTask error data
 taskFromResult res =
     case res of
         Ok data ->

@@ -36,4 +36,9 @@ article title =
 
 hasArticles : List Article -> Query.Single msg -> Expect.Expectation
 hasArticles items =
-    Query.findAll [ el "article" ] >> Query.count (Expect.equal (List.length items))
+    Query.findAll [ el "article" ] >> Query.count (expectEqualCount items)
+
+
+expectEqualCount : List a -> Int -> Expect.Expectation
+expectEqualCount =
+    Expect.equal << List.length

@@ -1,28 +1,21 @@
-module Article exposing (Article, build, title)
+module Article exposing
+    ( Article
+    , build
+    , title
+    )
 
 
-type Article
-    = Article Article_
-
-
-type alias Article_ =
+type alias Article =
     { title : String
     , about : String
     }
 
 
 build : String -> String -> Article
-build title_ about_ =
+build =
     Article
-        { title = title_
-        , about = about_
-        }
 
 
 title : Article -> String
 title =
-    article_ >> .title
-
-
-article_ (Article a) =
-    a
+    .title

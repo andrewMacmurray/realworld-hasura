@@ -1,6 +1,5 @@
 module Effect exposing
     ( Effect(..)
-    , applyUpdate
     , batch
     , loadGlobalFeed
     , loadUrl
@@ -116,70 +115,46 @@ map toMsg effect =
 -- Perform
 
 
-type alias Model model =
-    { model
-        | navKey : Navigation.Key
-        , user : User
-    }
+type alias Model model key =
+    { model | user : User, navKey : key }
 
 
-perform : ( Model model, Effect msg ) -> ( Model model, Cmd msg )
-perform ( model, effect ) =
-    applyUpdate ( model, effect ) |> Tuple.mapSecond (toCmd model.navKey)
-
-
-applyUpdate : ( { m | user : User }, Effect msg ) -> ( { m | user : User }, Effect msg )
-applyUpdate ( model, effect ) =
-    case effect of
-        Batch effs ->
-            ( batchApply model effs, effect )
-
-        SaveToken token ->
-            ( { model | user = User.login token }, effect )
-
-        _ ->
-            ( model, effect )
-
-
-batchApply : { m | user : User } -> List (Effect msg) -> { m | user : User }
-batchApply model effs =
-    let
-        next eff ( nextModel, _ ) =
-            applyUpdate ( nextModel, eff )
-    in
-    List.foldl next ( model, none ) effs |> Tuple.first
-
-
-
--- To Cmd
-
-
-toCmd : Navigation.Key -> Effect msg -> Cmd msg
-toCmd navKey effect =
+perform : (key -> String -> Cmd msg) -> ( Model model key, Effect msg ) -> ( Model model key, Cmd msg )
+perform pushUrl_ ( model, effect ) =
     case effect of
         None ->
-            Cmd.none
+            ( model, Cmd.none )
 
         Batch effs ->
-            Cmd.batch (List.map (toCmd navKey) effs)
+            doBatch pushUrl_ model effs
 
         NavigateTo route ->
-            Navigation.pushUrl navKey (Route.routeToString route)
+            ( model, pushUrl_ model.navKey (Route.routeToString route) )
 
         PushUrl url ->
-            Navigation.pushUrl navKey (Url.toString url)
+            ( model, pushUrl_ model.navKey (Url.toString url) )
 
         LoadUrl url ->
-            Navigation.load url
+            ( model, Navigation.load url )
 
         SaveToken token ->
-            Ports.saveToken token
+            ( { model | user = User.login token }, Ports.saveToken token )
 
         SignUp msg mutation ->
-            Api.mutate msg mutation
+            ( model, Api.mutate msg mutation )
 
         SignIn msg mutation ->
-            Api.mutate msg mutation
+            ( model, Api.mutate msg mutation )
 
         LoadGlobalFeed msg query ->
-            Api.query msg query
+            ( model, Api.query msg query )
+
+
+doBatch : (key -> String -> Cmd msg) -> Model model key -> List (Effect msg) -> ( Model model key, Cmd msg )
+doBatch pushUrl_ model effs =
+    List.foldl (doNext pushUrl_) ( model, [] ) effs |> Tuple.mapSecond Cmd.batch
+
+
+doNext : (key -> String -> Cmd msg) -> Effect msg -> ( Model model key, List (Cmd msg) ) -> ( Model model key, List (Cmd msg) )
+doNext pushUrl_ eff ( model, cmds ) =
+    perform pushUrl_ ( model, eff ) |> Tuple.mapSecond (\cmd -> cmd :: cmds)
