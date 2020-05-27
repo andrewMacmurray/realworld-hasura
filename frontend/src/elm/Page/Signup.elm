@@ -7,8 +7,7 @@ module Page.Signup exposing
     )
 
 import Api
-import Api.Mutation
-import Api.Object.Token
+import Api.Users
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Anchor as Anchor
@@ -85,8 +84,8 @@ update msg model =
         SignupResponseReceived (Ok token) ->
             ( model
             , Effect.batch
-                [ Effect.navigateTo Route.Home
-                , Effect.saveToken token
+                [ Effect.saveToken token
+                , Effect.navigateTo Route.Home
                 ]
             )
 
@@ -94,10 +93,9 @@ update msg model =
             ( model, Effect.none )
 
 
-signUp : Api.Mutation.SignupRequiredArguments -> Effect Msg
+signUp : Inputs -> Effect Msg
 signUp inputs =
-    Api.Mutation.signup inputs Api.Object.Token.token
-        |> Effect.signUp SignupResponseReceived
+    Api.Users.signUp inputs SignupResponseReceived
 
 
 
@@ -137,6 +135,7 @@ signupButton =
     Button.primary SignupClicked "Sign Up"
 
 
+email : Inputs -> Element Msg
 email =
     textInput
         { label = "Email"
@@ -145,6 +144,7 @@ email =
         }
 
 
+username : Inputs -> Element Msg
 username =
     textInput
         { label = "Username"
@@ -153,6 +153,7 @@ username =
         }
 
 
+password : Inputs -> Element Msg
 password =
     textInput
         { label = "Password"

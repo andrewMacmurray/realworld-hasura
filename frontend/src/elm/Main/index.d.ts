@@ -6,12 +6,14 @@ export namespace Elm {
   namespace Main {
     export interface App {
       ports: {
-        
+        saveToken: {
+          subscribe(callback: (data: string) => void): void
+        }
       };
     }
     export function init(options: {
       node?: HTMLElement | null;
-      flags: null;
+      flags: { token: string | null };
     }): Elm.Main.App;
   }
 }

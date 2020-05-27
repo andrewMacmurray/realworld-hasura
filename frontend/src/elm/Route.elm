@@ -22,6 +22,7 @@ type Route
     = Home
     | SignUp
     | SignIn
+    | NewPost
 
 
 parser : Parser.Parser (Route -> c) c
@@ -30,6 +31,7 @@ parser =
         [ Parser.map Home top
         , Parser.map SignUp (s "sign-up")
         , Parser.map SignIn (s "sign-in")
+        , Parser.map NewPost (s "new-post")
         ]
 
 
@@ -61,6 +63,9 @@ routeToString route =
 
         SignIn ->
             absolute [ "sign-in" ] []
+
+        NewPost ->
+            absolute [ "new-post" ] []
 
 
 fromUrl : Url -> Maybe Route

@@ -1,0 +1,1 @@
+CREATE TABLE "public"."articles"("id" serial NOT NULL, "author_id" integer NOT NULL, "title" text NOT NULL, "about" text NOT NULL, "content" text NOT NULL, "created_at" timestamptz NOT NULL DEFAULT now(), PRIMARY KEY ("id") , FOREIGN KEY ("author_id") REFERENCES "public"."users"("id") ON UPDATE cascade ON DELETE cascade, UNIQUE ("id"));

@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.Interface exposing (..)
+module Hasura.VerifyScalarCodecs exposing (..)
 
 
 placeholder : String

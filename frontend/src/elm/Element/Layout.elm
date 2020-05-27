@@ -38,7 +38,7 @@ loggedIn profile els =
     column [ width fill ]
         [ navbar
             [ Route.link Route.Home "Home"
-            , Text.link [] "New Post"
+            , Route.link Route.NewPost "New Post"
             ]
         , column
             [ paddingXY Scale.medium 0

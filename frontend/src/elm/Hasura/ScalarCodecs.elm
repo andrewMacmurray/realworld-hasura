@@ -2,31 +2,31 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.ScalarCodecs exposing (..)
+module Hasura.ScalarCodecs exposing (..)
 
-import Api.Scalar exposing (defaultCodecs)
+import Hasura.Scalar exposing (defaultCodecs)
 import Json.Decode as Decode exposing (Decoder)
 
 
 type alias Id =
-    Api.Scalar.Id
+    Hasura.Scalar.Id
 
 
 type alias Json =
-    Api.Scalar.Json
+    Hasura.Scalar.Json
 
 
 type alias Timestamptz =
-    Api.Scalar.Timestamptz
+    Hasura.Scalar.Timestamptz
 
 
 type alias Uuid =
-    Api.Scalar.Uuid
+    Hasura.Scalar.Uuid
 
 
-codecs : Api.Scalar.Codecs Id Json Timestamptz Uuid
+codecs : Hasura.Scalar.Codecs Id Json Timestamptz Uuid
 codecs =
-    Api.Scalar.defineCodecs
+    Hasura.Scalar.defineCodecs
         { codecId = defaultCodecs.codecId
         , codecJson = defaultCodecs.codecJson
         , codecTimestamptz = defaultCodecs.codecTimestamptz

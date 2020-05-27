@@ -13,6 +13,7 @@ import Browser.Navigation as Nav
 import Effect exposing (Effect)
 import Element exposing (..)
 import Page.Home as Home
+import Page.NewPost as NewPost
 import Page.NotFound as NotFound
 import Page.SignIn as SignIn
 import Page.Signup as SignUp
@@ -52,6 +53,7 @@ type Page
     = Home Home.Model
     | SignUp SignUp.Model
     | SignIn SignIn.Model
+    | NewPost NewPost.Model
     | NotFound
 
 
@@ -61,10 +63,12 @@ type Msg
     | HomeMsg Home.Msg
     | SignUpMsg SignUp.Msg
     | SignInMsg SignIn.Msg
+    | NewPostMsg NewPost.Msg
 
 
 type alias Flags =
-    ()
+    { token : Maybe String
+    }
 
 
 
@@ -77,14 +81,14 @@ performInit flags url key =
 
 
 init : Flags -> Url -> key -> ( Model key, Effect Msg )
-init _ url key =
-    initialModel key |> changePageTo url
+init flags url key =
+    initialModel flags key |> changePageTo url
 
 
-initialModel : key -> Model key
-initialModel key =
+initialModel : Flags -> key -> Model key
+initialModel flags key =
     { page = NotFound
-    , user = User.Guest
+    , user = User.fromToken flags.token
     , navKey = key
     }
 
@@ -118,6 +122,10 @@ update msg model =
         ( SignInMsg msg_, SignIn model_ ) ->
             SignIn.update msg_ model_
                 |> updateWith SignIn SignInMsg model
+
+        ( NewPostMsg msg_, NewPost model_ ) ->
+            NewPost.update msg_ model_
+                |> updateWith NewPost NewPostMsg model
 
         ( _, _ ) ->
             ( model, Effect.none )
@@ -157,6 +165,9 @@ changePageTo url model =
         Just Route.SignIn ->
             SignIn.init |> updateWith SignIn SignInMsg model
 
+        Just Route.NewPost ->
+            NewPost.init |> updateWith NewPost NewPostMsg model
+
         Nothing ->
             ( { model | page = NotFound }, Effect.none )
 
@@ -193,5 +204,17 @@ view_ model =
         SignIn model_ ->
             Element.map SignInMsg (SignIn.view model_)
 
+        NewPost model_ ->
+            Element.map NewPostMsg (authenticated NewPost.view model_ model.user)
+
         NotFound ->
             NotFound.view
+
+
+authenticated viewF subModel user =
+    case user of
+        User.Guest ->
+            NotFound.view
+
+        User.LoggedIn profile ->
+            viewF profile subModel

@@ -2,28 +2,23 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.Object.Users exposing (..)
+module Hasura.Object.Token exposing (..)
 
-import Api.InputObject
-import Api.Interface
-import Api.Object
-import Api.Scalar
-import Api.ScalarCodecs
-import Api.Union
 import Graphql.Internal.Builder.Argument as Argument exposing (Argument)
 import Graphql.Internal.Builder.Object as Object
 import Graphql.Internal.Encode as Encode exposing (Value)
 import Graphql.Operation exposing (RootMutation, RootQuery, RootSubscription)
 import Graphql.OptionalArgument exposing (OptionalArgument(..))
 import Graphql.SelectionSet exposing (SelectionSet)
+import Hasura.InputObject
+import Hasura.Interface
+import Hasura.Object
+import Hasura.Scalar
+import Hasura.ScalarCodecs
+import Hasura.Union
 import Json.Decode as Decode
 
 
-email : SelectionSet String Api.Object.Users
-email =
-    Object.selectionForField "String" "email" [] Decode.string
-
-
-username : SelectionSet String Api.Object.Users
-username =
-    Object.selectionForField "String" "username" [] Decode.string
+token : SelectionSet String Hasura.Object.Token
+token =
+    Object.selectionForField "String" "token" [] Decode.string

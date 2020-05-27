@@ -2,7 +2,15 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.Object exposing (..)
+module Hasura.Object exposing (..)
+
+
+type Articles
+    = Articles
+
+
+type Articles_mutation_response
+    = Articles_mutation_response
 
 
 type Token

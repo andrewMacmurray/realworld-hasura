@@ -1,6 +1,7 @@
 module User exposing
     ( Profile
     , User(..)
+    , fromToken
     , login
     )
 
@@ -17,3 +18,8 @@ type alias Profile =
 login : String -> User
 login =
     LoggedIn
+
+
+fromToken : Maybe String -> User
+fromToken =
+    Maybe.map LoggedIn >> Maybe.withDefault Guest

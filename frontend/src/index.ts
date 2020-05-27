@@ -1,3 +1,10 @@
 import { Elm } from "./elm/Main";
 
-Elm.Main.init({ flags: null, node: document.getElementById("app") });
+const app = Elm.Main.init({
+  flags: { token: localStorage.getItem("token") },
+  node: document.getElementById("app"),
+});
+
+app.ports.saveToken.subscribe((token) => {
+  localStorage.setItem("token", token);
+});

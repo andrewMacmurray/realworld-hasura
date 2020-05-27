@@ -6,11 +6,16 @@ module Page.Home exposing
     , view
     )
 
+import Api
+import Api.Articles
+import Article exposing (Article)
 import Effect exposing (Effect)
-import Element exposing (Element)
+import Element exposing (..)
+import Element.Anchor as Anchor
 import Element.Layout as Layout
 import Element.Text as Text
 import User exposing (User(..))
+import WebData exposing (WebData)
 
 
 
@@ -18,11 +23,12 @@ import User exposing (User(..))
 
 
 type alias Model =
-    {}
+    { globalFeed : WebData (List Article)
+    }
 
 
 type Msg
-    = NoOp
+    = GlobalFeedResponseReceived (Api.Response (List Article))
 
 
 
@@ -31,12 +37,15 @@ type Msg
 
 init : ( Model, Effect Msg )
 init =
-    ( initialModel, Effect.none )
+    ( initialModel
+    , Api.Articles.globalFeed GlobalFeedResponseReceived
+    )
 
 
 initialModel : Model
 initialModel =
-    {}
+    { globalFeed = WebData.Loading
+    }
 
 
 
@@ -46,8 +55,8 @@ initialModel =
 update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
-        NoOp ->
-            ( model, Effect.none )
+        GlobalFeedResponseReceived response ->
+            ( { model | globalFeed = WebData.fromResult response }, Effect.none )
 
 
 
@@ -55,14 +64,35 @@ update msg model =
 
 
 view : User -> Model -> Element Msg
-view user _ =
+view user model =
     case user of
         Guest ->
-            Layout.guest
-                [ Text.title [] "Home"
-                ]
+            Layout.guest [ globalFeed model ]
 
         LoggedIn profile ->
-            Layout.loggedIn profile
-                [ Text.title [] "Your Posts"
+            Layout.loggedIn profile [ globalFeed model ]
+
+
+globalFeed model =
+    case model.globalFeed of
+        WebData.Loading ->
+            column [ Anchor.description "global-feed" ]
+                [ Text.title [] "Global Feed"
                 ]
+
+        WebData.Loaded feed ->
+            column [ Anchor.description "global-feed" ]
+                [ Text.title [] "Global Feed"
+                , column [] (List.map viewArticle feed)
+                ]
+
+        WebData.Failure ->
+            column [ Anchor.description "global-feed" ]
+                [ Text.title [] "Something went wrong"
+                ]
+
+
+viewArticle article =
+    column [ Anchor.description "article" ]
+        [ Text.subtitle [] (Article.title article)
+        ]

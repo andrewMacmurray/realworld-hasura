@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.Enum.Order_by exposing (..)
+module Hasura.Enum.Order_by exposing (..)
 
 import Json.Decode as Decode exposing (Decoder)
 

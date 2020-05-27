@@ -1,18 +1,24 @@
 module Program exposing
     ( BlogProgramTest
+    , asGuest
     , baseUrl
     , fillField
     , start
+    , withDefaults
+    , withGlobalFeed
     )
 
+import Api
+import Article exposing (Article)
 import Effect exposing (Effect(..))
 import Element.Anchor as Anchor
 import Json.Encode as Encode
 import Main
 import ProgramTest exposing (ProgramDefinition, ProgramTest, SimulatedEffect)
-import Route
+import Route exposing (Route)
 import SimulatedEffect.Cmd
 import SimulatedEffect.Navigation
+import SimulatedEffect.Ports
 import SimulatedEffect.Task
 import Test.Html.Query
 import Test.Html.Selector
@@ -27,12 +33,47 @@ type alias BlogProgramTest =
     ProgramTest (Main.Model ()) Main.Msg (Effect Main.Msg)
 
 
-start : Route.Route -> BlogProgramTest
-start route =
+type alias Options =
+    { globalFeed : Api.Response (List Article)
+    , route : Route
+    , token : Maybe String
+    }
+
+
+asGuest : Route -> Options
+asGuest route =
+    defaultOptions route
+
+
+start : Options -> BlogProgramTest
+start options =
     program
-        |> ProgramTest.withSimulatedEffects simulateEffects
-        |> ProgramTest.withBaseUrl (baseUrl ++ Route.routeToString route)
-        |> ProgramTest.start ()
+        |> ProgramTest.withSimulatedEffects (simulateEffects options)
+        |> ProgramTest.withBaseUrl (baseUrl ++ Route.routeToString options.route)
+        |> ProgramTest.start (toFlags options)
+
+
+withGlobalFeed : List Article -> Options -> Options
+withGlobalFeed feed options =
+    { options | globalFeed = Ok feed }
+
+
+withDefaults : Options -> Options
+withDefaults =
+    identity
+
+
+toFlags : Options -> Main.Flags
+toFlags options =
+    { token = options.token }
+
+
+defaultOptions : Route -> Options
+defaultOptions route =
+    { route = route
+    , globalFeed = Ok []
+    , token = Nothing
+    }
 
 
 baseUrl : String
@@ -47,22 +88,30 @@ type alias BlogProgramDefinition =
 program : BlogProgramDefinition
 program =
     ProgramTest.createApplication
-        { init = Main.init
-        , update = Main.update
+        { init = init
+        , update = update
         , view = Main.view
         , onUrlRequest = Main.UrlRequest
         , onUrlChange = Main.UrlChange
         }
 
 
-simulateEffects : Effect Main.Msg -> SimulatedEffect Main.Msg
-simulateEffects eff =
+update msg model =
+    Main.update msg model |> Effect.applyUpdate
+
+
+init flags_ url key =
+    Main.init flags_ url key |> Effect.applyUpdate
+
+
+simulateEffects : Options -> Effect Main.Msg -> SimulatedEffect Main.Msg
+simulateEffects options eff =
     case eff of
         None ->
             SimulatedEffect.Cmd.none
 
         Batch effs ->
-            SimulatedEffect.Cmd.batch (List.map simulateEffects effs)
+            SimulatedEffect.Cmd.batch (List.map (simulateEffects options) effs)
 
         NavigateTo route ->
             SimulatedEffect.Navigation.pushUrl (Route.routeToString route)
@@ -79,8 +128,20 @@ simulateEffects eff =
         SignIn msg _ ->
             SimulatedEffect.Task.succeed "token!" |> SimulatedEffect.Task.attempt msg
 
-        SaveToken string ->
-            SimulatedEffect.Cmd.none
+        SaveToken token ->
+            SimulatedEffect.Ports.send "saveToken" (Encode.string token)
+
+        LoadGlobalFeed msg _ ->
+            taskFromResult options.globalFeed |> SimulatedEffect.Task.attempt msg
+
+
+taskFromResult res =
+    case res of
+        Ok data ->
+            SimulatedEffect.Task.succeed data
+
+        Err err ->
+            SimulatedEffect.Task.fail err
 
 
 

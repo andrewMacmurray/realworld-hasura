@@ -1,10 +1,11 @@
 module Api exposing
     ( Response
     , mutate
+    , query
     )
 
 import Graphql.Http
-import Graphql.Operation exposing (RootMutation)
+import Graphql.Operation exposing (RootMutation, RootQuery)
 import Graphql.SelectionSet exposing (SelectionSet)
 
 
@@ -16,6 +17,13 @@ mutate : (Response decodesTo -> msg) -> SelectionSet decodesTo RootMutation -> C
 mutate msg selectionSet =
     selectionSet
         |> Graphql.Http.mutationRequest endpoint
+        |> Graphql.Http.send msg
+
+
+query : (Response decodesTo -> msg) -> SelectionSet decodesTo RootQuery -> Cmd msg
+query msg selectionSet =
+    selectionSet
+        |> Graphql.Http.queryRequest endpoint
         |> Graphql.Http.send msg
 
 

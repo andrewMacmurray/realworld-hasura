@@ -7,8 +7,7 @@ module Page.SignIn exposing
     )
 
 import Api
-import Api.Mutation
-import Api.Object.Token
+import Api.Users
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Anchor as Anchor
@@ -92,10 +91,9 @@ update msg model =
             ( model, Effect.none )
 
 
-signIn : Api.Mutation.LoginRequiredArguments -> Effect Msg
+signIn : Inputs -> Effect Msg
 signIn inputs =
-    Api.Mutation.login inputs Api.Object.Token.token
-        |> Effect.signIn SignInResponseReceived
+    Api.Users.signIn inputs SignInResponseReceived
 
 
 
@@ -134,6 +132,7 @@ signInButton =
     Button.primary SignInClicked "Sign In"
 
 
+username : Inputs -> Element Msg
 username =
     textInput
         { label = "Username"
@@ -142,6 +141,7 @@ username =
         }
 
 
+password : Inputs -> Element Msg
 password =
     textInput
         { label = "Password"
