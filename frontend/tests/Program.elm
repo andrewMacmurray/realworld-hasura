@@ -61,6 +61,9 @@ simulateEffects eff =
         None ->
             SimulatedEffect.Cmd.none
 
+        Batch effs ->
+            SimulatedEffect.Cmd.batch (List.map simulateEffects effs)
+
         NavigateTo route ->
             SimulatedEffect.Navigation.pushUrl (Route.routeToString route)
 
@@ -70,8 +73,14 @@ simulateEffects eff =
         LoadUrl _ ->
             SimulatedEffect.Cmd.none
 
-        Signup msg _ ->
+        SignUp msg _ ->
             SimulatedEffect.Task.succeed "token!" |> SimulatedEffect.Task.attempt msg
+
+        SignIn msg _ ->
+            SimulatedEffect.Task.succeed "token!" |> SimulatedEffect.Task.attempt msg
+
+        SaveToken string ->
+            SimulatedEffect.Cmd.none
 
 
 

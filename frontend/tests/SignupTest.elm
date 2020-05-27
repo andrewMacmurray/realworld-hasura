@@ -17,9 +17,9 @@ suite =
                 |> Program.fillField "username" "amacmurray"
                 |> Program.fillField "password" "abc123"
                 |> ensureViewHas
-                    [ Selector.inputWithValue "a@b.com"
-                    , Selector.inputWithValue "amacmurray"
-                    , Selector.inputWithValue "abc123"
+                    [ Selector.filledField "a@b.com"
+                    , Selector.filledField "amacmurray"
+                    , Selector.filledField "abc123"
                     ]
                 |> clickButton "Sign Up"
                 |> Expect.pageChange Route.Home

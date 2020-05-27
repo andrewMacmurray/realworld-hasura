@@ -10,6 +10,7 @@ import Effect exposing (Effect)
 import Element exposing (Element)
 import Element.Layout as Layout
 import Element.Text as Text
+import User exposing (User(..))
 
 
 
@@ -53,8 +54,15 @@ update msg model =
 -- View
 
 
-view : Model -> Element Msg
-view _ =
-    Layout.page
-        [ Text.title [] "Home"
-        ]
+view : User -> Model -> Element Msg
+view user _ =
+    case user of
+        Guest ->
+            Layout.guest
+                [ Text.title [] "Home"
+                ]
+
+        LoggedIn profile ->
+            Layout.loggedIn profile
+                [ Text.title [] "Your Posts"
+                ]

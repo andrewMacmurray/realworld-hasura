@@ -1,12 +1,15 @@
 module Effect exposing
     ( Effect(..)
+    , batch
     , loadUrl
     , map
     , navigateTo
     , none
     , perform
     , pushUrl
-    , signup
+    , saveToken
+    , signIn
+    , signUp
     )
 
 import Api
@@ -15,6 +18,7 @@ import Graphql.Operation exposing (RootMutation)
 import Graphql.SelectionSet exposing (SelectionSet)
 import Route exposing (Route)
 import Url exposing (Url)
+import User exposing (User)
 
 
 
@@ -23,10 +27,13 @@ import Url exposing (Url)
 
 type Effect msg
     = None
+    | Batch (List (Effect msg))
     | PushUrl Url
-    | NavigateTo Route
     | LoadUrl String
-    | Signup (Api.Response String -> msg) (SelectionSet String RootMutation)
+    | NavigateTo Route
+    | SaveToken String
+    | SignUp (Api.Response String -> msg) (SelectionSet String RootMutation)
+    | SignIn (Api.Response String -> msg) (SelectionSet String RootMutation)
 
 
 none : Effect msg
@@ -34,9 +41,24 @@ none =
     None
 
 
-signup : (Api.Response String -> msg) -> SelectionSet String RootMutation -> Effect msg
-signup =
-    Signup
+batch : List (Effect msg) -> Effect msg
+batch =
+    Batch
+
+
+saveToken : String -> Effect msg
+saveToken =
+    SaveToken
+
+
+signUp : (Api.Response String -> msg) -> SelectionSet String RootMutation -> Effect msg
+signUp =
+    SignUp
+
+
+signIn : (Api.Response String -> msg) -> SelectionSet String RootMutation -> Effect msg
+signIn =
+    SignIn
 
 
 pushUrl : Url -> Effect msg
@@ -64,11 +86,20 @@ map toMsg effect =
         None ->
             None
 
+        Batch effs ->
+            Batch (List.map (map toMsg) effs)
+
         NavigateTo route ->
             NavigateTo route
 
-        Signup msg res ->
-            Signup (msg >> toMsg) res
+        SaveToken token ->
+            SaveToken token
+
+        SignUp msg res ->
+            SignUp (msg >> toMsg) res
+
+        SignIn msg res ->
+            SignIn (msg >> toMsg) res
 
         PushUrl url ->
             PushUrl url
@@ -81,25 +112,40 @@ map toMsg effect =
 -- Perform
 
 
-perform : Navigation.Key -> ( model, Effect msg ) -> ( model, Cmd msg )
-perform =
-    perform_ >> Tuple.mapSecond
+type alias Model model =
+    { model
+        | navKey : Navigation.Key
+        , user : User
+    }
 
 
-perform_ : Navigation.Key -> Effect msg -> Cmd msg
-perform_ navKey effect =
+perform : ( Model model, Effect msg ) -> ( Model model, Cmd msg )
+perform ( model, effect ) =
     case effect of
         None ->
-            Cmd.none
+            ( model, Cmd.none )
+
+        Batch effs ->
+            List.foldl nextEff ( model, [] ) effs |> Tuple.mapSecond Cmd.batch
 
         NavigateTo route ->
-            Navigation.pushUrl navKey (Route.routeToString route)
+            ( model, Navigation.pushUrl model.navKey (Route.routeToString route) )
 
         PushUrl url ->
-            Navigation.pushUrl navKey (Url.toString url)
+            ( model, Navigation.pushUrl model.navKey (Url.toString url) )
 
         LoadUrl url ->
-            Navigation.load url
+            ( model, Navigation.load url )
 
-        Signup msg mutation ->
-            Api.mutate msg mutation
+        SaveToken token ->
+            ( { model | user = User.login token }, Cmd.none )
+
+        SignUp msg mutation ->
+            ( model, Api.mutate msg mutation )
+
+        SignIn msg mutation ->
+            ( model, Api.mutate msg mutation )
+
+
+nextEff eff ( model, cmds ) =
+    perform ( model, eff ) |> Tuple.mapSecond (\c -> c :: cmds)

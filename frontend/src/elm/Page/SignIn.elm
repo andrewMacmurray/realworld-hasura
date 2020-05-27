@@ -80,8 +80,13 @@ update msg model =
         SignInClicked ->
             ( model, signIn model.inputs )
 
-        SignInResponseReceived (Ok _) ->
-            ( model, Effect.navigateTo Route.Home )
+        SignInResponseReceived (Ok token) ->
+            ( model
+            , Effect.batch
+                [ Effect.navigateTo Route.Home
+                , Effect.saveToken token
+                ]
+            )
 
         SignInResponseReceived (Err _) ->
             ( model, Effect.none )
@@ -90,7 +95,7 @@ update msg model =
 signIn : Api.Mutation.LoginRequiredArguments -> Effect Msg
 signIn inputs =
     Api.Mutation.login inputs Api.Object.Token.token
-        |> Effect.signup SignInResponseReceived
+        |> Effect.signIn SignInResponseReceived
 
 
 
@@ -99,7 +104,7 @@ signIn inputs =
 
 view : Model -> Element Msg
 view model =
-    Layout.page
+    Layout.guest
         [ signup model
         ]
 

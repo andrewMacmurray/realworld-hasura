@@ -1,10 +1,21 @@
-module Route exposing (Route(..), el, fromUrl, link, routeToString)
+module Route exposing
+    ( Route(..)
+    , el
+    , fromUrl
+    , link
+    , routeToString
+    )
 
 import Element exposing (Element)
+import Element.Anchor as Anchor
 import Element.Text as Text
 import Url exposing (Url)
 import Url.Builder exposing (absolute)
 import Url.Parser as Parser exposing (oneOf, s, top)
+
+
+
+-- Route
 
 
 type Route
@@ -24,7 +35,11 @@ parser =
 
 link : Route -> String -> Element msg
 link route label =
-    el route (Text.link [] label)
+    let
+        description =
+            Anchor.description (label ++ "-link")
+    in
+    el route (Text.link [ description ] label)
 
 
 el : Route -> Element msg -> Element msg

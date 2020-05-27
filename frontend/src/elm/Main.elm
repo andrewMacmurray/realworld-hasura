@@ -18,6 +18,7 @@ import Page.SignIn as SignIn
 import Page.Signup as SignUp
 import Route
 import Url exposing (Url)
+import User exposing (User)
 
 
 
@@ -42,6 +43,7 @@ main =
 
 type alias Model key =
     { page : Page
+    , user : User
     , navKey : key
     }
 
@@ -71,7 +73,7 @@ type alias Flags =
 
 performInit : Flags -> Url -> Nav.Key -> ( Model Nav.Key, Cmd Msg )
 performInit flags url key =
-    Effect.perform key (init flags url key)
+    Effect.perform (init flags url key)
 
 
 init : Flags -> Url -> key -> ( Model key, Effect Msg )
@@ -82,6 +84,7 @@ init _ url key =
 initialModel : key -> Model key
 initialModel key =
     { page = NotFound
+    , user = User.Guest
     , navKey = key
     }
 
@@ -92,7 +95,7 @@ initialModel key =
 
 performUpdate : Msg -> Model Nav.Key -> ( Model Nav.Key, Cmd Msg )
 performUpdate msg model =
-    Effect.perform model.navKey (update msg model)
+    Effect.perform (update msg model)
 
 
 update : Msg -> Model key -> ( Model key, Effect Msg )
@@ -130,6 +133,12 @@ handleUrl model request =
             ( model, Effect.loadUrl url )
 
 
+updateWith :
+    (pageModel -> page)
+    -> (pageMsg -> msg)
+    -> { model | page : page }
+    -> ( pageModel, Effect pageMsg )
+    -> ( { model | page : page }, Effect msg )
 updateWith modelF msgF model ( m, c ) =
     ( { model | page = modelF m }
     , Effect.map msgF c
@@ -176,13 +185,13 @@ view_ : Model key -> Element Msg
 view_ model =
     case model.page of
         Home model_ ->
-            Home.view model_ |> Element.map HomeMsg
+            Element.map HomeMsg (Home.view model.user model_)
 
         SignUp model_ ->
-            SignUp.view model_ |> Element.map SignUpMsg
+            Element.map SignUpMsg (SignUp.view model_)
 
         SignIn model_ ->
-            SignIn.view model_ |> Element.map SignInMsg
+            Element.map SignInMsg (SignIn.view model_)
 
         NotFound ->
             NotFound.view
