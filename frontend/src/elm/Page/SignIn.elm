@@ -1,4 +1,4 @@
-module Page.Signup exposing
+module Page.SignIn exposing
     ( Model
     , Msg
     , init
@@ -31,13 +31,12 @@ type alias Model =
 
 type Msg
     = InputsChanged Inputs
-    | SignupClicked
-    | SignupResponseReceived (Api.Response Token)
+    | SignInClicked
+    | SignInResponseReceived (Api.Response Token)
 
 
 type alias Inputs =
-    { email : String
-    , username : String
+    { username : String
     , password : String
     }
 
@@ -63,8 +62,7 @@ initialModel =
 
 emptyInputs : Inputs
 emptyInputs =
-    { email = ""
-    , username = ""
+    { username = ""
     , password = ""
     }
 
@@ -79,20 +77,20 @@ update msg model =
         InputsChanged inputs ->
             ( { model | inputs = inputs }, Effect.none )
 
-        SignupClicked ->
-            ( model, signUp model.inputs )
+        SignInClicked ->
+            ( model, signIn model.inputs )
 
-        SignupResponseReceived (Ok _) ->
+        SignInResponseReceived (Ok _) ->
             ( model, Effect.navigateTo Route.Home )
 
-        SignupResponseReceived (Err _) ->
+        SignInResponseReceived (Err _) ->
             ( model, Effect.none )
 
 
-signUp : Api.Mutation.SignupRequiredArguments -> Effect Msg
-signUp inputs =
-    Api.Mutation.signup inputs Api.Object.Token.token
-        |> Effect.signup SignupResponseReceived
+signIn : Api.Mutation.LoginRequiredArguments -> Effect Msg
+signIn inputs =
+    Api.Mutation.login inputs Api.Object.Token.token
+        |> Effect.signup SignInResponseReceived
 
 
 
@@ -113,31 +111,22 @@ signup model =
         , spacing Scale.large
         , width fill
         ]
-        [ Text.title [ centerX ] "Sign Up"
+        [ Text.title [ centerX ] "Sign In"
         , column
             [ centerX
             , width (fill |> maximum (Layout.maxWidth // 2))
             , spacing Scale.medium
             ]
             [ username model.inputs
-            , email model.inputs
             , password model.inputs
-            , el [ alignRight ] signupButton
+            , el [ alignRight ] signInButton
             ]
         ]
 
 
-signupButton : Element Msg
-signupButton =
-    Button.primary SignupClicked "Sign Up"
-
-
-email =
-    textInput
-        { label = "Email"
-        , value = .email
-        , update = \i v -> { i | email = v }
-        }
+signInButton : Element Msg
+signInButton =
+    Button.primary SignInClicked "Sign In"
 
 
 username =

@@ -35,7 +35,7 @@ navbar =
         , paddingXY Scale.medium 0
         ]
         (row [ width fill ]
-            [ Text.subtitle [ paddingXY 0 Scale.medium ] "conduit"
+            [ Route.el Route.Home (Text.subtitle [ paddingXY 0 Scale.medium ] "conduit")
             , navItems
             ]
         )
@@ -44,8 +44,8 @@ navbar =
 navItems =
     row [ alignRight, spacing Scale.medium ]
         [ Route.link Route.Home "Home"
-        , Text.link [] "Sign In"
-        , Route.link Route.Signup "Sign Up"
+        , Route.link Route.SignIn "Sign In"
+        , Route.link Route.SignUp "Sign Up"
         ]
 
 

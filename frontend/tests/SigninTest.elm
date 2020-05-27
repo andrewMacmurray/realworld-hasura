@@ -1,4 +1,4 @@
-module SignupTest exposing (suite)
+module SigninTest exposing (suite)
 
 import Program
 import Program.Expect as Expect
@@ -10,16 +10,14 @@ import Test exposing (..)
 
 suite : Test
 suite =
-    test "User is redirected to home after signup" <|
+    test "User is redirected to home when signed in" <|
         \_ ->
-            Program.start Route.SignUp
-                |> Program.fillField "email" "a@b.com"
+            Program.start Route.SignIn
                 |> Program.fillField "username" "amacmurray"
                 |> Program.fillField "password" "abc123"
                 |> ensureViewHas
-                    [ Selector.inputWithValue "a@b.com"
-                    , Selector.inputWithValue "amacmurray"
+                    [ Selector.inputWithValue "amacmurray"
                     , Selector.inputWithValue "abc123"
                     ]
-                |> clickButton "Sign Up"
+                |> clickButton "Sign In"
                 |> Expect.pageChange Route.Home

@@ -14,7 +14,8 @@ import Effect exposing (Effect)
 import Element exposing (..)
 import Page.Home as Home
 import Page.NotFound as NotFound
-import Page.Signup as Signup
+import Page.SignIn as SignIn
+import Page.Signup as SignUp
 import Route
 import Url exposing (Url)
 
@@ -54,7 +55,8 @@ type alias Model key =
 
 type Page
     = Home Home.Model
-    | Signup Signup.Model
+    | SignUp SignUp.Model
+    | SignIn SignIn.Model
     | NotFound
 
 
@@ -62,7 +64,8 @@ type Msg
     = UrlRequest UrlRequest
     | UrlChange Url
     | HomeMsg Home.Msg
-    | SignupMsg Signup.Msg
+    | SignUpMsg SignUp.Msg
+    | SignInMsg SignIn.Msg
 
 
 type alias Flags =
@@ -80,7 +83,7 @@ init _ url key =
 
 initialModel : key -> Model key
 initialModel key =
-    { page = Signup Signup.init
+    { page = NotFound
     , navKey = key
     }
 
@@ -102,9 +105,13 @@ update msg model =
             Home.update msg_ model_
                 |> updateWith Home HomeMsg model
 
-        ( SignupMsg msg_, Signup model_ ) ->
-            Signup.update msg_ model_
-                |> updateWith Signup SignupMsg model
+        ( SignUpMsg msg_, SignUp model_ ) ->
+            SignUp.update msg_ model_
+                |> updateWith SignUp SignUpMsg model
+
+        ( SignInMsg msg_, SignIn model_ ) ->
+            SignIn.update msg_ model_
+                |> updateWith SignIn SignInMsg model
 
         ( _, _ ) ->
             ( model, Effect.none )
@@ -132,8 +139,11 @@ changePageTo url model =
         Just Route.Home ->
             Home.init |> updateWith Home HomeMsg model
 
-        Just Route.Signup ->
-            ( { model | page = Signup Signup.init }, Effect.none )
+        Just Route.SignUp ->
+            SignUp.init |> updateWith SignUp SignUpMsg model
+
+        Just Route.SignIn ->
+            SignIn.init |> updateWith SignIn SignInMsg model
 
         Nothing ->
             ( { model | page = NotFound }, Effect.none )
@@ -165,8 +175,11 @@ view_ model =
         Home model_ ->
             Home.view model_ |> Element.map HomeMsg
 
-        Signup model_ ->
-            Signup.view model_ |> Element.map SignupMsg
+        SignUp model_ ->
+            SignUp.view model_ |> Element.map SignUpMsg
+
+        SignIn model_ ->
+            SignIn.view model_ |> Element.map SignInMsg
 
         NotFound ->
             NotFound.view
