@@ -17,6 +17,10 @@ import Route exposing (Route)
 import Url exposing (Url)
 
 
+
+-- Effect
+
+
 type Effect msg
     = None
     | PushUrl Url
@@ -30,20 +34,28 @@ none =
     None
 
 
+signup : (Api.Response String -> msg) -> SelectionSet String RootMutation -> Effect msg
 signup =
     Signup
 
 
+pushUrl : Url -> Effect msg
 pushUrl =
     PushUrl
 
 
+navigateTo : Route -> Effect msg
 navigateTo =
     NavigateTo
 
 
+loadUrl : String -> Effect msg
 loadUrl =
     LoadUrl
+
+
+
+-- Transform
 
 
 map : (a -> msg) -> Effect a -> Effect msg
@@ -65,8 +77,17 @@ map toMsg effect =
             LoadUrl url
 
 
-perform : Navigation.Key -> Effect msg -> Cmd msg
-perform navKey effect =
+
+-- Perform
+
+
+perform : Navigation.Key -> ( model, Effect msg ) -> ( model, Cmd msg )
+perform =
+    perform_ >> Tuple.mapSecond
+
+
+perform_ : Navigation.Key -> Effect msg -> Cmd msg
+perform_ navKey effect =
     case effect of
         None ->
             Cmd.none

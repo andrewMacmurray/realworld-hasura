@@ -26,16 +26,9 @@ import Url exposing (Url)
 
 main : Program Flags (Model Nav.Key) Msg
 main =
-    let
-        update_ msg model =
-            update msg model |> Tuple.mapSecond (Effect.perform model.navKey)
-
-        init_ flags url key =
-            init flags url key |> Tuple.mapSecond (Effect.perform key)
-    in
     Browser.application
-        { init = init_
-        , update = update_
+        { init = performInit
+        , update = performUpdate
         , subscriptions = subscriptions
         , view = view
         , onUrlRequest = UrlRequest
@@ -76,6 +69,11 @@ type alias Flags =
 -- Init
 
 
+performInit : Flags -> Url -> Nav.Key -> ( Model Nav.Key, Cmd Msg )
+performInit flags url key =
+    Effect.perform key (init flags url key)
+
+
 init : Flags -> Url -> key -> ( Model key, Effect Msg )
 init _ url key =
     initialModel key |> changePageTo url
@@ -90,6 +88,11 @@ initialModel key =
 
 
 -- Update
+
+
+performUpdate : Msg -> Model Nav.Key -> ( Model Nav.Key, Cmd Msg )
+performUpdate msg model =
+    Effect.perform model.navKey (update msg model)
 
 
 update : Msg -> Model key -> ( Model key, Effect Msg )
