@@ -13,8 +13,8 @@ type alias Response a =
 
 
 mutate : (Response decodesTo -> msg) -> SelectionSet decodesTo RootMutation -> Cmd msg
-mutate msg request =
-    request
+mutate msg selectionSet =
+    selectionSet
         |> Graphql.Http.mutationRequest endpoint
         |> Graphql.Http.send msg
 

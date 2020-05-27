@@ -6,6 +6,7 @@ module Page.Home exposing
     , view
     )
 
+import Effect exposing (Effect)
 import Element exposing (Element)
 import Element.Layout as Layout
 import Element.Text as Text
@@ -27,9 +28,9 @@ type Msg
 -- Init
 
 
-init : ( Model, Cmd Msg )
+init : ( Model, Effect Msg )
 init =
-    ( initialModel, Cmd.none )
+    ( initialModel, Effect.none )
 
 
 initialModel : Model
@@ -41,11 +42,11 @@ initialModel =
 -- Update
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
         NoOp ->
-            ( model, Cmd.none )
+            ( model, Effect.none )
 
 
 

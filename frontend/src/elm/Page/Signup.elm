@@ -6,17 +6,18 @@ module Page.Signup exposing
     , view
     )
 
--- Model
-
 import Api
 import Api.Mutation
 import Api.Object.Token
+import Effect exposing (Effect)
 import Element exposing (..)
+import Element.Anchor as Anchor
 import Element.Button as Button
 import Element.Input as Input
 import Element.Layout as Layout
 import Element.Scale as Scale
 import Element.Text as Text
+import Route
 
 
 
@@ -72,25 +73,26 @@ emptyInputs =
 -- Update
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
         InputsChanged inputs ->
-            ( { model | inputs = inputs }, Cmd.none )
+            ( { model | inputs = inputs }, Effect.none )
 
         SignupClicked ->
             ( model, signUp model.inputs )
 
         SignupResponseReceived (Ok token) ->
-            ( model, Cmd.none )
+            ( model, Effect.navigateTo Route.Home )
 
         SignupResponseReceived (Err _) ->
-            ( model, Cmd.none )
+            ( model, Effect.none )
 
 
+signUp : Api.Mutation.SignupRequiredArguments -> Effect Msg
 signUp inputs =
     Api.Mutation.signup inputs Api.Object.Token.token
-        |> Api.mutate SignupResponseReceived
+        |> Effect.signup SignupResponseReceived
 
 
 
@@ -155,7 +157,7 @@ password =
 
 
 textInput config inputs =
-    Input.text []
+    Input.text [ Anchor.description config.label ]
         { onChange = config.update inputs >> InputsChanged
         , text = config.value inputs
         , placeholder = Just (Input.placeholder [] (text config.label))

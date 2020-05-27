@@ -1,4 +1,4 @@
-module Route exposing (Route(..), fromUrl, link)
+module Route exposing (Route(..), fromUrl, link, routeToString)
 
 import Element exposing (Element)
 import Element.Text as Text
