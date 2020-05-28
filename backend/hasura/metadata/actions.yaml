@@ -17,5 +17,5 @@ custom_types:
   enums: []
   input_objects: []
   objects:
-  - name: Token
+  - name: TokenResponse
   scalars: []

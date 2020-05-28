@@ -1,9 +1,11 @@
 import * as Password from "./password";
 import * as Users from "./repository";
-import * as Token from "./token";
+import * as TokenResponse from "./token";
 
-interface Token {
+interface TokenResponse {
   token: string;
+  username: string;
+  email: string;
 }
 
 export interface SignupDetails {
@@ -20,22 +22,26 @@ export interface LoginDetails {
 export async function signup({
   password,
   email,
-  username
-}: SignupDetails): Promise<Token> {
+  username,
+}: SignupDetails): Promise<TokenResponse> {
   return Password.hash(password)
-    .then(passwordHash => Users.create({ passwordHash, email, username }))
+    .then((passwordHash) => Users.create({ passwordHash, email, username }))
     .then(generateToken);
 }
 
 export async function login({
   username,
-  password
-}: LoginDetails): Promise<Token> {
+  password,
+}: LoginDetails): Promise<TokenResponse> {
   return Users.find({ username })
-    .then(user => Password.check(password, user))
+    .then((user) => Password.check(password, user))
     .then(generateToken);
 }
 
-function generateToken(details: Token.UserDetails): Token {
-  return { token: Token.generate(details) };
+function generateToken(details: TokenResponse.UserDetails): TokenResponse {
+  return {
+    token: TokenResponse.generate(details),
+    username: details.username,
+    email: details.email,
+  };
 }

@@ -13,6 +13,7 @@ import Browser.Navigation as Nav
 import Effect exposing (Effect)
 import Element exposing (layout)
 import Page exposing (Page)
+import Ports
 import Url exposing (Url)
 import User exposing (User)
 import Utils.Update exposing (updateWith)
@@ -52,7 +53,7 @@ type Msg
 
 
 type alias Flags =
-    { token : Maybe String
+    { user : Maybe Ports.User
     }
 
 
@@ -67,15 +68,20 @@ performInit flags url key =
 
 init : Flags -> Url -> key -> ( Model key, Effect Msg )
 init flags url key =
-    updatePageWith (initialModel flags key) (Page.init url)
+    updatePageWith (initialModel flags key) (Page.init (handleUser flags.user) url)
 
 
 initialModel : Flags -> key -> Page -> Model key
 initialModel flags key page =
     { page = page
-    , user = User.fromToken flags.token
+    , user = handleUser flags.user
     , navKey = key
     }
+
+
+handleUser : Maybe Ports.User -> User
+handleUser =
+    Maybe.map Ports.toLoggedIn >> Maybe.withDefault User.Guest
 
 
 
@@ -94,7 +100,7 @@ update msg model =
             handleUrl model urlRequest
 
         UrlChange url ->
-            updatePage model (Page.init url)
+            updatePage model (Page.init model.user url)
 
         PageMsg msg_ ->
             updatePage model (Page.update msg_ model.page)

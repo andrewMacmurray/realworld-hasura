@@ -11,6 +11,7 @@ import Graphql.Operation exposing (RootMutation, RootQuery, RootSubscription)
 import Graphql.OptionalArgument exposing (OptionalArgument(..))
 import Graphql.SelectionSet exposing (SelectionSet)
 import Hasura.Enum.Articles_select_column
+import Hasura.Enum.User_profile_select_column
 import Hasura.Enum.Users_select_column
 import Hasura.InputObject
 import Hasura.Interface
@@ -61,6 +62,37 @@ type alias ArticlesByPkRequiredArguments =
 articles_by_pk : ArticlesByPkRequiredArguments -> SelectionSet decodesTo Hasura.Object.Articles -> SelectionSet (Maybe decodesTo) RootQuery
 articles_by_pk requiredArgs object_ =
     Object.selectionForCompositeField "articles_by_pk" [ Argument.required "id" requiredArgs.id Encode.int ] object_ (identity >> Decode.nullable)
+
+
+type alias ProfileOptionalArguments =
+    { distinct_on : OptionalArgument (List Hasura.Enum.User_profile_select_column.User_profile_select_column)
+    , limit : OptionalArgument Int
+    , offset : OptionalArgument Int
+    , order_by : OptionalArgument (List Hasura.InputObject.User_profile_order_by)
+    , where_ : OptionalArgument Hasura.InputObject.User_profile_bool_exp
+    }
+
+
+{-| fetch data from the table: "user\_profile"
+
+  - distinct\_on - distinct select on columns
+  - limit - limit the number of rows returned
+  - offset - skip the first n rows. Use only with order\_by
+  - order\_by - sort the rows by one or more columns
+  - where\_ - filter the rows returned
+
+-}
+profile : (ProfileOptionalArguments -> ProfileOptionalArguments) -> SelectionSet decodesTo Hasura.Object.User_profile -> SelectionSet (List decodesTo) RootQuery
+profile fillInOptionals object_ =
+    let
+        filledInOptionals =
+            fillInOptionals { distinct_on = Absent, limit = Absent, offset = Absent, order_by = Absent, where_ = Absent }
+
+        optionalArgs =
+            [ Argument.optional "distinct_on" filledInOptionals.distinct_on (Encode.enum Hasura.Enum.User_profile_select_column.toString |> Encode.list), Argument.optional "limit" filledInOptionals.limit Encode.int, Argument.optional "offset" filledInOptionals.offset Encode.int, Argument.optional "order_by" filledInOptionals.order_by (Hasura.InputObject.encodeUser_profile_order_by |> Encode.list), Argument.optional "where" filledInOptionals.where_ Hasura.InputObject.encodeUser_profile_bool_exp ]
+                |> List.filterMap identity
+    in
+    Object.selectionForCompositeField "profile" optionalArgs object_ (identity >> Decode.list)
 
 
 type alias UsersOptionalArguments =

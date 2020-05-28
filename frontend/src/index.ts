@@ -1,14 +1,15 @@
 import { Elm } from "./elm/Main";
+import * as User from "./ts/user";
 
 const app = Elm.Main.init({
-  flags: { token: localStorage.getItem("token") },
+  flags: { user: User.load() },
   node: document.getElementById("app"),
 });
 
-app.ports.saveToken.subscribe((token) => {
-  localStorage.setItem("token", token);
+app.ports.saveUser.subscribe((user) => {
+  User.save(user);
 });
 
-app.ports.clearToken_.subscribe(() => {
-  localStorage.removeItem("token");
+app.ports.logout_.subscribe(() => {
+  User.clear();
 });

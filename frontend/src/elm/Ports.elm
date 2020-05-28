@@ -1,15 +1,47 @@
 port module Ports exposing
-    ( logout
-    , saveToken
+    ( User
+    , logout
+    , saveUser
+    , toLoggedIn
+    , toProfile
+    , toUser
     )
 
+import Api.Token as Token
+import User
 
-port saveToken : String -> Cmd msg
+
+toUser : User.Profile -> User
+toUser user =
+    { username = User.username user
+    , email = User.email user
+    , token = Token.value (User.token user)
+    }
+
+
+toLoggedIn : User -> User.User
+toLoggedIn =
+    User.LoggedIn << toProfile
+
+
+toProfile : User -> User.Profile
+toProfile u =
+    User.profile (Token.token u.token) u.username u.email
+
+
+type alias User =
+    { username : String
+    , email : String
+    , token : String
+    }
+
+
+port saveUser : User -> Cmd msg
 
 
 logout : Cmd msg
 logout =
-    clearToken_ ()
+    logout_ ()
 
 
-port clearToken_ : () -> Cmd msg
+port logout_ : () -> Cmd msg

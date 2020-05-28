@@ -2,7 +2,7 @@ type Mutation {
   login (
     username: String!
     password: String!
-  ): Token!
+  ): TokenResponse!
 }
 
 
@@ -11,13 +11,15 @@ type Mutation {
     email: String!
     username: String!
     password: String!
-  ): Token!
+  ): TokenResponse!
 }
 
 
 
 
-type Token {
+type TokenResponse {
   token : String!
+  username : String!
+  email : String!
 }
 

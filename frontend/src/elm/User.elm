@@ -1,9 +1,13 @@
 module User exposing
     ( Profile
     , User(..)
-    , fromToken
-    , login
+    , email
+    , profile
+    , token
+    , username
     )
+
+import Api.Token exposing (Token)
 
 
 type User
@@ -11,15 +15,34 @@ type User
     | LoggedIn Profile
 
 
-type alias Profile =
-    String
+type Profile
+    = Profile_ Token Details_
 
 
-login : String -> User
-login =
-    LoggedIn
+type alias Details_ =
+    { username : String
+    , email : String
+    }
 
 
-fromToken : Maybe String -> User
-fromToken =
-    Maybe.map LoggedIn >> Maybe.withDefault Guest
+profile : Token -> String -> String -> Profile
+profile token_ username_ email_ =
+    Profile_ token_
+        { username = username_
+        , email = email_
+        }
+
+
+token : Profile -> Token
+token (Profile_ token_ _) =
+    token_
+
+
+username : Profile -> String
+username (Profile_ _ p) =
+    p.username
+
+
+email : Profile -> String
+email (Profile_ _ p) =
+    p.email

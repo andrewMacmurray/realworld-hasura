@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Hasura.Object.Token exposing (..)
+module Hasura.Object.TokenResponse exposing (..)
 
 import Graphql.Internal.Builder.Argument as Argument exposing (Argument)
 import Graphql.Internal.Builder.Object as Object
@@ -19,6 +19,16 @@ import Hasura.Union
 import Json.Decode as Decode
 
 
-token : SelectionSet String Hasura.Object.Token
+email : SelectionSet String Hasura.Object.TokenResponse
+email =
+    Object.selectionForField "String" "email" [] Decode.string
+
+
+token : SelectionSet String Hasura.Object.TokenResponse
 token =
     Object.selectionForField "String" "token" [] Decode.string
+
+
+username : SelectionSet String Hasura.Object.TokenResponse
+username =
+    Object.selectionForField "String" "username" [] Decode.string

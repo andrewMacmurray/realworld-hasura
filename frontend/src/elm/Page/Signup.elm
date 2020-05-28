@@ -10,13 +10,13 @@ import Api
 import Api.Users
 import Effect exposing (Effect)
 import Element exposing (..)
-import Element.Anchor as Anchor
 import Element.Button as Button
-import Element.Input as Input
 import Element.Layout as Layout
 import Element.Scale as Scale
 import Element.Text as Text
+import Form.Field as Field
 import Route
+import User exposing (User)
 
 
 
@@ -31,7 +31,7 @@ type alias Model =
 type Msg
     = InputsChanged Inputs
     | SignupClicked
-    | SignupResponseReceived (Api.Response Token)
+    | SignupResponseReceived (Api.Response User.Profile)
 
 
 type alias Inputs =
@@ -39,10 +39,6 @@ type alias Inputs =
     , username : String
     , password : String
     }
-
-
-type alias Token =
-    String
 
 
 
@@ -81,10 +77,10 @@ update msg model =
         SignupClicked ->
             ( model, signUp model.inputs )
 
-        SignupResponseReceived (Ok token) ->
+        SignupResponseReceived (Ok res) ->
             ( model
             , Effect.batch
-                [ Effect.saveToken token
+                [ Effect.loadUser res
                 , Effect.navigateTo Route.Home
                 ]
             )
@@ -160,10 +156,6 @@ password =
         }
 
 
-textInput config inputs =
-    Input.text [ Anchor.description config.label ]
-        { onChange = config.update inputs >> InputsChanged
-        , text = config.value inputs
-        , placeholder = Just (Input.placeholder [] (text config.label))
-        , label = Input.labelHidden config.label
-        }
+textInput : Field.Config Inputs -> Inputs -> Element Msg
+textInput =
+    Field.text InputsChanged

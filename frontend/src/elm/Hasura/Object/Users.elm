@@ -51,11 +51,6 @@ articles fillInOptionals object_ =
     Object.selectionForCompositeField "articles" optionalArgs object_ (identity >> Decode.list)
 
 
-email : SelectionSet String Hasura.Object.Users
-email =
-    Object.selectionForField "String" "email" [] Decode.string
-
-
 username : SelectionSet String Hasura.Object.Users
 username =
     Object.selectionForField "String" "username" [] Decode.string

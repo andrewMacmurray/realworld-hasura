@@ -45,26 +45,35 @@ type Msg
 -- Init
 
 
-init : Url -> ( Page, Effect Msg )
-init url =
+init : User -> Url -> ( Page, Effect Msg )
+init user url =
     case Route.fromUrl url of
         Just Route.Home ->
-            Home.init |> updateWith Home HomeMsg
+            updateWith Home HomeMsg Home.init
 
         Just Route.SignUp ->
-            SignUp.init |> updateWith SignUp SignUpMsg
+            updateWith SignUp SignUpMsg SignUp.init
 
         Just Route.SignIn ->
-            SignIn.init |> updateWith SignIn SignInMsg
+            updateWith SignIn SignInMsg SignIn.init
 
         Just Route.NewPost ->
-            NewPost.init |> updateWith NewPost NewPostMsg
+            updateWith NewPost NewPostMsg NewPost.init
 
         Just Route.Settings ->
-            Settings.init |> updateWith Settings SettingsMsg
+            initAuthenticated Settings SettingsMsg Settings.init user
 
         Nothing ->
             ( NotFound, Effect.none )
+
+
+initAuthenticated modelF msgF init_ user =
+    case user of
+        User.Guest ->
+            ( NotFound, Effect.none )
+
+        User.LoggedIn profile ->
+            init_ profile |> updateWith modelF msgF
 
 
 

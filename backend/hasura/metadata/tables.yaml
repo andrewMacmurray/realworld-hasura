@@ -35,6 +35,22 @@
       check: null
 - table:
     schema: public
+    name: user_profile
+  configuration:
+    custom_root_fields:
+      select: profile
+    custom_column_names: {}
+  select_permissions:
+  - role: user
+    permission:
+      columns:
+      - email
+      - username
+      filter:
+        user_id:
+          _eq: X-Hasura-User-Id
+- table:
+    schema: public
     name: users
   array_relationships:
   - name: articles
@@ -53,6 +69,5 @@
   - role: user
     permission:
       columns:
-      - email
       - username
       filter: {}

@@ -3,10 +3,11 @@ module Program exposing
     , baseUrl
     , clickLink
     , fillField
+    , login
+    , loginWithDetails
     , page
     , start
     , withGlobalFeed
-    , withUser
     )
 
 import Api
@@ -15,15 +16,16 @@ import Effect exposing (Effect(..))
 import Element.Anchor as Anchor
 import Json.Encode as Encode
 import Main
+import Ports
 import ProgramTest exposing (ProgramDefinition, ProgramTest, SimulatedEffect, SimulatedTask)
 import Route exposing (Route)
 import SimulatedEffect.Cmd
 import SimulatedEffect.Navigation
-import SimulatedEffect.Ports
 import SimulatedEffect.Task
 import Test.Html.Query
 import Test.Html.Selector
 import Url
+import User
 
 
 
@@ -45,7 +47,7 @@ type alias FakeNavKey =
 type alias Options =
     { globalFeed : Api.Response (List Article)
     , route : Route
-    , token : Maybe String
+    , user : Maybe Ports.User
     }
 
 
@@ -58,9 +60,21 @@ page =
     defaultOptions
 
 
-withUser : String -> Options -> Options
-withUser username options =
-    { options | token = Just username }
+login : Options -> Options
+login options =
+    { options | user = Just (user "amacmurray" "a@b.com") }
+
+
+loginWithDetails : String -> String -> Options -> Options
+loginWithDetails username email options =
+    { options | user = Just (user username email) }
+
+
+user name email =
+    { username = name
+    , email = email
+    , token = "token"
+    }
 
 
 withGlobalFeed : List Article -> Options -> Options
@@ -72,7 +86,7 @@ defaultOptions : Route -> Options
 defaultOptions route =
     { route = route
     , globalFeed = Ok []
-    , token = Nothing
+    , user = Nothing
     }
 
 
@@ -90,7 +104,7 @@ start options =
 
 toFlags : Options -> Main.Flags
 toFlags options =
-    { token = options.token }
+    { user = options.user }
 
 
 baseUrl : String
@@ -161,16 +175,21 @@ simulateEffects options eff =
             SimulatedEffect.Cmd.none
 
         SignUp { msg } ->
-            simulateTask (Ok "token") msg
+            simulateTask (Ok defaultProfile) msg
 
         SignIn { msg } ->
-            simulateTask (Ok "token") msg
+            simulateTask (Ok defaultProfile) msg
 
-        SaveToken token ->
-            SimulatedEffect.Ports.send "saveToken" (Encode.string token)
+        LoadUser profile ->
+            SimulatedEffect.Cmd.none
 
         LoadGlobalFeed { msg } ->
             simulateTask options.globalFeed msg
+
+
+defaultProfile : User.Profile
+defaultProfile =
+    Ports.toProfile (user "amacmurray" "a@b.com")
 
 
 simulateTask : Result err data -> (Result err data -> msg) -> SimulatedEffect msg

@@ -6,17 +6,17 @@ export namespace Elm {
   namespace Main {
     export interface App {
       ports: {
-        saveToken: {
-          subscribe(callback: (data: string) => void): void
+        saveUser: {
+          subscribe(callback: (data: { username: string; email: string; token: string }) => void): void
         }
-        clearToken_: {
+        logout_: {
           subscribe(callback: (data: null) => void): void
         }
       };
     }
     export function init(options: {
       node?: HTMLElement | null;
-      flags: { token: string | null };
+      flags: { user: { username: string; email: string; token: string } | null };
     }): Elm.Main.App;
   }
 }

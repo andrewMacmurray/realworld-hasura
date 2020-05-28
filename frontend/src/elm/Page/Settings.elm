@@ -14,6 +14,7 @@ import Element.Divider as Divider
 import Element.Layout as Layout
 import Element.Scale as Scale
 import Element.Text as Text
+import Form.Field as Field
 import User exposing (User(..))
 
 
@@ -22,25 +23,40 @@ import User exposing (User(..))
 
 
 type alias Model =
-    {}
+    { inputs : Inputs
+    }
 
 
 type Msg
     = LogoutClicked
+    | InputsChanged Inputs
+
+
+type alias Inputs =
+    { username : String
+    , email : String
+    }
 
 
 
 -- Init
 
 
-init : ( Model, Effect Msg )
-init =
-    ( initialModel, Effect.None )
+init : User.Profile -> ( Model, Effect Msg )
+init profile =
+    ( initialModel profile, Effect.None )
 
 
-initialModel : Model
-initialModel =
-    {}
+initialModel : User.Profile -> Model
+initialModel profile =
+    { inputs = initInputs profile }
+
+
+initInputs : User.Profile -> Inputs
+initInputs profile =
+    { username = User.username profile
+    , email = User.email profile
+    }
 
 
 
@@ -53,26 +69,54 @@ update msg model =
         LogoutClicked ->
             ( model, Effect.logout )
 
+        InputsChanged inputs ->
+            ( { model | inputs = inputs }, Effect.none )
+
 
 
 -- View
 
 
 view : User.Profile -> Model -> Element Msg
-view user _ =
+view user model =
     Layout.loggedIn user
         [ column [ spacing Scale.medium, width fill, paddingXY 0 Scale.large ]
             [ Text.title [ Anchor.description "settings-title", centerX ] "Your Settings"
-            , settingsFields
+            , settingsFields model
             ]
         ]
 
 
-settingsFields : Element Msg
-settingsFields =
+settingsFields : Model -> Element Msg
+settingsFields model =
     Layout.halfWidth
         (column [ width fill, spacing Scale.medium ]
-            [ Divider.divider
+            [ username model.inputs
+            , email model.inputs
+            , Divider.divider
             , el [ Anchor.description "logout" ] (Button.secondary LogoutClicked "Logout")
             ]
         )
+
+
+email : Inputs -> Element Msg
+email =
+    textField
+        { value = .email
+        , update = \i v -> { i | email = v }
+        , label = "Email"
+        }
+
+
+username : Inputs -> Element Msg
+username =
+    textField
+        { value = .username
+        , update = \i v -> { i | username = v }
+        , label = "Username"
+        }
+
+
+textField : Field.Config Inputs -> Inputs -> Element Msg
+textField =
+    Field.text InputsChanged

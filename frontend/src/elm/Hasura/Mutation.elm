@@ -27,7 +27,7 @@ type alias LoginRequiredArguments =
 
 {-| perform the action: "login"
 -}
-login : LoginRequiredArguments -> SelectionSet decodesTo Hasura.Object.Token -> SelectionSet decodesTo RootMutation
+login : LoginRequiredArguments -> SelectionSet decodesTo Hasura.Object.TokenResponse -> SelectionSet decodesTo RootMutation
 login requiredArgs object_ =
     Object.selectionForCompositeField "login" [ Argument.required "password" requiredArgs.password Encode.string, Argument.required "username" requiredArgs.username Encode.string ] object_ identity
 
@@ -41,7 +41,7 @@ type alias SignupRequiredArguments =
 
 {-| perform the action: "signup"
 -}
-signup : SignupRequiredArguments -> SelectionSet decodesTo Hasura.Object.Token -> SelectionSet decodesTo RootMutation
+signup : SignupRequiredArguments -> SelectionSet decodesTo Hasura.Object.TokenResponse -> SelectionSet decodesTo RootMutation
 signup requiredArgs object_ =
     Object.selectionForCompositeField "signup" [ Argument.required "email" requiredArgs.email Encode.string, Argument.required "password" requiredArgs.password Encode.string, Argument.required "username" requiredArgs.username Encode.string ] object_ identity
 

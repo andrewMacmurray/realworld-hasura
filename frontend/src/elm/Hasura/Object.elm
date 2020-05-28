@@ -13,8 +13,12 @@ type Articles_mutation_response
     = Articles_mutation_response
 
 
-type Token
-    = Token
+type TokenResponse
+    = TokenResponse
+
+
+type User_profile
+    = User_profile
 
 
 type Users

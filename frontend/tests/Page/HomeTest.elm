@@ -2,13 +2,11 @@ module Page.HomeTest exposing (suite)
 
 import Article exposing (Article)
 import Date
-import Expect
 import Program
 import Program.Selector exposing (el)
-import ProgramTest exposing (ensureViewHas, expectView)
+import ProgramTest exposing (expectViewHas)
 import Route
 import Test exposing (..)
-import Test.Html.Query as Query
 import Test.Html.Selector exposing (text)
 import Time exposing (Month(..))
 
@@ -18,20 +16,15 @@ suite =
     describe "Home"
         [ test "Guest User sees global feed on load" <|
             \_ ->
-                let
-                    articles =
-                        [ article "foo"
-                        , article "bar"
-                        ]
-                in
                 Program.page Route.Home
-                    |> Program.withGlobalFeed articles
+                    |> Program.withGlobalFeed [ article "foo", article "bar" ]
                     |> Program.start
-                    |> ensureViewHas
+                    |> expectViewHas
                         [ el "global-feed"
+                        , text "foo"
+                        , text "bar"
                         , text "MON JAN 20 2020"
                         ]
-                    |> expectView (hasArticles articles)
         ]
 
 
@@ -41,13 +34,3 @@ article title =
         "about something"
         "author"
         (Date.fromCalendarDate 2020 Jan 20)
-
-
-hasArticles : List Article -> Query.Single msg -> Expect.Expectation
-hasArticles items =
-    Query.findAll [ el "article" ] >> Query.count (expectEqualCount items)
-
-
-expectEqualCount : List a -> Int -> Expect.Expectation
-expectEqualCount =
-    Expect.equal << List.length
