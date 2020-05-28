@@ -119,4 +119,4 @@ username =
 
 textField : Field.Config Inputs -> Inputs -> Element Msg
 textField =
-    Field.text InputsChanged
+    Field.text InputsChanged Field.medium

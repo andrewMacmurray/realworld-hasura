@@ -3,6 +3,7 @@ module Element.Layout exposing
     , halfWidth
     , loggedIn
     , maxWidth
+    , padded
     )
 
 import Element exposing (..)
@@ -50,6 +51,11 @@ loggedIn profile els =
             ]
             els
         ]
+
+
+padded : Element msg -> Element msg
+padded =
+    el [ width (fill |> maximum (maxWidth - (Scale.large * 6))), centerX ]
 
 
 halfWidth : Element msg -> Element msg

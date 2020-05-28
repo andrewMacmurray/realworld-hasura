@@ -158,4 +158,4 @@ password =
 
 textInput : Field.Config Inputs -> Inputs -> Element Msg
 textInput =
-    Field.text InputsChanged
+    Field.text InputsChanged Field.medium

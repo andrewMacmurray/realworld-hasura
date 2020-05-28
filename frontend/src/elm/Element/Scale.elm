@@ -7,7 +7,7 @@ module Element.Scale exposing
 
 small : number
 small =
-    12
+    14
 
 
 medium : number
