@@ -105,14 +105,14 @@ view user model =
             Element.map SignInMsg (SignIn.view model_)
 
         NewPost model_ ->
-            Element.map NewPostMsg (authenticated NewPost.view model_ user)
+            Element.map NewPostMsg (viewAuthenticated NewPost.view model_ user)
 
         NotFound ->
             NotFound.view
 
 
-authenticated : (User.Profile -> subModel -> Element msg) -> subModel -> User -> Element msg
-authenticated view__ subModel user =
+viewAuthenticated : (User.Profile -> subModel -> Element msg) -> subModel -> User -> Element msg
+viewAuthenticated view__ subModel user =
     case user of
         User.Guest ->
             NotFound.view

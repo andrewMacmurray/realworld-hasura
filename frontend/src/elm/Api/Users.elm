@@ -11,9 +11,13 @@ import Hasura.Object.Token
 
 signUp : SignupRequiredArguments -> (Api.Response String -> msg) -> Effect msg
 signUp inputs msg =
-    Hasura.Mutation.signup inputs Hasura.Object.Token.token |> Effect.signUp msg
+    Hasura.Mutation.signup inputs Hasura.Object.Token.token
+        |> Api.mutation msg
+        |> Effect.signUp
 
 
 signIn : LoginRequiredArguments -> (Api.Response String -> msg) -> Effect msg
 signIn inputs msg =
-    Hasura.Mutation.login inputs Hasura.Object.Token.token |> Effect.signIn msg
+    Hasura.Mutation.login inputs Hasura.Object.Token.token
+        |> Api.mutation msg
+        |> Effect.signIn

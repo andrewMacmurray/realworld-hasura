@@ -16,8 +16,6 @@ module Effect exposing
 import Api
 import Article exposing (Article)
 import Browser.Navigation as Navigation
-import Graphql.Operation exposing (RootMutation, RootQuery)
-import Graphql.SelectionSet exposing (SelectionSet)
 import Ports
 import Route exposing (Route)
 import Url exposing (Url)
@@ -35,9 +33,9 @@ type Effect msg
     | LoadUrl String
     | NavigateTo Route
     | SaveToken String
-    | SignUp (Api.Response String -> msg) (SelectionSet String RootMutation)
-    | SignIn (Api.Response String -> msg) (SelectionSet String RootMutation)
-    | LoadGlobalFeed (Api.Response (List Article) -> msg) (SelectionSet (List Article) RootQuery)
+    | SignUp (Api.Mutation String msg)
+    | SignIn (Api.Mutation String msg)
+    | LoadGlobalFeed (Api.Query (List Article) msg)
 
 
 none =
@@ -95,11 +93,11 @@ map toMsg effect =
         SaveToken token ->
             SaveToken token
 
-        SignUp msg mut ->
-            SignUp (msg >> toMsg) mut
+        SignUp mut ->
+            SignUp (Api.map toMsg mut)
 
-        SignIn msg mut ->
-            SignIn (msg >> toMsg) mut
+        SignIn mut ->
+            SignIn (Api.map toMsg mut)
 
         PushUrl url ->
             PushUrl url
@@ -107,8 +105,8 @@ map toMsg effect =
         LoadUrl url ->
             LoadUrl url
 
-        LoadGlobalFeed msg query ->
-            LoadGlobalFeed (msg >> toMsg) query
+        LoadGlobalFeed query ->
+            LoadGlobalFeed (Api.map toMsg query)
 
 
 
@@ -119,7 +117,11 @@ type alias Model model key =
     { model | user : User, navKey : key }
 
 
-perform : (key -> String -> Cmd msg) -> ( Model model key, Effect msg ) -> ( Model model key, Cmd msg )
+type alias PushUrl key msg =
+    key -> String -> Cmd msg
+
+
+perform : PushUrl key msg -> ( Model model key, Effect msg ) -> ( Model model key, Cmd msg )
 perform pushUrl_ ( model, effect ) =
     case effect of
         None ->
@@ -140,21 +142,21 @@ perform pushUrl_ ( model, effect ) =
         SaveToken token ->
             ( { model | user = User.login token }, Ports.saveToken token )
 
-        SignUp msg mutation ->
-            ( model, Api.mutate msg mutation )
+        SignUp mutation ->
+            ( model, Api.mutationRequest mutation )
 
-        SignIn msg mutation ->
-            ( model, Api.mutate msg mutation )
+        SignIn mutation ->
+            ( model, Api.mutationRequest mutation )
 
-        LoadGlobalFeed msg query ->
-            ( model, Api.query msg query )
+        LoadGlobalFeed query ->
+            ( model, Api.queryRequest query )
 
 
-doBatch : (key -> String -> Cmd msg) -> Model model key -> List (Effect msg) -> ( Model model key, Cmd msg )
+doBatch : PushUrl key msg -> Model model key -> List (Effect msg) -> ( Model model key, Cmd msg )
 doBatch pushUrl_ model effs =
     List.foldl (doNext pushUrl_) ( model, [] ) effs |> Tuple.mapSecond Cmd.batch
 
 
-doNext : (key -> String -> Cmd msg) -> Effect msg -> ( Model model key, List (Cmd msg) ) -> ( Model model key, List (Cmd msg) )
+doNext : PushUrl key msg -> Effect msg -> ( Model model key, List (Cmd msg) ) -> ( Model model key, List (Cmd msg) )
 doNext pushUrl_ eff ( model, cmds ) =
     perform pushUrl_ ( model, eff ) |> Tuple.mapSecond (\cmd -> cmd :: cmds)

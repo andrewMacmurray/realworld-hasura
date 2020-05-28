@@ -130,20 +130,25 @@ simulateEffects options eff =
         LoadUrl _ ->
             SimulatedEffect.Cmd.none
 
-        SignUp msg _ ->
-            SimulatedEffect.Task.succeed "token!" |> SimulatedEffect.Task.attempt msg
+        SignUp { msg } ->
+            simulateTask (Ok "token") msg
 
-        SignIn msg _ ->
-            SimulatedEffect.Task.succeed "token!" |> SimulatedEffect.Task.attempt msg
+        SignIn { msg } ->
+            simulateTask (Ok "token") msg
 
         SaveToken token ->
             SimulatedEffect.Ports.send "saveToken" (Encode.string token)
 
-        LoadGlobalFeed msg _ ->
-            taskFromResult options.globalFeed |> SimulatedEffect.Task.attempt msg
+        LoadGlobalFeed { msg } ->
+            simulateTask options.globalFeed msg
 
 
-taskFromResult : Result error data -> SimulatedTask error data
+simulateTask : Result err data -> (Result err data -> msg) -> SimulatedEffect msg
+simulateTask result msg =
+    taskFromResult result |> SimulatedEffect.Task.attempt msg
+
+
+taskFromResult : Result err data -> SimulatedTask err data
 taskFromResult res =
     case res of
         Ok data ->
