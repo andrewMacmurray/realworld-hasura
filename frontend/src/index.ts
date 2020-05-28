@@ -8,3 +8,7 @@ const app = Elm.Main.init({
 app.ports.saveToken.subscribe((token) => {
   localStorage.setItem("token", token);
 });
+
+app.ports.clearToken_.subscribe(() => {
+  localStorage.removeItem("token");
+});

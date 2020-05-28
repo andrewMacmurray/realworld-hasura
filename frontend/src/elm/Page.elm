@@ -11,6 +11,7 @@ import Element exposing (..)
 import Page.Home as Home
 import Page.NewPost as NewPost
 import Page.NotFound as NotFound
+import Page.Settings as Settings
 import Page.SignIn as SignIn
 import Page.Signup as SignUp
 import Route
@@ -28,6 +29,7 @@ type Page
     | SignUp SignUp.Model
     | SignIn SignIn.Model
     | NewPost NewPost.Model
+    | Settings Settings.Model
     | NotFound
 
 
@@ -36,6 +38,7 @@ type Msg
     | SignUpMsg SignUp.Msg
     | SignInMsg SignIn.Msg
     | NewPostMsg NewPost.Msg
+    | SettingsMsg Settings.Msg
 
 
 
@@ -56,6 +59,9 @@ init url =
 
         Just Route.NewPost ->
             NewPost.init |> updateWith NewPost NewPostMsg
+
+        Just Route.Settings ->
+            Settings.init |> updateWith Settings SettingsMsg
 
         Nothing ->
             ( NotFound, Effect.none )
@@ -84,6 +90,10 @@ update msg page =
             NewPost.update msg_ model_
                 |> updateWith NewPost NewPostMsg
 
+        ( SettingsMsg msg_, Settings model_ ) ->
+            Settings.update msg_ model_
+                |> updateWith Settings SettingsMsg
+
         ( _, _ ) ->
             ( page, Effect.none )
 
@@ -106,6 +116,9 @@ view user model =
 
         NewPost model_ ->
             Element.map NewPostMsg (viewAuthenticated NewPost.view model_ user)
+
+        Settings model_ ->
+            Element.map SettingsMsg (viewAuthenticated Settings.view model_ user)
 
         NotFound ->
             NotFound.view

@@ -1,4 +1,4 @@
-module HomeTest exposing (..)
+module Page.HomeTest exposing (suite)
 
 import Article exposing (Article)
 import Date
@@ -24,7 +24,7 @@ suite =
                         , article "bar"
                         ]
                 in
-                Program.asGuest Route.Home
+                Program.page Route.Home
                     |> Program.withGlobalFeed articles
                     |> Program.start
                     |> ensureViewHas

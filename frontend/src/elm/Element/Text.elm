@@ -3,6 +3,8 @@ module Element.Text exposing
     , greenLink
     , label
     , link
+    , medium
+    , small
     , subtitle
     , subtitleGreen
     , text

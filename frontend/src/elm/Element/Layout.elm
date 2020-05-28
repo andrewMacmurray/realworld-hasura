@@ -1,6 +1,6 @@
 module Element.Layout exposing
-    ( constrained
-    , guest
+    ( guest
+    , halfWidth
     , loggedIn
     , maxWidth
     )
@@ -41,6 +41,7 @@ loggedIn profile els =
         [ navbar
             [ Route.link Route.Home "Home"
             , Route.link Route.NewPost "New Post"
+            , Route.link Route.Settings "Settings"
             ]
         , column
             [ paddingXY Scale.medium 0
@@ -49,6 +50,11 @@ loggedIn profile els =
             ]
             els
         ]
+
+
+halfWidth : Element msg -> Element msg
+halfWidth =
+    el [ width (fill |> maximum (maxWidth // 2)), centerX ]
 
 
 navbar : List (Element msg) -> Element msg
@@ -65,13 +71,9 @@ navbar links =
         )
 
 
+navItems : List (Element msg) -> Element msg
 navItems =
     row [ alignRight, spacing Scale.medium ]
-
-
-constrained : Element msg -> Element msg
-constrained =
-    el [ constrainWidth, centerX ]
 
 
 constrainWidth =

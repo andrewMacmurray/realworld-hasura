@@ -1,11 +1,11 @@
-module Program.Expect exposing (pageChange)
+module Program.Expect exposing (redirect)
 
-import Expect
+import Expect exposing (Expectation)
 import Program exposing (BlogProgramTest, baseUrl)
 import ProgramTest
-import Route
+import Route exposing (Route)
 
 
-pageChange : Route.Route -> BlogProgramTest -> Expect.Expectation
-pageChange route =
+redirect : Route -> BlogProgramTest -> Expectation
+redirect route =
     ProgramTest.expectBrowserUrl (\s -> Expect.equal (baseUrl ++ Route.routeToString route) s)

@@ -115,15 +115,13 @@ signup model =
         , width fill
         ]
         [ Text.title [ centerX ] "Sign In"
-        , column
-            [ centerX
-            , width (fill |> maximum (Layout.maxWidth // 2))
-            , spacing Scale.medium
-            ]
-            [ username model.inputs
-            , password model.inputs
-            , el [ alignRight ] signInButton
-            ]
+        , Layout.halfWidth
+            (column [ spacing Scale.medium, width fill ]
+                [ username model.inputs
+                , password model.inputs
+                , el [ alignRight ] signInButton
+                ]
+            )
         ]
 
 

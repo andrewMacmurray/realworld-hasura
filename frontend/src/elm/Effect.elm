@@ -3,6 +3,7 @@ module Effect exposing
     , batch
     , loadGlobalFeed
     , loadUrl
+    , logout
     , map
     , navigateTo
     , none
@@ -33,6 +34,7 @@ type Effect msg
     | LoadUrl String
     | NavigateTo Route
     | SaveToken String
+    | Logout
     | SignUp (Api.Mutation String msg)
     | SignIn (Api.Mutation String msg)
     | LoadGlobalFeed (Api.Query (List Article) msg)
@@ -48,6 +50,10 @@ batch =
 
 saveToken =
     SaveToken
+
+
+logout =
+    Logout
 
 
 signUp =
@@ -93,6 +99,9 @@ map toMsg effect =
         SaveToken token ->
             SaveToken token
 
+        Logout ->
+            Logout
+
         SignUp mut ->
             SignUp (Api.map toMsg mut)
 
@@ -132,6 +141,14 @@ perform pushUrl_ ( model, effect ) =
 
         NavigateTo route ->
             ( model, pushUrl_ model.navKey (Route.routeToString route) )
+
+        Logout ->
+            ( { model | user = User.Guest }
+            , Cmd.batch
+                [ Ports.logout
+                , pushUrl_ model.navKey (Route.routeToString Route.Home)
+                ]
+            )
 
         PushUrl url ->
             ( model, pushUrl_ model.navKey (Url.toString url) )

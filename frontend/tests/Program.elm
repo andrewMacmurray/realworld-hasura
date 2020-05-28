@@ -1,10 +1,12 @@
 module Program exposing
     ( BlogProgramTest
-    , asGuest
     , baseUrl
+    , clickLink
     , fillField
+    , page
     , start
     , withGlobalFeed
+    , withUser
     )
 
 import Api
@@ -24,8 +26,16 @@ import Test.Html.Selector
 import Url
 
 
+
+-- Program
+
+
 type alias BlogProgramTest =
     ProgramTest (Main.Model FakeNavKey) Main.Msg (Effect Main.Msg)
+
+
+type alias BlogProgramDefinition =
+    ProgramDefinition Main.Flags (Main.Model FakeNavKey) Main.Msg (Effect Main.Msg)
 
 
 type alias FakeNavKey =
@@ -39,27 +49,23 @@ type alias Options =
     }
 
 
-asGuest : Route -> Options
-asGuest =
+
+-- Configure
+
+
+page : Route -> Options
+page =
     defaultOptions
 
 
-start : Options -> BlogProgramTest
-start options =
-    program
-        |> ProgramTest.withSimulatedEffects (simulateEffects options)
-        |> ProgramTest.withBaseUrl (baseUrl ++ Route.routeToString options.route)
-        |> ProgramTest.start (toFlags options)
+withUser : String -> Options -> Options
+withUser username options =
+    { options | token = Just username }
 
 
 withGlobalFeed : List Article -> Options -> Options
 withGlobalFeed feed options =
     { options | globalFeed = Ok feed }
-
-
-toFlags : Options -> Main.Flags
-toFlags options =
-    { token = options.token }
 
 
 defaultOptions : Route -> Options
@@ -70,13 +76,30 @@ defaultOptions route =
     }
 
 
+
+-- Start
+
+
+start : Options -> BlogProgramTest
+start options =
+    program
+        |> ProgramTest.withSimulatedEffects (simulateEffects options)
+        |> ProgramTest.withBaseUrl (baseUrl ++ Route.routeToString options.route)
+        |> ProgramTest.start (toFlags options)
+
+
+toFlags : Options -> Main.Flags
+toFlags options =
+    { token = options.token }
+
+
 baseUrl : String
 baseUrl =
     "http://localhost:1234"
 
 
-type alias BlogProgramDefinition =
-    ProgramDefinition Main.Flags (Main.Model FakeNavKey) Main.Msg (Effect Main.Msg)
+
+-- Definition
 
 
 program : BlogProgramDefinition
@@ -112,6 +135,10 @@ fakePushUrl _ _ =
     Cmd.none
 
 
+
+-- Simulated Effects
+
+
 simulateEffects : Options -> Effect Main.Msg -> SimulatedEffect Main.Msg
 simulateEffects options eff =
     case eff of
@@ -123,6 +150,9 @@ simulateEffects options eff =
 
         NavigateTo route ->
             SimulatedEffect.Navigation.pushUrl (Route.routeToString route)
+
+        Logout ->
+            SimulatedEffect.Navigation.pushUrl (Route.routeToString Route.Home)
 
         PushUrl url ->
             SimulatedEffect.Navigation.pushUrl (Url.toString url)
@@ -160,6 +190,11 @@ taskFromResult res =
 
 
 -- UI Helpers
+
+
+clickLink : Route -> String -> ProgramTest model msg effect -> ProgramTest model msg effect
+clickLink route label =
+    ProgramTest.clickLink label (Route.routeToString route)
 
 
 fillField : String -> String -> ProgramTest model msg effect -> ProgramTest model msg effect

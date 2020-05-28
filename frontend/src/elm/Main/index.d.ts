@@ -9,6 +9,9 @@ export namespace Elm {
         saveToken: {
           subscribe(callback: (data: string) => void): void
         }
+        clearToken_: {
+          subscribe(callback: (data: null) => void): void
+        }
       };
     }
     export function init(options: {

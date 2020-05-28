@@ -1,4 +1,4 @@
-module SignupTest exposing (suite)
+module Page.SignUpTest exposing (suite)
 
 import Expect
 import Program
@@ -13,7 +13,7 @@ suite : Test
 suite =
     test "User is redirected to home after signup" <|
         \_ ->
-            Program.asGuest Route.SignUp
+            Program.page Route.SignUp
                 |> Program.start
                 |> Program.fillField "email" "a@b.com"
                 |> Program.fillField "username" "amacmurray"
@@ -25,6 +25,6 @@ suite =
                     ]
                 |> clickButton "Sign Up"
                 |> Expect.all
-                    [ Expect.pageChange Route.Home
+                    [ Expect.redirect Route.Home
                     , expectViewHas [ el "new-post-link" ]
                     ]

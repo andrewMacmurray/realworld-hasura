@@ -1,4 +1,4 @@
-module SigninTest exposing (suite)
+module Page.SignInTest exposing (suite)
 
 import Program
 import Program.Expect as Expect
@@ -13,7 +13,7 @@ suite =
     describe "Sign In"
         [ test "User is redirected to home when signed in" <|
             \_ ->
-                Program.asGuest Route.SignIn
+                Program.page Route.SignIn
                     |> Program.start
                     |> Program.fillField "username" "amacmurray"
                     |> Program.fillField "password" "abc123"
@@ -22,10 +22,10 @@ suite =
                         , filledField "abc123"
                         ]
                     |> clickButton "Sign In"
-                    |> Expect.pageChange Route.Home
+                    |> Expect.redirect Route.Home
         , test "User sees authenticated navbar items when signed in" <|
             \_ ->
-                Program.asGuest Route.SignIn
+                Program.page Route.SignIn
                     |> Program.start
                     |> ensureViewHas [ el "sign-in-link" ]
                     |> Program.fillField "username" "amacmurray"
