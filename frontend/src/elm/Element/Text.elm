@@ -1,12 +1,24 @@
 module Element.Text exposing
-    ( link
+    ( date
+    , greenLink
+    , label
+    , link
     , subtitle
+    , subtitleGreen
+    , text
     , title
     )
 
+import Date exposing (Date)
 import Element
 import Element.Font as Font
 import Element.Palette as Palette
+import Html.Attributes
+
+
+type Color
+    = Black
+    | Green
 
 
 title : List (Element.Attribute msg) -> String -> Element.Element msg
@@ -23,12 +35,21 @@ title attrs content =
 
 
 subtitle : List (Element.Attribute msg) -> String -> Element.Element msg
-subtitle attrs content =
+subtitle =
+    subtitle_ Black
+
+
+subtitleGreen =
+    subtitle_ Green
+
+
+subtitle_ : Color -> List (Element.Attribute msg) -> String -> Element.Element msg
+subtitle_ color attrs content =
     Element.el
         (List.concat
             [ [ Font.size medium
-              , Font.color Palette.green
               , Font.bold
+              , toFontColor color
               ]
             , attrs
             ]
@@ -36,19 +57,95 @@ subtitle attrs content =
         (Element.text content)
 
 
-link : List (Element.Attribute msg) -> String -> Element.Element msg
-link attrs content =
+toFontColor color =
+    case color of
+        Black ->
+            Font.color Palette.black
+
+        Green ->
+            Font.color Palette.green
+
+
+date : List (Element.Attribute msg) -> Date -> Element.Element msg
+date attrs date_ =
+    label attrs (formatDate date_)
+
+
+label : List (Element.Attribute msg) -> String -> Element.Element msg
+label attrs content =
+    text
+        (List.concat
+            [ [ Font.size extraSmall
+              , Font.letterSpacing 0.6
+              ]
+            , attrs
+            ]
+        )
+        (String.toUpper content)
+
+
+formatDate : Date -> String
+formatDate =
+    Date.format "EEE MMM d y"
+
+
+text : List (Element.Attribute msg) -> String -> Element.Element msg
+text attrs content =
     Element.el
         (List.concat
             [ [ Font.size small
               , Element.pointer
               , Font.color Palette.grey
-              , Element.mouseOver [ Font.color Palette.black ]
               ]
             , attrs
             ]
         )
         (Element.text content)
+
+
+greenLink =
+    link_ Green
+
+
+link =
+    link_ Black
+
+
+link_ : Color -> List (Element.Attribute msg) -> String -> Element.Element msg
+link_ color attrs content =
+    let
+        fontColor =
+            case color of
+                Black ->
+                    Font.color Palette.grey
+
+                Green ->
+                    Font.color Palette.green
+
+        hoverColor =
+            case color of
+                Black ->
+                    Font.color Palette.black
+
+                Green ->
+                    Font.color Palette.darkGreen
+    in
+    Element.el
+        (List.concat
+            [ [ Font.size small
+              , Element.pointer
+              , fontColor
+              , underlineOnHover
+              , Element.mouseOver [ hoverColor ]
+              ]
+            , attrs
+            ]
+        )
+        (Element.text content)
+
+
+underlineOnHover =
+    Element.htmlAttribute (Html.Attributes.class "underline-hover")
 
 
 large =
@@ -62,4 +159,9 @@ medium =
 
 small : number
 small =
-    14
+    16
+
+
+extraSmall : number
+extraSmall =
+    10

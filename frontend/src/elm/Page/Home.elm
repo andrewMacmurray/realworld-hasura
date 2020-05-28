@@ -12,7 +12,9 @@ import Article exposing (Article)
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Anchor as Anchor
+import Element.Divider as Divider
 import Element.Layout as Layout
+import Element.Scale as Scale
 import Element.Text as Text
 import User exposing (User(..))
 import WebData exposing (WebData)
@@ -73,26 +75,43 @@ view user model =
             Layout.loggedIn profile [ globalFeed model ]
 
 
+globalFeed : Model -> Element msg
 globalFeed model =
     case model.globalFeed of
         WebData.Loading ->
-            column [ Anchor.description "global-feed" ]
-                [ Text.title [] "Global Feed"
-                ]
+            feed (Text.text [] "Loading")
 
-        WebData.Loaded feed ->
-            column [ Anchor.description "global-feed" ]
-                [ Text.title [] "Global Feed"
-                , column [] (List.map viewArticle feed)
-                ]
+        WebData.Loaded feed_ ->
+            feed (column [ spacing Scale.large, width fill ] (List.map viewArticle feed_))
 
         WebData.Failure ->
-            column [ Anchor.description "global-feed" ]
-                [ Text.title [] "Something went wrong"
-                ]
+            feed (Text.text [] "Something Went wrong")
 
 
+feed : Element msg -> Element msg
+feed contents =
+    column
+        [ Anchor.description "global-feed"
+        , width fill
+        , spacing Scale.large
+        , paddingXY 0 Scale.large
+        ]
+        [ Text.greenLink [] "Global Feed"
+        , contents
+        ]
+
+
+viewArticle : Article -> Element msg
 viewArticle article =
-    column [ Anchor.description "article" ]
-        [ Text.subtitle [] (Article.title article)
+    column [ Anchor.description "article", spacing Scale.medium, width fill ]
+        [ Divider.divider
+        , column [ spacing Scale.small ]
+            [ Text.greenLink [] (Article.author article)
+            , Text.date [] (Article.createdAt article)
+            ]
+        , column [ spacing Scale.small ]
+            [ Text.subtitle [] (Article.title article)
+            , Text.text [] (Article.about article)
+            ]
+        , Text.label [] "Read more..."
         ]

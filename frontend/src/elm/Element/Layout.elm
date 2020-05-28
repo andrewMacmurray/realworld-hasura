@@ -6,6 +6,8 @@ module Element.Layout exposing
     )
 
 import Element exposing (..)
+import Element.Font as Font
+import Element.Palette as Palette
 import Element.Scale as Scale
 import Element.Text as Text
 import Route
@@ -57,7 +59,7 @@ navbar links =
         , paddingXY Scale.medium 0
         ]
         (row [ width fill ]
-            [ Route.el Route.Home (Text.subtitle [ paddingXY 0 Scale.medium ] "conduit")
+            [ Route.el Route.Home (Text.subtitle [ Font.color Palette.green, paddingXY 0 Scale.medium ] "conduit")
             , navItems links
             ]
         )

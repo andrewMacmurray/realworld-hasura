@@ -1,6 +1,7 @@
 module HomeTest exposing (..)
 
 import Article exposing (Article)
+import Date
 import Expect
 import Program
 import Program.Selector exposing (el)
@@ -8,6 +9,8 @@ import ProgramTest exposing (ensureViewHas, expectView)
 import Route
 import Test exposing (..)
 import Test.Html.Query as Query
+import Test.Html.Selector exposing (text)
+import Time exposing (Month(..))
 
 
 suite : Test
@@ -24,14 +27,20 @@ suite =
                 Program.asGuest Route.Home
                     |> Program.withGlobalFeed articles
                     |> Program.start
-                    |> ensureViewHas [ el "global-feed" ]
+                    |> ensureViewHas
+                        [ el "global-feed"
+                        , text "MON JAN 20 2020"
+                        ]
                     |> expectView (hasArticles articles)
         ]
 
 
 article : String -> Article
 article title =
-    Article.build title "about something"
+    Article.build title
+        "about something"
+        "author"
+        (Date.fromCalendarDate 2020 Jan 20)
 
 
 hasArticles : List Article -> Query.Single msg -> Expect.Expectation
