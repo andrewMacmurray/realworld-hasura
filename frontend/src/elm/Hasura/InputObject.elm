@@ -68,9 +68,9 @@ buildArticles_bool_exp fillOptionals =
     let
         optionals =
             fillOptionals
-                { and_ = Absent, not_ = Absent, or_ = Absent, about = Absent, author = Absent, content = Absent, created_at = Absent, tags = Absent, title = Absent }
+                { and_ = Absent, not_ = Absent, or_ = Absent, about = Absent, author = Absent, content = Absent, created_at = Absent, id = Absent, tags = Absent, title = Absent }
     in
-    Articles_bool_exp { and_ = optionals.and_, not_ = optionals.not_, or_ = optionals.or_, about = optionals.about, author = optionals.author, content = optionals.content, created_at = optionals.created_at, tags = optionals.tags, title = optionals.title }
+    Articles_bool_exp { and_ = optionals.and_, not_ = optionals.not_, or_ = optionals.or_, about = optionals.about, author = optionals.author, content = optionals.content, created_at = optionals.created_at, id = optionals.id, tags = optionals.tags, title = optionals.title }
 
 
 type alias Articles_bool_expOptionalFields =
@@ -81,6 +81,7 @@ type alias Articles_bool_expOptionalFields =
     , author : OptionalArgument Users_bool_exp
     , content : OptionalArgument String_comparison_exp
     , created_at : OptionalArgument Timestamptz_comparison_exp
+    , id : OptionalArgument Int_comparison_exp
     , tags : OptionalArgument Tags_bool_exp
     , title : OptionalArgument String_comparison_exp
     }
@@ -99,6 +100,7 @@ type alias Articles_bool_expRaw =
     , author : OptionalArgument Users_bool_exp
     , content : OptionalArgument String_comparison_exp
     , created_at : OptionalArgument Timestamptz_comparison_exp
+    , id : OptionalArgument Int_comparison_exp
     , tags : OptionalArgument Tags_bool_exp
     , title : OptionalArgument String_comparison_exp
     }
@@ -115,7 +117,7 @@ type Articles_bool_exp
 encodeArticles_bool_exp : Articles_bool_exp -> Value
 encodeArticles_bool_exp (Articles_bool_exp input) =
     Encode.maybeObject
-        [ ( "_and", (encodeArticles_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.and_ ), ( "_not", encodeArticles_bool_exp |> Encode.optional input.not_ ), ( "_or", (encodeArticles_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.or_ ), ( "about", encodeString_comparison_exp |> Encode.optional input.about ), ( "author", encodeUsers_bool_exp |> Encode.optional input.author ), ( "content", encodeString_comparison_exp |> Encode.optional input.content ), ( "created_at", encodeTimestamptz_comparison_exp |> Encode.optional input.created_at ), ( "tags", encodeTags_bool_exp |> Encode.optional input.tags ), ( "title", encodeString_comparison_exp |> Encode.optional input.title ) ]
+        [ ( "_and", (encodeArticles_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.and_ ), ( "_not", encodeArticles_bool_exp |> Encode.optional input.not_ ), ( "_or", (encodeArticles_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.or_ ), ( "about", encodeString_comparison_exp |> Encode.optional input.about ), ( "author", encodeUsers_bool_exp |> Encode.optional input.author ), ( "content", encodeString_comparison_exp |> Encode.optional input.content ), ( "created_at", encodeTimestamptz_comparison_exp |> Encode.optional input.created_at ), ( "id", encodeInt_comparison_exp |> Encode.optional input.id ), ( "tags", encodeTags_bool_exp |> Encode.optional input.tags ), ( "title", encodeString_comparison_exp |> Encode.optional input.title ) ]
 
 
 buildArticles_insert_input : (Articles_insert_inputOptionalFields -> Articles_insert_inputOptionalFields) -> Articles_insert_input
@@ -248,9 +250,9 @@ buildArticles_order_by fillOptionals =
     let
         optionals =
             fillOptionals
-                { about = Absent, author = Absent, content = Absent, created_at = Absent, title = Absent }
+                { about = Absent, author = Absent, content = Absent, created_at = Absent, id = Absent, title = Absent }
     in
-    { about = optionals.about, author = optionals.author, content = optionals.content, created_at = optionals.created_at, title = optionals.title }
+    { about = optionals.about, author = optionals.author, content = optionals.content, created_at = optionals.created_at, id = optionals.id, title = optionals.title }
 
 
 type alias Articles_order_byOptionalFields =
@@ -258,6 +260,7 @@ type alias Articles_order_byOptionalFields =
     , author : OptionalArgument Users_order_by
     , content : OptionalArgument Hasura.Enum.Order_by.Order_by
     , created_at : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , id : OptionalArgument Hasura.Enum.Order_by.Order_by
     , title : OptionalArgument Hasura.Enum.Order_by.Order_by
     }
 
@@ -269,6 +272,7 @@ type alias Articles_order_by =
     , author : OptionalArgument Users_order_by
     , content : OptionalArgument Hasura.Enum.Order_by.Order_by
     , created_at : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , id : OptionalArgument Hasura.Enum.Order_by.Order_by
     , title : OptionalArgument Hasura.Enum.Order_by.Order_by
     }
 
@@ -278,7 +282,7 @@ type alias Articles_order_by =
 encodeArticles_order_by : Articles_order_by -> Value
 encodeArticles_order_by input =
     Encode.maybeObject
-        [ ( "about", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.about ), ( "author", encodeUsers_order_by |> Encode.optional input.author ), ( "content", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.content ), ( "created_at", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.created_at ), ( "title", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.title ) ]
+        [ ( "about", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.about ), ( "author", encodeUsers_order_by |> Encode.optional input.author ), ( "content", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.content ), ( "created_at", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.created_at ), ( "id", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.id ), ( "title", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.title ) ]
 
 
 buildArticles_pk_columns_input : Articles_pk_columns_inputRequiredFields -> Articles_pk_columns_input
@@ -336,6 +340,52 @@ encodeArticles_set_input : Articles_set_input -> Value
 encodeArticles_set_input input =
     Encode.maybeObject
         [ ( "about", Encode.string |> Encode.optional input.about ), ( "content", Encode.string |> Encode.optional input.content ), ( "title", Encode.string |> Encode.optional input.title ) ]
+
+
+buildInt_comparison_exp : (Int_comparison_expOptionalFields -> Int_comparison_expOptionalFields) -> Int_comparison_exp
+buildInt_comparison_exp fillOptionals =
+    let
+        optionals =
+            fillOptionals
+                { eq_ = Absent, gt_ = Absent, gte_ = Absent, in_ = Absent, is_null_ = Absent, lt_ = Absent, lte_ = Absent, neq_ = Absent, nin_ = Absent }
+    in
+    { eq_ = optionals.eq_, gt_ = optionals.gt_, gte_ = optionals.gte_, in_ = optionals.in_, is_null_ = optionals.is_null_, lt_ = optionals.lt_, lte_ = optionals.lte_, neq_ = optionals.neq_, nin_ = optionals.nin_ }
+
+
+type alias Int_comparison_expOptionalFields =
+    { eq_ : OptionalArgument Int
+    , gt_ : OptionalArgument Int
+    , gte_ : OptionalArgument Int
+    , in_ : OptionalArgument (List Int)
+    , is_null_ : OptionalArgument Bool
+    , lt_ : OptionalArgument Int
+    , lte_ : OptionalArgument Int
+    , neq_ : OptionalArgument Int
+    , nin_ : OptionalArgument (List Int)
+    }
+
+
+{-| Type for the Int\_comparison\_exp input object.
+-}
+type alias Int_comparison_exp =
+    { eq_ : OptionalArgument Int
+    , gt_ : OptionalArgument Int
+    , gte_ : OptionalArgument Int
+    , in_ : OptionalArgument (List Int)
+    , is_null_ : OptionalArgument Bool
+    , lt_ : OptionalArgument Int
+    , lte_ : OptionalArgument Int
+    , neq_ : OptionalArgument Int
+    , nin_ : OptionalArgument (List Int)
+    }
+
+
+{-| Encode a Int\_comparison\_exp into a value that can be used as an argument.
+-}
+encodeInt_comparison_exp : Int_comparison_exp -> Value
+encodeInt_comparison_exp input =
+    Encode.maybeObject
+        [ ( "_eq", Encode.int |> Encode.optional input.eq_ ), ( "_gt", Encode.int |> Encode.optional input.gt_ ), ( "_gte", Encode.int |> Encode.optional input.gte_ ), ( "_in", (Encode.int |> Encode.list) |> Encode.optional input.in_ ), ( "_is_null", Encode.bool |> Encode.optional input.is_null_ ), ( "_lt", Encode.int |> Encode.optional input.lt_ ), ( "_lte", Encode.int |> Encode.optional input.lte_ ), ( "_neq", Encode.int |> Encode.optional input.neq_ ), ( "_nin", (Encode.int |> Encode.list) |> Encode.optional input.nin_ ) ]
 
 
 buildJson_comparison_exp : (Json_comparison_expOptionalFields -> Json_comparison_expOptionalFields) -> Json_comparison_exp

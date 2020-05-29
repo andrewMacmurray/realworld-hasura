@@ -10,7 +10,7 @@ import Test exposing (..)
 
 suite : Test
 suite =
-    describe "Settings"
+    describe "Settings Page"
         [ test "User can logout" <|
             \_ ->
                 Program.withPage Route.Settings

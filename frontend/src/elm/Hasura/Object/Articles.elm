@@ -42,6 +42,11 @@ created_at =
     Object.selectionForField "ScalarCodecs.Timestamptz" "created_at" [] (Hasura.ScalarCodecs.codecs |> Hasura.Scalar.unwrapCodecs |> .codecTimestamptz |> .decoder)
 
 
+id : SelectionSet Int Hasura.Object.Articles
+id =
+    Object.selectionForField "Int" "id" [] Decode.int
+
+
 type alias TagsOptionalArguments =
     { distinct_on : OptionalArgument (List Hasura.Enum.Tags_select_column.Tags_select_column)
     , limit : OptionalArgument Int

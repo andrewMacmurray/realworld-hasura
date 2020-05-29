@@ -13,7 +13,7 @@ import Time exposing (Month(..))
 
 suite : Test
 suite =
-    describe "Home"
+    describe "Home Page"
         [ test "Guest User sees global feed on load" <|
             \_ ->
                 Program.withPage Route.Home
@@ -30,7 +30,9 @@ suite =
 
 article : String -> Article
 article title =
-    Article.build title
+    Article.build 1
+        title
         "about something"
         "author"
+        "contents"
         (Date.fromCalendarDate 2020 Jan 20)

@@ -1,6 +1,7 @@
 module Effect exposing
     ( Effect(..)
     , batch
+    , loadArticle
     , loadGlobalFeed
     , loadUrl
     , loadUser
@@ -39,6 +40,7 @@ type Effect msg
     | SignUp (Api.Mutation User.Profile msg)
     | SignIn (Api.Mutation User.Profile msg)
     | LoadGlobalFeed (Api.Query (List Article) msg)
+    | LoadArticle (Api.Query (Maybe Article) msg)
     | PublishArticle User.Profile (Api.Mutation () msg)
 
 
@@ -82,6 +84,10 @@ loadGlobalFeed =
     LoadGlobalFeed
 
 
+loadArticle =
+    LoadArticle
+
+
 publishArticle =
     PublishArticle
 
@@ -122,6 +128,9 @@ map toMsg effect =
 
         LoadGlobalFeed query ->
             LoadGlobalFeed (Api.map toMsg query)
+
+        LoadArticle query ->
+            LoadArticle (Api.map toMsg query)
 
         PublishArticle user mut ->
             PublishArticle user (Api.map toMsg mut)
@@ -177,6 +186,9 @@ perform pushUrl_ ( model, effect ) =
             ( model, Api.guestMutation mutation )
 
         LoadGlobalFeed query ->
+            ( model, Api.guestQuery query )
+
+        LoadArticle query ->
             ( model, Api.guestQuery query )
 
         PublishArticle user mutation ->

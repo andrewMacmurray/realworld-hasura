@@ -5,6 +5,7 @@
     custom_root_fields:
       insert: publish_articles
       insert_one: publish_article
+      select_by_pk: article
     custom_column_names: {}
   object_relationships:
   - name: author
@@ -36,6 +37,7 @@
       - about
       - content
       - created_at
+      - id
       - title
       filter: {}
   - role: user
@@ -44,6 +46,7 @@
       - about
       - content
       - created_at
+      - id
       - title
       filter: {}
   update_permissions:

@@ -6,12 +6,13 @@ module Route exposing
     , routeToString
     )
 
+import Article
 import Element exposing (Element)
 import Element.Anchor as Anchor
 import Element.Text as Text
 import Url exposing (Url)
 import Url.Builder exposing (absolute)
-import Url.Parser as Parser exposing (oneOf, s, top)
+import Url.Parser as Parser exposing ((</>), int, oneOf, s, top)
 
 
 
@@ -24,6 +25,7 @@ type Route
     | SignIn
     | NewPost
     | Settings
+    | Article Article.Id
 
 
 parser : Parser.Parser (Route -> c) c
@@ -34,6 +36,7 @@ parser =
         , Parser.map SignIn (s "sign-in")
         , Parser.map NewPost (s "new-post")
         , Parser.map Settings (s "settings")
+        , Parser.map Article (s "article" </> int)
         ]
 
 
@@ -71,6 +74,9 @@ routeToString route =
 
         Settings ->
             absolute [ "settings" ] []
+
+        Article id ->
+            absolute [ "article", String.fromInt id ] []
 
 
 fromUrl : Url -> Maybe Route

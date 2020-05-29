@@ -5,6 +5,7 @@ module Program exposing
     , login
     , loginWithDetails
     , start
+    , withArticle
     , withGlobalFeed
     , withPage
     )
@@ -45,6 +46,7 @@ type alias FakeNavKey =
 
 type alias Options =
     { globalFeed : Api.Response (List Article)
+    , article : Api.Response (Maybe Article)
     , route : Route
     , user : Maybe Ports.User
     }
@@ -76,6 +78,11 @@ user name email =
     }
 
 
+withArticle : Api.Response (Maybe Article) -> Options -> Options
+withArticle article options =
+    { options | article = article }
+
+
 withGlobalFeed : List Article -> Options -> Options
 withGlobalFeed feed options =
     { options | globalFeed = Ok feed }
@@ -85,6 +92,7 @@ defaultOptions : Route -> Options
 defaultOptions route =
     { route = route
     , globalFeed = Ok []
+    , article = Ok Nothing
     , user = Nothing
     }
 
@@ -179,11 +187,14 @@ simulateEffects options eff =
         SignIn { msg } ->
             simulateTask (Ok defaultProfile) msg
 
-        LoadUser profile ->
+        LoadUser _ ->
             SimulatedEffect.Cmd.none
 
         LoadGlobalFeed { msg } ->
             simulateTask options.globalFeed msg
+
+        LoadArticle { msg } ->
+            simulateTask options.article msg
 
         PublishArticle _ { msg } ->
             simulateTask (Ok ()) msg

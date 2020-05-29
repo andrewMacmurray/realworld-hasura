@@ -6,7 +6,7 @@ module WebData exposing
 
 type WebData data
     = Loading
-    | Loaded data
+    | Success data
     | Failure
 
 
@@ -14,7 +14,7 @@ fromResult : Result error data -> WebData data
 fromResult res =
     case res of
         Ok data ->
-            Loaded data
+            Success data
 
         Err _ ->
             Failure

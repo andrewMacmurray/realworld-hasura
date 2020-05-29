@@ -16,6 +16,7 @@ import Element.Divider as Divider
 import Element.Layout as Layout
 import Element.Scale as Scale
 import Element.Text as Text
+import Route
 import User exposing (User(..))
 import WebData exposing (WebData)
 
@@ -81,7 +82,7 @@ globalFeed model =
         WebData.Loading ->
             feed (Text.text [] "Loading")
 
-        WebData.Loaded feed_ ->
+        WebData.Success feed_ ->
             feed (column [ spacing Scale.large, width fill ] (List.map viewArticle feed_))
 
         WebData.Failure ->
@@ -103,15 +104,21 @@ feed contents =
 
 viewArticle : Article -> Element msg
 viewArticle article =
-    column [ Anchor.description "article", spacing Scale.medium, width fill ]
+    column
+        [ Anchor.description "article"
+        , spacing Scale.medium
+        , width fill
+        ]
         [ Divider.divider
         , column [ spacing Scale.small ]
             [ Text.greenLink [] (Article.author article)
             , Text.date [] (Article.createdAt article)
             ]
-        , column [ spacing Scale.small ]
-            [ Text.subtitle [] (Article.title article)
-            , Text.text [] (Article.about article)
-            ]
+        , Route.el (Route.Article (Article.id article))
+            (column [ spacing Scale.small ]
+                [ Text.subtitle [] (Article.title article)
+                , Text.text [] (Article.about article)
+                ]
+            )
         , Text.label [] "Read more..."
         ]

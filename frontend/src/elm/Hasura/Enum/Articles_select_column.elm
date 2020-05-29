@@ -12,6 +12,7 @@ import Json.Decode as Decode exposing (Decoder)
   - About - column name
   - Content - column name
   - Created\_at - column name
+  - Id - column name
   - Title - column name
 
 -}
@@ -19,12 +20,13 @@ type Articles_select_column
     = About
     | Content
     | Created_at
+    | Id
     | Title
 
 
 list : List Articles_select_column
 list =
-    [ About, Content, Created_at, Title ]
+    [ About, Content, Created_at, Id, Title ]
 
 
 decoder : Decoder Articles_select_column
@@ -41,6 +43,9 @@ decoder =
 
                     "created_at" ->
                         Decode.succeed Created_at
+
+                    "id" ->
+                        Decode.succeed Id
 
                     "title" ->
                         Decode.succeed Title
@@ -63,6 +68,9 @@ toString enum =
 
         Created_at ->
             "created_at"
+
+        Id ->
+            "id"
 
         Title ->
             "title"
@@ -90,6 +98,9 @@ fromString enumString =
 
         "created_at" ->
             Just Created_at
+
+        "id" ->
+            Just Id
 
         "title" ->
             Just Title

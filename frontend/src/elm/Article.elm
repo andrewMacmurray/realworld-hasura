@@ -1,10 +1,13 @@
 module Article exposing
     ( Article
+    , Id
     , ToCreate
     , about
     , author
     , build
+    , content
     , createdAt
+    , id
     , title
     , toCreate
     )
@@ -21,9 +24,15 @@ type alias ToCreate =
     }
 
 
+type alias Id =
+    Int
+
+
 type alias Article =
-    { title : String
+    { id : Id
+    , title : String
     , about : String
+    , content : String
     , author : String
     , createdAt : Date
     }
@@ -42,6 +51,11 @@ build =
     Article
 
 
+id : Article -> Id
+id =
+    .id
+
+
 title : Article -> String
 title =
     .title
@@ -50,6 +64,11 @@ title =
 about : Article -> String
 about =
     .about
+
+
+content : Article -> String
+content =
+    .content
 
 
 author : Article -> String

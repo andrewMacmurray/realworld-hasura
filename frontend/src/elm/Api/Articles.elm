@@ -1,4 +1,4 @@
-module Api.Articles exposing (globalFeed, publish)
+module Api.Articles exposing (globalFeed, loadArticle, publish)
 
 import Api
 import Api.Date as Date
@@ -7,7 +7,7 @@ import Effect exposing (Effect)
 import Graphql.OptionalArgument exposing (OptionalArgument(..))
 import Graphql.SelectionSet as SelectionSet exposing (SelectionSet, with)
 import Hasura.Enum.Order_by exposing (Order_by(..))
-import Hasura.InputObject as Input exposing (Articles_insert_input)
+import Hasura.InputObject as Input exposing (Articles_insert_input, Articles_order_byOptionalFields)
 import Hasura.Mutation
 import Hasura.Object exposing (Articles)
 import Hasura.Object.Articles as Articles
@@ -15,6 +15,17 @@ import Hasura.Object.Users as Users
 import Hasura.Query exposing (ArticlesOptionalArguments)
 import Tags
 import User
+
+
+
+-- Article
+
+
+loadArticle : Article.Id -> (Api.Response (Maybe Article) -> msg) -> Effect msg
+loadArticle id msg =
+    Hasura.Query.article { id = id } articleSelection
+        |> Api.query msg
+        |> Effect.loadArticle
 
 
 
@@ -31,15 +42,27 @@ globalFeed msg =
 articleSelection : SelectionSet Article Articles
 articleSelection =
     SelectionSet.succeed Article.build
+        |> with Articles.id
         |> with Articles.title
         |> with Articles.about
+        |> with Articles.content
         |> with (Articles.author Users.username)
         |> with (Date.fromScalar Articles.created_at)
 
 
 newestFirst : ArticlesOptionalArguments -> ArticlesOptionalArguments
-newestFirst args =
-    { args | order_by = Present [ Input.buildArticles_order_by (\i -> { i | created_at = Present Desc }) ] }
+newestFirst =
+    orderBy (Input.buildArticles_order_by (created_at Desc))
+
+
+orderBy : a -> { b | order_by : OptionalArgument (List a) } -> { b | order_by : OptionalArgument (List a) }
+orderBy val args_ =
+    { args_ | order_by = Present [ val ] }
+
+
+created_at : a -> { b | created_at : OptionalArgument a } -> { b | created_at : OptionalArgument a }
+created_at val args =
+    { args | created_at = Present val }
 
 
 

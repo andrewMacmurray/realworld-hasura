@@ -23,6 +23,17 @@ import Hasura.Union
 import Json.Decode as Decode exposing (Decoder)
 
 
+type alias ArticleRequiredArguments =
+    { id : Int }
+
+
+{-| fetch data from the table: "articles" using primary key columns
+-}
+article : ArticleRequiredArguments -> SelectionSet decodesTo Hasura.Object.Articles -> SelectionSet (Maybe decodesTo) RootSubscription
+article requiredArgs object_ =
+    Object.selectionForCompositeField "article" [ Argument.required "id" requiredArgs.id Encode.int ] object_ (identity >> Decode.nullable)
+
+
 type alias ArticlesOptionalArguments =
     { distinct_on : OptionalArgument (List Hasura.Enum.Articles_select_column.Articles_select_column)
     , limit : OptionalArgument Int
@@ -52,17 +63,6 @@ articles fillInOptionals object_ =
                 |> List.filterMap identity
     in
     Object.selectionForCompositeField "articles" optionalArgs object_ (identity >> Decode.list)
-
-
-type alias ArticlesByPkRequiredArguments =
-    { id : Int }
-
-
-{-| fetch data from the table: "articles" using primary key columns
--}
-articles_by_pk : ArticlesByPkRequiredArguments -> SelectionSet decodesTo Hasura.Object.Articles -> SelectionSet (Maybe decodesTo) RootSubscription
-articles_by_pk requiredArgs object_ =
-    Object.selectionForCompositeField "articles_by_pk" [ Argument.required "id" requiredArgs.id Encode.int ] object_ (identity >> Decode.nullable)
 
 
 type alias ProfileOptionalArguments =

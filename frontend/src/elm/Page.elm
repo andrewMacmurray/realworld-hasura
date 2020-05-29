@@ -8,6 +8,7 @@ module Page exposing
 
 import Effect exposing (Effect)
 import Element exposing (..)
+import Page.Article as Article
 import Page.Home as Home
 import Page.NewPost as NewPost
 import Page.NotFound as NotFound
@@ -30,6 +31,7 @@ type Page
     | SignIn SignIn.Model
     | NewPost NewPost.Model
     | Settings Settings.Model
+    | Article Article.Model
     | NotFound
 
 
@@ -39,6 +41,7 @@ type Msg
     | SignInMsg SignIn.Msg
     | NewPostMsg NewPost.Msg
     | SettingsMsg Settings.Msg
+    | ArticleMsg Article.Msg
 
 
 
@@ -62,6 +65,9 @@ init user url =
 
         Just Route.Settings ->
             initAuthenticated Settings SettingsMsg Settings.init user
+
+        Just (Route.Article id_) ->
+            updateWith Article ArticleMsg (Article.init id_)
 
         Nothing ->
             ( NotFound, Effect.none )
@@ -103,6 +109,10 @@ update msg page =
             Settings.update msg_ model_
                 |> updateWith Settings SettingsMsg
 
+        ( ArticleMsg msg_, Article model_ ) ->
+            Article.update msg_ model_
+                |> updateWith Article ArticleMsg
+
         ( _, _ ) ->
             ( page, Effect.none )
 
@@ -128,6 +138,9 @@ view user model =
 
         Settings model_ ->
             Element.map SettingsMsg (viewAuthenticated Settings.view model_ user)
+
+        Article model_ ->
+            Element.map ArticleMsg (Article.view user model_)
 
         NotFound ->
             NotFound.view

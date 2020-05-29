@@ -10,7 +10,7 @@ import Test exposing (..)
 
 suite : Test
 suite =
-    describe "Sign In"
+    describe "Sign In Page"
         [ test "User is redirected to home when signed in" <|
             \_ ->
                 Program.withPage Route.SignIn
