@@ -5,9 +5,9 @@ module Program exposing
     , fillField
     , login
     , loginWithDetails
-    , page
     , start
     , withGlobalFeed
+    , withPage
     )
 
 import Api
@@ -55,8 +55,8 @@ type alias Options =
 -- Configure
 
 
-page : Route -> Options
-page =
+withPage : Route -> Options
+withPage =
     defaultOptions
 
 

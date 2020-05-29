@@ -16,7 +16,7 @@ suite =
     describe "Home"
         [ test "Guest User sees global feed on load" <|
             \_ ->
-                Program.page Route.Home
+                Program.withPage Route.Home
                     |> Program.withGlobalFeed [ article "foo", article "bar" ]
                     |> Program.start
                     |> expectViewHas

@@ -12,6 +12,7 @@ import Element.Input as Input
 import Element.Palette as Palette
 import Element.Scale as Scale
 import Element.Text as Text
+import Element.Transition as Transition
 
 
 type Button msg
@@ -72,25 +73,35 @@ toElement : Button msg -> Element msg
 toElement (Button button_) =
     Input.button
         [ toFill button_
+        , Transition.all
         , toBorderColor button_
+        , toFontColor button_
         , Border.width 1
         , Border.rounded 5
         , toPadding button_
-        , Font.letterSpacing 1
+        , mouseOver (toHoverStyles button_)
         ]
         { onPress = Just button_.onClick
-        , label = toLabel button_
+        , label = label button_
         }
 
 
 toPadding : Button_ msg -> Attribute msg
-toPadding button_ =
-    case button_.size of
-        Large ->
-            paddingXY Scale.large Scale.medium
+toPadding _ =
+    paddingXY Scale.medium Scale.small
 
-        Medium ->
-            paddingXY Scale.medium Scale.small
+
+toHoverStyles button_ =
+    case button_.fill of
+        Solid ->
+            [ Background.color (toDarker button_.color)
+            , Border.color (toDarker button_.color)
+            ]
+
+        Hollow ->
+            [ Background.color (toColor button_.color)
+            , Font.color Palette.white
+            ]
 
 
 toFill : Button_ msg -> Attr decorative msg
@@ -108,6 +119,15 @@ toBorderColor button_ =
     Border.color (toColor button_.color)
 
 
+toFontColor button_ =
+    case button_.fill of
+        Solid ->
+            Font.color Palette.white
+
+        Hollow ->
+            Font.color (toColor button_.color)
+
+
 toColor : Color -> Element.Color
 toColor color =
     case color of
@@ -115,30 +135,27 @@ toColor color =
             Palette.green
 
         Red ->
+            Palette.red
+
+
+toDarker color =
+    case color of
+        Green ->
+            Palette.deepGreen
+
+        Red ->
             Palette.darkRed
 
 
-toLabel : Button_ msg -> Element msg
-toLabel button_ =
-    case button_.fill of
-        Solid ->
-            el (toLabelAttributes button_ ++ [ Font.color Palette.white ])
-                (text button_.text)
-
-        Hollow ->
-            el
-                (toLabelAttributes button_ ++ [ Font.color (toColor button_.color) ])
-                (text button_.text)
+label : Button_ msg -> Element msg
+label button_ =
+    el [ toFontSize button_ ] (text button_.text)
 
 
-toLabelAttributes button_ =
+toFontSize button_ =
     case button_.size of
         Large ->
-            [ Font.regular
-            , Font.size Text.medium
-            ]
+            Font.size (Text.medium - 2)
 
         Medium ->
-            [ Font.size Text.small
-            , Font.letterSpacing 0
-            ]
+            Font.size Text.small

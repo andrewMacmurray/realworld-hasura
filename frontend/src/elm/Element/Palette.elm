@@ -2,9 +2,11 @@ module Element.Palette exposing
     ( black
     , darkGreen
     , darkRed
+    , deepGreen
     , green
     , grey
     , lightGrey
+    , red
     , transparent
     , white
     )
@@ -20,6 +22,16 @@ green =
 darkGreen : Color
 darkGreen =
     rgb255 55 110 55
+
+
+deepGreen : Color
+deepGreen =
+    rgb255 16 82 16
+
+
+red : Color
+red =
+    rgb255 201 45 20
 
 
 darkRed : Color

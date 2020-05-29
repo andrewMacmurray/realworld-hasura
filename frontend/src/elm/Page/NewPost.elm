@@ -9,6 +9,7 @@ module Page.NewPost exposing
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Anchor as Anchor
+import Element.Button as Button
 import Element.Font as Font
 import Element.Layout as Layout
 import Element.Palette as Palette
@@ -30,6 +31,7 @@ type alias Model =
 
 type Msg
     = InputsChanged Inputs
+    | PublishClicked
 
 
 type alias Inputs =
@@ -73,6 +75,9 @@ update msg model =
         InputsChanged inputs ->
             ( { model | inputs = inputs }, Effect.none )
 
+        PublishClicked ->
+            ( model, Effect.none )
+
 
 
 -- View
@@ -92,9 +97,14 @@ view user model =
                 , content model.inputs
                 , tags model.inputs
                 , showTags model.inputs.tags
+                , publishButton
                 ]
             )
         ]
+
+
+publishButton =
+    el [ alignRight ] (Button.primary PublishClicked "Publish Article")
 
 
 showTags : String -> Element msg

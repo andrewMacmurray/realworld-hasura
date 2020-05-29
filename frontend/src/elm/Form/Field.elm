@@ -53,8 +53,10 @@ area =
 text : (inputs -> msg) -> Style -> Config inputs -> inputs -> Element msg
 text msg style config inputs =
     let
-        description =
-            Anchor.description config.label
+        commonAttributes =
+            [ Anchor.description config.label
+            , padding Scale.small
+            ]
 
         config_ =
             { onChange = config.update inputs >> msg
@@ -65,21 +67,21 @@ text msg style config inputs =
     in
     case style of
         Small ->
-            Input.text [ description, padding Scale.small, Font.size Text.small ] config_
+            Input.text (Font.size Text.small :: commonAttributes) config_
 
         Medium ->
-            Input.text [ description, padding Scale.small, Font.size Text.medium ] config_
+            Input.text (Font.size Text.medium :: commonAttributes) config_
 
         Large ->
-            Input.text [ description, padding Scale.medium, Font.size Text.medium ] config_
+            Input.text (Font.size Text.medium :: commonAttributes) config_
 
         TextArea ->
             Input.multiline
-                [ description
-                , padding Scale.small
-                , Font.size Text.small
-                , height (fill |> minimum 150)
-                ]
+                (List.concat
+                    [ [ Font.size Text.small, height (fill |> minimum 150) ]
+                    , commonAttributes
+                    ]
+                )
                 { onChange = config_.onChange
                 , text = config_.text
                 , placeholder = config_.placeholder

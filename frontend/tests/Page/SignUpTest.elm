@@ -13,7 +13,7 @@ suite : Test
 suite =
     test "User is redirected to home after signup" <|
         \_ ->
-            Program.page Route.SignUp
+            Program.withPage Route.SignUp
                 |> Program.start
                 |> Program.fillField "email" "a@b.com"
                 |> Program.fillField "username" "amacmurray"

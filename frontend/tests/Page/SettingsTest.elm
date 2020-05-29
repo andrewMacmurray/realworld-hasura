@@ -13,7 +13,7 @@ suite =
     describe "Settings"
         [ test "User can logout" <|
             \_ ->
-                Program.page Route.Settings
+                Program.withPage Route.Settings
                     |> Program.login
                     |> Program.start
                     |> ensureViewHas [ el "settings-title", el "logout" ]
@@ -22,7 +22,7 @@ suite =
                     |> Expect.redirect Route.Home
         , test "User can see their profile information" <|
             \_ ->
-                Program.page Route.Settings
+                Program.withPage Route.Settings
                     |> Program.loginWithDetails "amacmurray" "a@b.com"
                     |> Program.start
                     |> expectViewHas

@@ -13,7 +13,7 @@ suite =
     describe "Sign In"
         [ test "User is redirected to home when signed in" <|
             \_ ->
-                Program.page Route.SignIn
+                Program.withPage Route.SignIn
                     |> Program.start
                     |> Program.fillField "username" "amacmurray"
                     |> Program.fillField "password" "abc123"
@@ -25,7 +25,7 @@ suite =
                     |> Expect.redirect Route.Home
         , test "User sees authenticated navbar items when signed in" <|
             \_ ->
-                Program.page Route.SignIn
+                Program.withPage Route.SignIn
                     |> Program.start
                     |> ensureViewHas [ el "sign-in-link" ]
                     |> Program.fillField "username" "amacmurray"

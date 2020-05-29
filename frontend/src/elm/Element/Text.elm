@@ -2,6 +2,7 @@ module Element.Text exposing
     ( date
     , greenLink
     , label
+    , large
     , link
     , medium
     , small
@@ -149,6 +150,7 @@ underlineOnHover =
     Element.htmlAttribute (Html.Attributes.class "underline-hover")
 
 
+large : number
 large =
     32
 
