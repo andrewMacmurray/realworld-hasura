@@ -73,7 +73,7 @@ toElement : Button msg -> Element msg
 toElement (Button button_) =
     Input.button
         [ toFill button_
-        , Transition.all
+        , Transition.colors
         , toBorderColor button_
         , toFontColor button_
         , Border.width 1

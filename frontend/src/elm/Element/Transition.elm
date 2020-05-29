@@ -1,9 +1,9 @@
-module Element.Transition exposing (all)
+module Element.Transition exposing (colors)
 
 import Element exposing (htmlAttribute)
 import Html.Attributes exposing (style)
 
 
-all : Element.Attribute msg
-all =
-    htmlAttribute (style "transition" "0.2s ease")
+colors : Element.Attribute msg
+colors =
+    htmlAttribute (style "transition" "background 0.2s ease, border-color 0.2s ease, color 0.2s ease")
