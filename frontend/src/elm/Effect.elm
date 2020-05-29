@@ -41,7 +41,7 @@ type Effect msg
     | SignIn (Api.Mutation User.Profile msg)
     | LoadGlobalFeed (Api.Query (List Article) msg)
     | LoadArticle (Api.Query (Maybe Article) msg)
-    | PublishArticle User.Profile (Api.Mutation () msg)
+    | PublishArticle (Api.Mutation () msg)
 
 
 none =
@@ -132,8 +132,8 @@ map toMsg effect =
         LoadArticle query ->
             LoadArticle (Api.map toMsg query)
 
-        PublishArticle user mut ->
-            PublishArticle user (Api.map toMsg mut)
+        PublishArticle mut ->
+            PublishArticle (Api.map toMsg mut)
 
 
 
@@ -180,19 +180,19 @@ perform pushUrl_ ( model, effect ) =
             )
 
         SignUp mutation ->
-            ( model, Api.guestMutation mutation )
+            ( model, Api.doMutation model.user mutation )
 
         SignIn mutation ->
-            ( model, Api.guestMutation mutation )
+            ( model, Api.doMutation model.user mutation )
 
         LoadGlobalFeed query ->
-            ( model, Api.guestQuery query )
+            ( model, Api.doQuery model.user query )
 
         LoadArticle query ->
-            ( model, Api.guestQuery query )
+            ( model, Api.doQuery model.user query )
 
-        PublishArticle user mutation ->
-            ( model, Api.authenticatedMutation user mutation )
+        PublishArticle mutation ->
+            ( model, Api.doMutation model.user mutation )
 
 
 doBatch : PushUrl key msg -> Model model key -> List (Effect msg) -> ( Model model key, Cmd msg )

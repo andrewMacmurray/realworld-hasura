@@ -69,12 +69,12 @@ created_at val args =
 -- Publish
 
 
-publish : User.Profile -> (Api.Response () -> msg) -> Article.ToCreate -> Effect msg
-publish user msg article_ =
+publish : (Api.Response () -> msg) -> Article.ToCreate -> Effect msg
+publish msg article_ =
     Hasura.Mutation.publish_article identity { object = toPublishArgs article_ } SelectionSet.empty
         |> failOnNothing
         |> Api.mutation msg
-        |> Effect.publishArticle user
+        |> Effect.publishArticle
 
 
 toPublishArgs : Article.ToCreate -> Articles_insert_input

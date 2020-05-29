@@ -16,16 +16,8 @@ import Date exposing (Date)
 import Tags exposing (Tag)
 
 
-type alias ToCreate =
-    { title : String
-    , about : String
-    , content : String
-    , tags : List Tag
-    }
 
-
-type alias Id =
-    Int
+-- Article
 
 
 type alias Article =
@@ -38,6 +30,22 @@ type alias Article =
     }
 
 
+type alias Id =
+    Int
+
+
+type alias ToCreate =
+    { title : String
+    , about : String
+    , content : String
+    , tags : List Tag
+    }
+
+
+
+-- Create
+
+
 toCreate : { i | title : String, about : String, content : String, tags : String } -> ToCreate
 toCreate i =
     { title = i.title
@@ -47,8 +55,17 @@ toCreate i =
     }
 
 
+
+-- Build
+
+
+build : Id -> String -> String -> String -> String -> Date -> Article
 build =
     Article
+
+
+
+-- Query
 
 
 id : Article -> Id

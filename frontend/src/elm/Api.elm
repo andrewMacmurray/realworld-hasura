@@ -2,9 +2,8 @@ module Api exposing
     ( Mutation
     , Query
     , Response
-    , authenticatedMutation
-    , guestMutation
-    , guestQuery
+    , doMutation
+    , doQuery
     , map
     , mutation
     , query
@@ -14,7 +13,7 @@ import Api.Token as Token
 import Graphql.Http
 import Graphql.Operation exposing (RootMutation, RootQuery)
 import Graphql.SelectionSet exposing (SelectionSet)
-import User
+import User exposing (User)
 
 
 
@@ -69,26 +68,35 @@ map toMsg m =
 -- Do Request
 
 
-guestMutation : Mutation a msg -> Cmd msg
-guestMutation { msg, selection } =
+doMutation : User -> Mutation a msg -> Cmd msg
+doMutation user { msg, selection } =
     selection
         |> Graphql.Http.mutationRequest endpoint
+        |> authorizeForUser user
         |> Graphql.Http.send msg
 
 
-guestQuery : Query a msg -> Cmd msg
-guestQuery { msg, selection } =
+doQuery : User -> Query a msg -> Cmd msg
+doQuery user { msg, selection } =
     selection
         |> Graphql.Http.queryRequest endpoint
+        |> authorizeForUser user
         |> Graphql.Http.send msg
 
 
-authenticatedMutation : User.Profile -> Mutation a msg -> Cmd msg
-authenticatedMutation profile { msg, selection } =
-    selection
-        |> Graphql.Http.mutationRequest endpoint
-        |> Graphql.Http.withHeader "Authorization" (bearerToken profile)
-        |> Graphql.Http.send msg
+authorizeForUser : User -> Graphql.Http.Request decodesTo -> Graphql.Http.Request decodesTo
+authorizeForUser user request =
+    case user of
+        User.LoggedIn profile ->
+            withAuthHeader request profile
+
+        User.Guest ->
+            request
+
+
+withAuthHeader : Graphql.Http.Request decodesTo -> User.Profile -> Graphql.Http.Request decodesTo
+withAuthHeader request profile =
+    Graphql.Http.withHeader "Authorization" (bearerToken profile) request
 
 
 bearerToken : User.Profile -> String

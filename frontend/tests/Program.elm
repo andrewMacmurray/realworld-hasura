@@ -71,6 +71,7 @@ loginWithDetails username email options =
     { options | user = Just (user username email) }
 
 
+user : String -> String -> Ports.User
 user name email =
     { username = name
     , email = email
@@ -196,7 +197,7 @@ simulateEffects options eff =
         LoadArticle { msg } ->
             simulateTask options.article msg
 
-        PublishArticle _ { msg } ->
+        PublishArticle { msg } ->
             simulateTask (Ok ()) msg
 
 

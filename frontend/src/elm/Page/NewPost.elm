@@ -35,7 +35,7 @@ type alias Model =
 
 type Msg
     = InputsChanged Inputs
-    | PublishClicked User.Profile
+    | PublishClicked
     | PublishResponseReceived (Api.Response ())
 
 
@@ -80,8 +80,8 @@ update msg model =
         InputsChanged inputs ->
             ( { model | inputs = inputs }, Effect.none )
 
-        PublishClicked user ->
-            ( model, publishArticle user model.inputs )
+        PublishClicked ->
+            ( model, publishArticle model.inputs )
 
         PublishResponseReceived (Ok _) ->
             ( model, Effect.navigateTo Route.Home )
@@ -90,9 +90,9 @@ update msg model =
             ( model, Effect.none )
 
 
-publishArticle : User.Profile -> Inputs -> Effect Msg
-publishArticle user =
-    Article.toCreate >> Api.Articles.publish user PublishResponseReceived
+publishArticle : Inputs -> Effect Msg
+publishArticle =
+    Article.toCreate >> Api.Articles.publish PublishResponseReceived
 
 
 
@@ -113,15 +113,15 @@ view user model =
                 , content model.inputs
                 , tags model.inputs
                 , showTags model.inputs.tags
-                , publishButton user
+                , publishButton
                 ]
             )
         ]
 
 
-publishButton : User.Profile -> Element Msg
-publishButton user =
-    el [ alignRight ] (Button.primary (PublishClicked user) "Publish Article")
+publishButton : Element Msg
+publishButton =
+    el [ alignRight ] (Button.primary PublishClicked "Publish Article")
 
 
 showTags : String -> Element msg

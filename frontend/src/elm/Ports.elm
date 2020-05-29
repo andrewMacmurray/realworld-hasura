@@ -11,6 +11,20 @@ import Api.Token as Token
 import User
 
 
+
+-- User
+
+
+type alias User =
+    { username : String
+    , email : String
+    , token : String
+    }
+
+
+port saveUser : User -> Cmd msg
+
+
 toUser : User.Profile -> User
 toUser user =
     { username = User.username user
@@ -29,14 +43,8 @@ toProfile u =
     User.profile (Token.token u.token) u.username u.email
 
 
-type alias User =
-    { username : String
-    , email : String
-    , token : String
-    }
 
-
-port saveUser : User -> Cmd msg
+-- Logout
 
 
 logout : Cmd msg
