@@ -1,4 +1,7 @@
-module WebData exposing (WebData(..), fromResult)
+module WebData exposing
+    ( WebData(..)
+    , fromResult
+    )
 
 
 type WebData data

@@ -3,7 +3,7 @@ module Page.SignUpTest exposing (suite)
 import Expect
 import Program
 import Program.Expect as Expect
-import Program.Selector as Selector exposing (el)
+import Program.Selector exposing (el, filledField)
 import ProgramTest exposing (clickButton, ensureViewHas, expectViewHas)
 import Route
 import Test exposing (..)
@@ -19,9 +19,9 @@ suite =
                 |> Program.fillField "username" "amacmurray"
                 |> Program.fillField "password" "abc123"
                 |> ensureViewHas
-                    [ Selector.filledField "a@b.com"
-                    , Selector.filledField "amacmurray"
-                    , Selector.filledField "abc123"
+                    [ filledField "a@b.com"
+                    , filledField "amacmurray"
+                    , filledField "abc123"
                     ]
                 |> clickButton "Sign Up"
                 |> Expect.all

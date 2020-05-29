@@ -1,5 +1,6 @@
 module Form.Field exposing
     ( Config
+    , Style
     , area
     , large
     , medium

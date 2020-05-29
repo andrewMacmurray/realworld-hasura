@@ -8,9 +8,14 @@ module Page.NewPost exposing
 
 import Effect exposing (Effect)
 import Element exposing (..)
+import Element.Anchor as Anchor
+import Element.Font as Font
 import Element.Layout as Layout
+import Element.Palette as Palette
 import Element.Scale as Scale
+import Element.Text as Text
 import Form.Field as Field
+import Tags exposing (Tag)
 import User exposing (User(..))
 
 
@@ -31,6 +36,7 @@ type alias Inputs =
     { title : String
     , about : String
     , content : String
+    , tags : String
     }
 
 
@@ -53,6 +59,7 @@ emptyInputs =
     { title = ""
     , about = ""
     , content = ""
+    , tags = ""
     }
 
 
@@ -83,11 +90,26 @@ view user model =
                 [ title model.inputs
                 , about model.inputs
                 , content model.inputs
+                , tags model.inputs
+                , showTags model.inputs.tags
                 ]
             )
         ]
 
 
+showTags : String -> Element msg
+showTags =
+    Tags.fromString
+        >> List.map showTag
+        >> wrappedRow [ spacing Scale.small ]
+
+
+showTag : Tag -> Element msg
+showTag tag_ =
+    Text.text [ Font.color Palette.green, Anchor.description "visible-tag" ] ("#" ++ Tags.value tag_)
+
+
+title : Inputs -> Element Msg
 title =
     textInput Field.large
         { value = .title
@@ -96,6 +118,7 @@ title =
         }
 
 
+about : Inputs -> Element Msg
 about =
     textInput Field.small
         { value = .about
@@ -104,13 +127,24 @@ about =
         }
 
 
+content : Inputs -> Element Msg
 content =
     textInput Field.area
         { value = .content
         , update = \i v -> { i | content = v }
-        , label = "Write your article (in Markdown)"
+        , label = "Write your article (in markdown)"
         }
 
 
+tags : Inputs -> Element Msg
+tags =
+    textInput Field.small
+        { value = .tags
+        , update = \i v -> { i | tags = v }
+        , label = "Enter tags"
+        }
+
+
+textInput : Field.Style -> Field.Config Inputs -> Inputs -> Element Msg
 textInput =
     Field.text InputsChanged

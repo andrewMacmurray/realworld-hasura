@@ -2,7 +2,7 @@ module Page.SettingsTest exposing (suite)
 
 import Program
 import Program.Expect as Expect
-import Program.Selector as Selector exposing (el)
+import Program.Selector exposing (el, filledField)
 import ProgramTest exposing (clickButton, ensureViewHas, expectViewHas)
 import Route
 import Test exposing (..)
@@ -26,7 +26,7 @@ suite =
                     |> Program.loginWithDetails "amacmurray" "a@b.com"
                     |> Program.start
                     |> expectViewHas
-                        [ Selector.filledField "amacmurray"
-                        , Selector.filledField "a@b.com"
+                        [ filledField "amacmurray"
+                        , filledField "a@b.com"
                         ]
         ]

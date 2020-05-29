@@ -6,7 +6,6 @@ module Element.Text exposing
     , medium
     , small
     , subtitle
-    , subtitleGreen
     , text
     , title
     )
@@ -41,10 +40,6 @@ subtitle =
     subtitle_ Black
 
 
-subtitleGreen =
-    subtitle_ Green
-
-
 subtitle_ : Color -> List (Element.Attribute msg) -> String -> Element.Element msg
 subtitle_ color attrs content =
     Element.el
@@ -59,6 +54,7 @@ subtitle_ color attrs content =
         (Element.text content)
 
 
+toFontColor : Color -> Element.Attr decorative msg
 toFontColor color =
     case color of
         Black ->
@@ -105,10 +101,12 @@ text attrs content =
         (Element.text content)
 
 
+greenLink : List (Element.Attribute msg) -> String -> Element.Element msg
 greenLink =
     link_ Green
 
 
+link : List (Element.Attribute msg) -> String -> Element.Element msg
 link =
     link_ Black
 
@@ -146,6 +144,7 @@ link_ color attrs content =
         (Element.text content)
 
 
+underlineOnHover : Element.Attribute msg
 underlineOnHover =
     Element.htmlAttribute (Html.Attributes.class "underline-hover")
 
