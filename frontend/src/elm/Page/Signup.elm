@@ -11,7 +11,9 @@ import Api.Users
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Button as Button
+import Element.Font as Font
 import Element.Layout as Layout
+import Element.Palette as Palette
 import Element.Scale as Scale
 import Element.Text as Text
 import Form.Field as Field
@@ -25,6 +27,7 @@ import User exposing (User)
 
 type alias Model =
     { inputs : Inputs
+    , request : SignUpRequest
     }
 
 
@@ -32,6 +35,12 @@ type Msg
     = InputsChanged Inputs
     | SignupClicked
     | SignupResponseReceived (Api.Response User.Profile)
+
+
+type SignUpRequest
+    = Idle
+    | InProgress
+    | Failed String
 
 
 type alias Inputs =
@@ -53,6 +62,7 @@ init =
 initialModel : Model
 initialModel =
     { inputs = emptyInputs
+    , request = Idle
     }
 
 
@@ -75,7 +85,7 @@ update msg model =
             ( { model | inputs = inputs }, Effect.none )
 
         SignupClicked ->
-            ( model, signUp model.inputs )
+            ( { model | request = InProgress }, signUp model.inputs )
 
         SignupResponseReceived (Ok res) ->
             ( model
@@ -85,8 +95,8 @@ update msg model =
                 ]
             )
 
-        SignupResponseReceived (Err _) ->
-            ( model, Effect.none )
+        SignupResponseReceived (Err err) ->
+            ( { model | request = Failed (Api.errorMessage err) }, Effect.none )
 
 
 signUp : Inputs -> Effect Msg
@@ -100,9 +110,7 @@ signUp inputs =
 
 view : Model -> Element Msg
 view model =
-    Layout.guest
-        [ signup model
-        ]
+    Layout.guest |> Layout.toElement [ signup model ]
 
 
 signup : Model -> Element Msg
@@ -119,9 +127,23 @@ signup model =
                 , email model.inputs
                 , password model.inputs
                 , el [ alignRight ] signupButton
+                , el [ alignRight ] (statusMessage model.request)
                 ]
             )
         ]
+
+
+statusMessage : SignUpRequest -> Element msg
+statusMessage request =
+    case request of
+        Idle ->
+            none
+
+        InProgress ->
+            Text.text [] "Signing Up"
+
+        Failed reason ->
+            Text.text [ Font.color Palette.red ] reason
 
 
 signupButton : Element Msg

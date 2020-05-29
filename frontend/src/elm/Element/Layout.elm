@@ -1,9 +1,13 @@
 module Element.Layout exposing
-    ( guest
+    ( Layout
+    , authenticated
+    , guest
     , halfWidth
-    , loggedIn
     , maxWidth
     , padded
+    , toElement
+    , user
+    , withBanner
     )
 
 import Element exposing (..)
@@ -12,40 +16,77 @@ import Element.Palette as Palette
 import Element.Scale as Scale
 import Element.Text as Text
 import Route
-import User
+import User exposing (User)
 
 
 
 -- Layout
 
 
-guest : List (Element msg) -> Element msg
-guest els =
-    column [ width fill ]
-        [ navbar
-            [ Route.link Route.Home "Home"
-            , Route.link Route.SignIn "Sign In"
-            , Route.link Route.SignUp "Sign Up"
-            ]
-        , column
-            [ paddingXY Scale.medium 0
-            , constrainWidth
-            , centerX
-            ]
-            els
-        ]
+type Layout msg
+    = Layout (Options msg)
 
 
-loggedIn : User.Profile -> List (Element msg) -> Element msg
-loggedIn profile els =
+type alias Options msg =
+    { profile : Maybe User.Profile
+    , banner : Maybe (Banner msg)
+    }
+
+
+type alias Banner msg =
+    ( List (Attribute msg), Element msg )
+
+
+
+-- Construct
+
+
+guest : Layout msg
+guest =
+    Layout
+        { profile = Nothing
+        , banner = Nothing
+        }
+
+
+authenticated : User.Profile -> Layout msg
+authenticated profile =
+    Layout
+        { profile = Just profile
+        , banner = Nothing
+        }
+
+
+user : User -> Layout msg
+user user_ =
+    case user_ of
+        User.Guest ->
+            guest
+
+        User.LoggedIn profile ->
+            authenticated profile
+
+
+
+-- Configure
+
+
+withBanner : List (Attribute msg) -> Element msg -> Layout msg -> Layout msg
+withBanner attr el (Layout options) =
+    Layout { options | banner = Just ( attr, el ) }
+
+
+
+-- Render
+
+
+toElement : List (Element msg) -> Layout msg -> Element msg
+toElement els (Layout options) =
     column [ width fill ]
-        [ navbar
-            [ Route.link Route.Home "Home"
-            , Route.link Route.NewPost "New Post"
-            , Route.link Route.Settings "Settings"
-            ]
+        [ toNavBar options
+        , toBanner options
         , column
-            [ paddingXY Scale.medium 0
+            [ paddingXY Scale.medium Scale.large
             , constrainWidth
             , centerX
             ]
@@ -63,15 +104,62 @@ halfWidth =
     el [ width (fill |> maximum (maxWidth // 2)), centerX ]
 
 
-navbar : List (Element msg) -> Element msg
-navbar links =
+toBanner : Options msg -> Element msg
+toBanner options =
+    case options.banner of
+        Just b ->
+            banner_ b
+
+        Nothing ->
+            none
+
+
+banner_ : Banner msg -> Element msg
+banner_ ( attrs, content ) =
+    el ([ width fill ] ++ attrs)
+        (el
+            [ centerX
+            , constrainWidth
+            , paddingXY Scale.medium (Scale.large * 2)
+            ]
+            content
+        )
+
+
+toNavBar : Options msg -> Element msg
+toNavBar options =
+    case options.profile of
+        Just _ ->
+            navBar
+                [ Route.link Route.Home "Home"
+                , Route.link Route.NewPost "New Post"
+                , Route.link Route.Settings "Settings"
+                ]
+
+        Nothing ->
+            navBar
+                [ Route.link Route.Home "Home"
+                , Route.link Route.SignIn "Sign In"
+                , Route.link Route.SignUp "Sign Up"
+                ]
+
+
+navBar : List (Element msg) -> Element msg
+navBar links =
     el
         [ centerX
         , constrainWidth
         , paddingXY Scale.medium 0
         ]
         (row [ width fill ]
-            [ Route.el Route.Home (Text.subtitle [ Font.color Palette.green, paddingXY 0 Scale.medium ] "conduit")
+            [ Route.el Route.Home
+                (Text.title
+                    [ Font.color Palette.green
+                    , paddingXY 0 Scale.medium
+                    , Font.bold
+                    ]
+                    "conduit"
+                )
             , navItems links
             ]
         )

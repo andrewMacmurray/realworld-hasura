@@ -79,12 +79,13 @@ update msg model =
 
 view : User.Profile -> Model -> Element Msg
 view user model =
-    Layout.loggedIn user
-        [ column [ spacing Scale.medium, width fill, paddingXY 0 Scale.large ]
-            [ Text.title [ Anchor.description "settings-title", centerX ] "Your Settings"
-            , settingsFields model
+    Layout.authenticated user
+        |> Layout.toElement
+            [ column [ spacing Scale.medium, width fill, paddingXY 0 Scale.large ]
+                [ Text.title [ Anchor.description "settings-title", centerX ] "Your Settings"
+                , settingsFields model
+                ]
             ]
-        ]
 
 
 settingsFields : Model -> Element Msg
@@ -119,4 +120,4 @@ username =
 
 textField : Field.Config Inputs -> Inputs -> Element Msg
 textField =
-    Field.text InputsChanged Field.medium
+    Field.text InputsChanged Field.small

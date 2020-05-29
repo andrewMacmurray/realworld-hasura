@@ -4,6 +4,7 @@ module Api exposing
     , Response
     , doMutation
     , doQuery
+    , errorMessage
     , map
     , mutation
     , query
@@ -62,6 +63,20 @@ map toMsg m =
     { msg = toMsg << m.msg
     , selection = m.selection
     }
+
+
+
+-- Errors
+
+
+errorMessage : Graphql.Http.Error a -> String
+errorMessage err =
+    case err of
+        Graphql.Http.GraphqlError _ errors ->
+            errors |> List.map .message |> String.join ", "
+
+        Graphql.Http.HttpError _ ->
+            "http error"
 
 
 

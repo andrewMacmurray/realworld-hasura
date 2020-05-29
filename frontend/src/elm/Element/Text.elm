@@ -1,6 +1,7 @@
 module Element.Text exposing
     ( date
     , greenLink
+    , headline
     , label
     , large
     , link
@@ -21,6 +22,11 @@ import Html.Attributes
 type Color
     = Black
     | Green
+
+
+headline : List (Element.Attribute msg) -> String -> Element.Element msg
+headline attrs =
+    title (attrs ++ [ Font.size extraLarge ])
 
 
 title : List (Element.Attribute msg) -> String -> Element.Element msg
@@ -148,6 +154,11 @@ link_ color attrs content =
 underlineOnHover : Element.Attribute msg
 underlineOnHover =
     Element.htmlAttribute (Html.Attributes.class "underline-hover")
+
+
+extraLarge : number
+extraLarge =
+    64
 
 
 large : number

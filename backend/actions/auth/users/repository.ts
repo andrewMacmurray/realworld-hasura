@@ -48,10 +48,10 @@ function toUserDetails({ users }): FindResponse {
       id,
       username,
       email,
-      passwordHash: password_hash
+      passwordHash: password_hash,
     };
   } else {
-    throw new Error("unrecognized user");
+    throw new Error("Invalid username / password combination");
   }
 }
 
@@ -68,13 +68,16 @@ export async function create(variables: Create): Promise<CreateResponse> {
     `,
       variables
     )
-    .then(res => toCreateResponse(variables, res));
+    .then((res) => toCreateResponse(variables, res))
+    .catch((_) => {
+      throw new Error("Error creating user");
+    });
 }
 
 function toCreateResponse(variables, res): CreateResponse {
   return {
     id: res.insert_users.returning[0],
     email: variables.email,
-    username: variables.username
+    username: variables.username,
   };
 }

@@ -12,8 +12,12 @@ import Article exposing (Article)
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Anchor as Anchor
+import Element.Avatar as Avatar
+import Element.Background as Background
 import Element.Divider as Divider
+import Element.Font as Font
 import Element.Layout as Layout
+import Element.Palette as Palette
 import Element.Scale as Scale
 import Element.Text as Text
 import Route
@@ -68,12 +72,17 @@ update msg model =
 
 view : User -> Model -> Element Msg
 view user model =
-    case user of
-        Guest ->
-            Layout.guest [ globalFeed model ]
+    Layout.user user
+        |> Layout.withBanner [ Background.color Palette.green ] banner
+        |> Layout.toElement [ globalFeed model ]
 
-        LoggedIn profile ->
-            Layout.loggedIn profile [ globalFeed model ]
+
+banner : Element msg
+banner =
+    column [ spacing Scale.medium, centerX ]
+        [ Text.headline [ Font.color Palette.white, centerX ] "conduit"
+        , Text.subtitle [ Font.color Palette.white, Font.regular, centerX ] "A place to share your knowledge"
+        ]
 
 
 globalFeed : Model -> Element msg
@@ -95,7 +104,6 @@ feed contents =
         [ Anchor.description "global-feed"
         , width fill
         , spacing Scale.large
-        , paddingXY 0 Scale.large
         ]
         [ Text.greenLink [] "Global Feed"
         , contents
@@ -110,15 +118,23 @@ viewArticle article =
         , width fill
         ]
         [ Divider.divider
-        , column [ spacing Scale.small ]
-            [ Text.greenLink [] (Article.author article)
-            , Text.date [] (Article.createdAt article)
+        , row [ spacing Scale.small ]
+            [ Avatar.large (Article.profileImage article)
+            , column [ spacing Scale.small ]
+                [ Text.greenLink [] (Article.author article)
+                , Text.date [] (Article.createdAt article)
+                ]
             ]
-        , Route.el (Route.Article (Article.id article))
+        , linkToArticle article
             (column [ spacing Scale.small ]
                 [ Text.subtitle [] (Article.title article)
                 , Text.text [] (Article.about article)
                 ]
             )
-        , Text.label [] "Read more..."
+        , linkToArticle article (Text.label [] "Read more...")
         ]
+
+
+linkToArticle : Article -> Element msg -> Element msg
+linkToArticle =
+    Article.id >> Route.Article >> Route.el

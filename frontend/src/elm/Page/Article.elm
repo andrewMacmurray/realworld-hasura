@@ -12,7 +12,11 @@ import Article exposing (Article)
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Anchor as Anchor
-import Element.Layout as Layout
+import Element.Avatar as Avatar
+import Element.Background as Background
+import Element.Font as Font
+import Element.Layout as Layout exposing (Layout)
+import Element.Palette as Palette
 import Element.Scale as Scale
 import Element.Text as Text
 import User exposing (User(..))
@@ -81,22 +85,56 @@ update msg model =
 
 view : User -> Model -> Element Msg
 view user model =
-    case user of
-        Guest ->
-            Layout.guest [ showArticle model.article ]
-
-        LoggedIn profile ->
-            Layout.loggedIn profile [ showArticle model.article ]
+    Layout.user user
+        |> withBanner model
+        |> Layout.toElement [ articleBody model.article ]
 
 
-showArticle : LoadStatus Article -> Element msg
-showArticle article_ =
+withBanner : Model -> Layout msg -> Layout msg
+withBanner model layout =
+    case model.article of
+        Loaded article ->
+            banner article layout
+
+        _ ->
+            layout
+
+
+banner : Article -> Layout msg -> Layout msg
+banner article =
+    Layout.withBanner
+        [ Background.color Palette.black ]
+        (column
+            [ spacing Scale.medium ]
+            [ Text.headline
+                [ Font.color Palette.white
+                , Anchor.description "article-title"
+                ]
+                (Article.title article)
+            , author article
+            ]
+        )
+
+
+author : Article -> Element msg
+author article =
+    row [ spacing Scale.small ]
+        [ Avatar.medium (Article.profileImage article)
+        , column [ spacing Scale.extraSmall ]
+            [ Text.link [ Font.color Palette.white ] (Article.author article)
+            , Text.date [] (Article.createdAt article)
+            ]
+        ]
+
+
+articleBody : LoadStatus Article -> Element msg
+articleBody article_ =
     case article_ of
         Loading ->
             Text.text [] "Loading..."
 
         Loaded a ->
-            showArticle_ a
+            showArticleBody a
 
         NotFound ->
             Text.text [ Anchor.description "not-found-message" ] "Article Not Found"
@@ -105,11 +143,9 @@ showArticle article_ =
             Text.text [ Anchor.description "error-message" ] "There was an error loading the article"
 
 
-showArticle_ : Article -> Element msg
-showArticle_ a =
+showArticleBody : Article -> Element msg
+showArticleBody a =
     column [ spacing Scale.large ]
-        [ Text.title [ Anchor.description "article-title" ] (Article.title a)
-        , Text.date [] (Article.createdAt a)
-        , Text.subtitle [] (Article.about a)
+        [ Text.subtitle [] (Article.about a)
         , Text.text [] (Article.content a)
         ]

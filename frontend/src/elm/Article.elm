@@ -8,6 +8,7 @@ module Article exposing
     , content
     , createdAt
     , id
+    , profileImage
     , title
     , toCreate
     )
@@ -96,3 +97,8 @@ author =
 createdAt : Article -> Date
 createdAt =
     .createdAt
+
+
+profileImage : Article -> String
+profileImage _ =
+    "https://static.productionready.io/images/smiley-cyrus.jpg"

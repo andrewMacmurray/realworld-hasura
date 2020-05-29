@@ -1,8 +1,14 @@
 module Element.Scale exposing
-    ( large
+    ( extraSmall
+    , large
     , medium
     , small
     )
+
+
+extraSmall : number
+extraSmall =
+    8
 
 
 small : number

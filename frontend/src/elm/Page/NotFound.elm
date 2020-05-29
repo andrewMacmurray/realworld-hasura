@@ -7,6 +7,4 @@ import Element.Text as Text
 
 view : Element msg
 view =
-    Layout.guest
-        [ Text.title [] "Not Found"
-        ]
+    Layout.guest |> Layout.toElement [ Text.title [] "Not Found" ]

@@ -1,3 +1,7 @@
 .underline-hover:hover {
   text-decoration: underline;
 }
+
+.circular-image img {
+  border-radius: 100%;
+}
