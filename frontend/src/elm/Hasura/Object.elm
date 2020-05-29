@@ -13,6 +13,14 @@ type Articles_mutation_response
     = Articles_mutation_response
 
 
+type Tags
+    = Tags
+
+
+type Tags_mutation_response
+    = Tags_mutation_response
+
+
 type TokenResponse
     = TokenResponse
 

@@ -11,6 +11,7 @@ import Graphql.Operation exposing (RootMutation, RootQuery, RootSubscription)
 import Graphql.OptionalArgument exposing (OptionalArgument(..))
 import Graphql.SelectionSet exposing (SelectionSet)
 import Hasura.Enum.Articles_select_column
+import Hasura.Enum.Tags_select_column
 import Hasura.Enum.User_profile_select_column
 import Hasura.Enum.Users_select_column
 import Hasura.InputObject
@@ -93,6 +94,48 @@ profile fillInOptionals object_ =
                 |> List.filterMap identity
     in
     Object.selectionForCompositeField "profile" optionalArgs object_ (identity >> Decode.list)
+
+
+type alias TagsOptionalArguments =
+    { distinct_on : OptionalArgument (List Hasura.Enum.Tags_select_column.Tags_select_column)
+    , limit : OptionalArgument Int
+    , offset : OptionalArgument Int
+    , order_by : OptionalArgument (List Hasura.InputObject.Tags_order_by)
+    , where_ : OptionalArgument Hasura.InputObject.Tags_bool_exp
+    }
+
+
+{-| fetch data from the table: "tags"
+
+  - distinct\_on - distinct select on columns
+  - limit - limit the number of rows returned
+  - offset - skip the first n rows. Use only with order\_by
+  - order\_by - sort the rows by one or more columns
+  - where\_ - filter the rows returned
+
+-}
+tags : (TagsOptionalArguments -> TagsOptionalArguments) -> SelectionSet decodesTo Hasura.Object.Tags -> SelectionSet (List decodesTo) RootSubscription
+tags fillInOptionals object_ =
+    let
+        filledInOptionals =
+            fillInOptionals { distinct_on = Absent, limit = Absent, offset = Absent, order_by = Absent, where_ = Absent }
+
+        optionalArgs =
+            [ Argument.optional "distinct_on" filledInOptionals.distinct_on (Encode.enum Hasura.Enum.Tags_select_column.toString |> Encode.list), Argument.optional "limit" filledInOptionals.limit Encode.int, Argument.optional "offset" filledInOptionals.offset Encode.int, Argument.optional "order_by" filledInOptionals.order_by (Hasura.InputObject.encodeTags_order_by |> Encode.list), Argument.optional "where" filledInOptionals.where_ Hasura.InputObject.encodeTags_bool_exp ]
+                |> List.filterMap identity
+    in
+    Object.selectionForCompositeField "tags" optionalArgs object_ (identity >> Decode.list)
+
+
+type alias TagsByPkRequiredArguments =
+    { id : Int }
+
+
+{-| fetch data from the table: "tags" using primary key columns
+-}
+tags_by_pk : TagsByPkRequiredArguments -> SelectionSet decodesTo Hasura.Object.Tags -> SelectionSet (Maybe decodesTo) RootSubscription
+tags_by_pk requiredArgs object_ =
+    Object.selectionForCompositeField "tags_by_pk" [ Argument.required "id" requiredArgs.id Encode.int ] object_ (identity >> Decode.nullable)
 
 
 type alias UsersOptionalArguments =

@@ -6,6 +6,9 @@ module Page.NewPost exposing
     , view
     )
 
+import Api
+import Api.Articles
+import Article
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Anchor as Anchor
@@ -16,6 +19,7 @@ import Element.Palette as Palette
 import Element.Scale as Scale
 import Element.Text as Text
 import Form.Field as Field
+import Route
 import Tags exposing (Tag)
 import User exposing (User(..))
 
@@ -31,7 +35,8 @@ type alias Model =
 
 type Msg
     = InputsChanged Inputs
-    | PublishClicked
+    | PublishClicked User.Profile
+    | PublishResponseReceived (Api.Response ())
 
 
 type alias Inputs =
@@ -75,8 +80,19 @@ update msg model =
         InputsChanged inputs ->
             ( { model | inputs = inputs }, Effect.none )
 
-        PublishClicked ->
+        PublishClicked user ->
+            ( model, publishArticle user model.inputs )
+
+        PublishResponseReceived (Ok _) ->
+            ( model, Effect.navigateTo Route.Home )
+
+        PublishResponseReceived (Err _) ->
             ( model, Effect.none )
+
+
+publishArticle : User.Profile -> Inputs -> Effect Msg
+publishArticle user =
+    Article.toCreate >> Api.Articles.publish user PublishResponseReceived
 
 
 
@@ -97,14 +113,15 @@ view user model =
                 , content model.inputs
                 , tags model.inputs
                 , showTags model.inputs.tags
-                , publishButton
+                , publishButton user
                 ]
             )
         ]
 
 
-publishButton =
-    el [ alignRight ] (Button.primary PublishClicked "Publish Article")
+publishButton : User.Profile -> Element Msg
+publishButton user =
+    el [ alignRight ] (Button.primary (PublishClicked user) "Publish Article")
 
 
 showTags : String -> Element msg

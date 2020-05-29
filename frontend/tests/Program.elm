@@ -1,7 +1,6 @@
 module Program exposing
     ( BlogProgramTest
     , baseUrl
-    , clickLink
     , fillField
     , login
     , loginWithDetails
@@ -186,6 +185,9 @@ simulateEffects options eff =
         LoadGlobalFeed { msg } ->
             simulateTask options.globalFeed msg
 
+        PublishArticle _ { msg } ->
+            simulateTask (Ok ()) msg
+
 
 defaultProfile : User.Profile
 defaultProfile =
@@ -209,11 +211,6 @@ taskFromResult res =
 
 
 -- UI Helpers
-
-
-clickLink : Route -> String -> ProgramTest model msg effect -> ProgramTest model msg effect
-clickLink route label =
-    ProgramTest.clickLink label (Route.routeToString route)
 
 
 fillField : String -> String -> ProgramTest model msg effect -> ProgramTest model msg effect

@@ -19,6 +19,34 @@ import Hasura.Union
 import Json.Decode as Decode exposing (Decoder)
 
 
+type alias InsertTagsRequiredArguments =
+    { objects : List Hasura.InputObject.Tags_insert_input }
+
+
+{-| insert data into the table: "tags"
+
+  - objects - the rows to be inserted
+
+-}
+insert_tags : InsertTagsRequiredArguments -> SelectionSet decodesTo Hasura.Object.Tags_mutation_response -> SelectionSet (Maybe decodesTo) RootMutation
+insert_tags requiredArgs object_ =
+    Object.selectionForCompositeField "insert_tags" [ Argument.required "objects" requiredArgs.objects (Hasura.InputObject.encodeTags_insert_input |> Encode.list) ] object_ (identity >> Decode.nullable)
+
+
+type alias InsertTagsOneRequiredArguments =
+    { object : Hasura.InputObject.Tags_insert_input }
+
+
+{-| insert a single row into the table: "tags"
+
+  - object - the row to be inserted
+
+-}
+insert_tags_one : InsertTagsOneRequiredArguments -> SelectionSet decodesTo Hasura.Object.Tags -> SelectionSet (Maybe decodesTo) RootMutation
+insert_tags_one requiredArgs object_ =
+    Object.selectionForCompositeField "insert_tags_one" [ Argument.required "object" requiredArgs.object Hasura.InputObject.encodeTags_insert_input ] object_ (identity >> Decode.nullable)
+
+
 type alias LoginRequiredArguments =
     { password : String
     , username : String
@@ -30,6 +58,60 @@ type alias LoginRequiredArguments =
 login : LoginRequiredArguments -> SelectionSet decodesTo Hasura.Object.TokenResponse -> SelectionSet decodesTo RootMutation
 login requiredArgs object_ =
     Object.selectionForCompositeField "login" [ Argument.required "password" requiredArgs.password Encode.string, Argument.required "username" requiredArgs.username Encode.string ] object_ identity
+
+
+type alias PublishArticleOptionalArguments =
+    { on_conflict : OptionalArgument Hasura.InputObject.Articles_on_conflict }
+
+
+type alias PublishArticleRequiredArguments =
+    { object : Hasura.InputObject.Articles_insert_input }
+
+
+{-| insert a single row into the table: "articles"
+
+  - object - the row to be inserted
+  - on\_conflict - on conflict condition
+
+-}
+publish_article : (PublishArticleOptionalArguments -> PublishArticleOptionalArguments) -> PublishArticleRequiredArguments -> SelectionSet decodesTo Hasura.Object.Articles -> SelectionSet (Maybe decodesTo) RootMutation
+publish_article fillInOptionals requiredArgs object_ =
+    let
+        filledInOptionals =
+            fillInOptionals { on_conflict = Absent }
+
+        optionalArgs =
+            [ Argument.optional "on_conflict" filledInOptionals.on_conflict Hasura.InputObject.encodeArticles_on_conflict ]
+                |> List.filterMap identity
+    in
+    Object.selectionForCompositeField "publish_article" (optionalArgs ++ [ Argument.required "object" requiredArgs.object Hasura.InputObject.encodeArticles_insert_input ]) object_ (identity >> Decode.nullable)
+
+
+type alias PublishArticlesOptionalArguments =
+    { on_conflict : OptionalArgument Hasura.InputObject.Articles_on_conflict }
+
+
+type alias PublishArticlesRequiredArguments =
+    { objects : List Hasura.InputObject.Articles_insert_input }
+
+
+{-| insert data into the table: "articles"
+
+  - objects - the rows to be inserted
+  - on\_conflict - on conflict condition
+
+-}
+publish_articles : (PublishArticlesOptionalArguments -> PublishArticlesOptionalArguments) -> PublishArticlesRequiredArguments -> SelectionSet decodesTo Hasura.Object.Articles_mutation_response -> SelectionSet (Maybe decodesTo) RootMutation
+publish_articles fillInOptionals requiredArgs object_ =
+    let
+        filledInOptionals =
+            fillInOptionals { on_conflict = Absent }
+
+        optionalArgs =
+            [ Argument.optional "on_conflict" filledInOptionals.on_conflict Hasura.InputObject.encodeArticles_on_conflict ]
+                |> List.filterMap identity
+    in
+    Object.selectionForCompositeField "publish_articles" (optionalArgs ++ [ Argument.required "objects" requiredArgs.objects (Hasura.InputObject.encodeArticles_insert_input |> Encode.list) ]) object_ (identity >> Decode.nullable)
 
 
 type alias SignupRequiredArguments =

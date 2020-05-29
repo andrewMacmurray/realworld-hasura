@@ -9,6 +9,7 @@ module Effect exposing
     , navigateTo
     , none
     , perform
+    , publishArticle
     , pushUrl
     , signIn
     , signUp
@@ -38,6 +39,7 @@ type Effect msg
     | SignUp (Api.Mutation User.Profile msg)
     | SignIn (Api.Mutation User.Profile msg)
     | LoadGlobalFeed (Api.Query (List Article) msg)
+    | PublishArticle User.Profile (Api.Mutation () msg)
 
 
 none =
@@ -80,6 +82,10 @@ loadGlobalFeed =
     LoadGlobalFeed
 
 
+publishArticle =
+    PublishArticle
+
+
 
 -- Transform
 
@@ -116,6 +122,9 @@ map toMsg effect =
 
         LoadGlobalFeed query ->
             LoadGlobalFeed (Api.map toMsg query)
+
+        PublishArticle user mut ->
+            PublishArticle user (Api.map toMsg mut)
 
 
 
@@ -162,13 +171,16 @@ perform pushUrl_ ( model, effect ) =
             )
 
         SignUp mutation ->
-            ( model, Api.mutationRequest mutation )
+            ( model, Api.guestMutation mutation )
 
         SignIn mutation ->
-            ( model, Api.mutationRequest mutation )
+            ( model, Api.guestMutation mutation )
 
         LoadGlobalFeed query ->
-            ( model, Api.queryRequest query )
+            ( model, Api.guestQuery query )
+
+        PublishArticle user mutation ->
+            ( model, Api.authenticatedMutation user mutation )
 
 
 doBatch : PushUrl key msg -> Model model key -> List (Effect msg) -> ( Model model key, Cmd msg )

@@ -1,10 +1,34 @@
 - table:
     schema: public
     name: articles
+  configuration:
+    custom_root_fields:
+      insert: publish_articles
+      insert_one: publish_article
+    custom_column_names: {}
   object_relationships:
   - name: author
     using:
       foreign_key_constraint_on: author_id
+  array_relationships:
+  - name: tags
+    using:
+      foreign_key_constraint_on:
+        column: article_id
+        table:
+          schema: public
+          name: tags
+  insert_permissions:
+  - role: user
+    permission:
+      check: {}
+      set:
+        author_id: x-hasura-User-Id
+      columns:
+      - about
+      - content
+      - title
+      backend_only: false
   select_permissions:
   - role: anonymous
     permission:
@@ -33,6 +57,27 @@
         author_id:
           _eq: X-Hasura-User-Id
       check: null
+- table:
+    schema: public
+    name: tags
+  insert_permissions:
+  - role: user
+    permission:
+      check: {}
+      columns:
+      - tag
+      backend_only: false
+  select_permissions:
+  - role: anonymous
+    permission:
+      columns:
+      - tag
+      filter: {}
+  - role: user
+    permission:
+      columns:
+      - tag
+      filter: {}
 - table:
     schema: public
     name: user_profile
