@@ -24,6 +24,7 @@ import Element.Text as Text
 import Route
 import Tag exposing (Tag)
 import User exposing (User(..))
+import Utils.String as String
 import WebData exposing (WebData)
 
 
@@ -132,27 +133,29 @@ popularTags tags_ =
 
 viewPopularTag : Tag.Popular -> Element msg
 viewPopularTag t =
-    row
-        [ spacing 4
-        , Anchor.description ("popular-" ++ Tag.value t.tag)
-        ]
-        [ Text.link [] ("#" ++ Tag.value t.tag)
-        , el
-            [ Background.color Palette.deepGreen
-            , Border.rounded 10000
-            , alignTop
-            , moveUp 5
-            , width (px 18)
-            , height (px 18)
+    Route.el (Route.Home (Just t.tag))
+        (row
+            [ spacing 4
+            , Anchor.description ("popular-" ++ Tag.value t.tag)
             ]
-            (Text.label
-                [ centerX
-                , centerY
-                , Font.color Palette.white
+            [ Text.link [] ("#" ++ Tag.value t.tag)
+            , el
+                [ Background.color Palette.deepGreen
+                , Border.rounded 10000
+                , alignTop
+                , moveUp 5
+                , width (px 18)
+                , height (px 18)
                 ]
-                (String.fromInt t.count)
-            )
-        ]
+                (Text.label
+                    [ centerX
+                    , centerY
+                    , Font.color Palette.white
+                    ]
+                    (String.fromInt t.count)
+                )
+            ]
+        )
 
 
 feedArticles : Maybe Tag -> List Article -> Element msg
@@ -166,7 +169,7 @@ feedArticles selectedTag articles =
                 ]
                 [ row [ spacing Scale.large ]
                     [ Text.subtitle [] "Global Feed"
-                    , Text.greenSubtitle [] ("#" ++ Tag.value tag)
+                    , Text.greenSubtitle [] ("#" ++ String.capitalize (Tag.value tag))
                     ]
                 , viewArticles articles
                 ]
@@ -203,9 +206,8 @@ viewArticle article =
             [ column [ spacing Scale.medium, width fill ]
                 [ profile article
                 , articleSummary article
-                , readMore article
+                , row [ width fill ] [ readMore article, tags article ]
                 ]
-            , tags article
             ]
         ]
 
@@ -219,7 +221,7 @@ articleSummary : Article -> Element msg
 articleSummary article =
     linkToArticle article
         (column [ spacing Scale.small ]
-            [ Text.subtitle [] (Article.title article)
+            [ paragraph [] [ Text.subtitle [] (Article.title article) ]
             , Text.text [] (Article.about article)
             ]
         )
@@ -255,7 +257,7 @@ tags article =
 
 viewTag : Tag.Tag -> Element msg
 viewTag t =
-    Text.link [] ("#" ++ Tag.value t)
+    Route.link (Route.Home (Just t)) ("#" ++ Tag.value t)
 
 
 linkToArticle : Article -> Element msg -> Element msg

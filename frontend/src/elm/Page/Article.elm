@@ -125,11 +125,13 @@ viewTag tag =
 
 headline : Article -> Element msg
 headline article =
-    Text.headline
-        [ Font.color Palette.white
-        , Anchor.description "article-title"
+    paragraph []
+        [ Text.headline
+            [ Font.color Palette.white
+            , Anchor.description "article-title"
+            ]
+            (Article.title article)
         ]
-        (Article.title article)
 
 
 author : Article -> Element msg
