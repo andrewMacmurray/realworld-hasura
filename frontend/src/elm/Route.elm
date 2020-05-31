@@ -4,6 +4,7 @@ module Route exposing
     , fromUrl
     , link
     , routeToString
+    , tagFeed
     )
 
 import Article
@@ -40,6 +41,11 @@ parser =
         , Parser.map Settings (s "settings")
         , Parser.map Article (s "article" </> int)
         ]
+
+
+tagFeed : Tag -> Route
+tagFeed tag =
+    Home (Just tag)
 
 
 tagQuery : Query.Parser (Maybe Tag)

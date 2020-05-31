@@ -120,7 +120,7 @@ tags article =
 
 viewTag : Tag -> Element msg
 viewTag tag =
-    Route.el (Route.Home (Just tag)) (Text.link [] ("#" ++ Tag.value tag))
+    Route.el (Route.tagFeed tag) (Text.link [] ("#" ++ Tag.value tag))
 
 
 headline : Article -> Element msg

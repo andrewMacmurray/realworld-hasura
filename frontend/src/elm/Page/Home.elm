@@ -133,7 +133,7 @@ popularTags tags_ =
 
 viewPopularTag : Tag.Popular -> Element msg
 viewPopularTag t =
-    Route.el (Route.Home (Just t.tag))
+    Route.el (Route.tagFeed t.tag)
         (row
             [ spacing 4
             , Anchor.description ("popular-" ++ Tag.value t.tag)
@@ -257,7 +257,7 @@ tags article =
 
 viewTag : Tag.Tag -> Element msg
 viewTag t =
-    Route.link (Route.Home (Just t)) ("#" ++ Tag.value t)
+    Route.link (Route.tagFeed t) ("#" ++ Tag.value t)
 
 
 linkToArticle : Article -> Element msg -> Element msg

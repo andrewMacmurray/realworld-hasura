@@ -38,7 +38,7 @@ suite =
                         ]
         , test "Shows feed for a particular tag" <|
             \_ ->
-                Program.withPage (Route.Home (Just (Tag.one "bread")))
+                Program.withPage (Route.tagFeed (Tag.one "bread"))
                     |> Program.start
                     |> expectViewHas
                         [ el "tag-feed-for-bread"
