@@ -19,6 +19,7 @@ import Element.Layout as Layout exposing (Layout)
 import Element.Palette as Palette
 import Element.Scale as Scale
 import Element.Text as Text
+import Tag exposing (Tag)
 import User exposing (User(..))
 
 
@@ -104,16 +105,30 @@ banner : Article -> Layout msg -> Layout msg
 banner article =
     Layout.withBanner
         [ Background.color Palette.black ]
-        (column
-            [ spacing Scale.medium ]
-            [ Text.headline
-                [ Font.color Palette.white
-                , Anchor.description "article-title"
-                ]
-                (Article.title article)
+        (column [ spacing Scale.large ]
+            [ headline article
             , author article
             ]
         )
+
+
+tags : Article -> Element msg
+tags article =
+    row [ spacing Scale.small ] (List.map viewTag <| Article.tags article)
+
+
+viewTag : Tag -> Element msg
+viewTag tag =
+    Text.link [] ("#" ++ Tag.value tag)
+
+
+headline : Article -> Element msg
+headline article =
+    Text.headline
+        [ Font.color Palette.white
+        , Anchor.description "article-title"
+        ]
+        (Article.title article)
 
 
 author : Article -> Element msg
@@ -145,7 +160,10 @@ articleBody article_ =
 
 showArticleBody : Article -> Element msg
 showArticleBody a =
-    column [ spacing Scale.large ]
-        [ Text.subtitle [] (Article.about a)
+    column [ spacing Scale.large, width fill ]
+        [ row [ width fill ]
+            [ Text.subtitle [] (Article.about a)
+            , el [ alignRight ] (tags a)
+            ]
         , Text.text [] (Article.content a)
         ]

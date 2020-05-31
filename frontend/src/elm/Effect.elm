@@ -39,7 +39,7 @@ type Effect msg
     | Logout
     | SignUp (Api.Mutation User.Profile msg)
     | SignIn (Api.Mutation User.Profile msg)
-    | LoadGlobalFeed (Api.Query (List Article) msg)
+    | LoadGlobalFeed (Api.Query Article.Feed msg)
     | LoadArticle (Api.Query (Maybe Article) msg)
     | PublishArticle (Api.Mutation () msg)
 
@@ -89,7 +89,7 @@ loadUrl =
     LoadUrl
 
 
-loadGlobalFeed : Api.Query (List Article) msg -> Effect msg
+loadGlobalFeed : Api.Query Article.Feed msg -> Effect msg
 loadGlobalFeed =
     LoadGlobalFeed
 

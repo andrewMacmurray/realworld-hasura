@@ -22,6 +22,7 @@ import Route exposing (Route)
 import SimulatedEffect.Cmd
 import SimulatedEffect.Navigation
 import SimulatedEffect.Task
+import Tag exposing (Tag)
 import Test.Html.Query
 import Test.Html.Selector
 import Url
@@ -45,7 +46,7 @@ type alias FakeNavKey =
 
 
 type alias Options =
-    { globalFeed : Api.Response (List Article)
+    { globalFeed : Api.Response Article.Feed
     , article : Api.Response (Maybe Article)
     , route : Route
     , user : Maybe Ports.User
@@ -84,17 +85,31 @@ withArticle article options =
     { options | article = article }
 
 
-withGlobalFeed : List Article -> Options -> Options
-withGlobalFeed feed options =
-    { options | globalFeed = Ok feed }
+withGlobalFeed : List Article -> List Tag -> Options -> Options
+withGlobalFeed articles tags options =
+    { options | globalFeed = Ok (toGlobalFeed articles tags) }
+
+
+toGlobalFeed : List Article -> List Tag -> Article.Feed
+toGlobalFeed articles tags =
+    { articles = articles
+    , popularTags = List.map (\t -> { tag = t, count = 1 }) tags
+    }
 
 
 defaultOptions : Route -> Options
 defaultOptions route =
     { route = route
-    , globalFeed = Ok []
+    , globalFeed = Ok emptyFeed
     , article = Ok Nothing
     , user = Nothing
+    }
+
+
+emptyFeed : Article.Feed
+emptyFeed =
+    { articles = []
+    , popularTags = []
     }
 
 

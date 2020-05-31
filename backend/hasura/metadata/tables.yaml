@@ -63,6 +63,20 @@
 - table:
     schema: public
     name: tags
+  configuration:
+    custom_root_fields:
+      select_aggregate: tags_summary
+      insert_one: insert_tag
+      select_by_pk: tag
+    custom_column_names: {}
+  computed_fields:
+  - name: count
+    definition:
+      function:
+        schema: public
+        name: tag_count
+      table_argument: null
+    comment: ""
   insert_permissions:
   - role: user
     permission:
@@ -75,11 +89,15 @@
     permission:
       columns:
       - tag
+      computed_fields:
+      - count
       filter: {}
   - role: user
     permission:
       columns:
       - tag
+      computed_fields:
+      - count
       filter: {}
 - table:
     schema: public

@@ -26,7 +26,7 @@ suite =
                         , filledField "something about the article"
                         , filledArea "some article content"
                         ]
-        , test "User can enter tags without special characters" <|
+        , test "User can enter tags" <|
             \_ ->
                 Program.withPage Route.NewPost
                     |> Program.login
@@ -41,7 +41,7 @@ suite =
                     |> Program.fillField "article-title" "Title"
                     |> Program.fillField "what's-this-article-about?" "something about the article"
                     |> Program.fillField "write-your-article-(in-markdown)" "some article content"
-                    |> Program.fillField "enter-tags" "tag1, tag2, tag3"
+                    |> Program.fillField "enter-tags" "tag"
                     |> clickButton "Publish Article"
                     |> Expect.redirect Route.Home
         ]

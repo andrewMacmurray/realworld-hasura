@@ -1,20 +1,26 @@
-module Api.Articles exposing (globalFeed, loadArticle, publish)
+module Api.Articles exposing
+    ( globalFeed
+    , loadArticle
+    , publish
+    )
 
 import Api
 import Api.Date as Date
 import Article exposing (Article)
 import Effect exposing (Effect)
+import Graphql.Operation exposing (RootQuery)
 import Graphql.OptionalArgument exposing (OptionalArgument(..))
 import Graphql.SelectionSet as SelectionSet exposing (SelectionSet, with)
 import Hasura.Enum.Order_by exposing (Order_by(..))
+import Hasura.Enum.Tags_select_column as Tags_select_column
 import Hasura.InputObject as Input exposing (Articles_insert_input, Articles_order_byOptionalFields)
 import Hasura.Mutation
 import Hasura.Object exposing (Articles)
 import Hasura.Object.Articles as Articles
 import Hasura.Object.Tags as Tags
 import Hasura.Object.Users as Users
-import Hasura.Query exposing (ArticlesOptionalArguments)
-import Tag
+import Hasura.Query exposing (ArticlesOptionalArguments, TagsOptionalArguments)
+import Tag exposing (Tag)
 
 
 
@@ -32,11 +38,49 @@ loadArticle id msg =
 -- Global Feed
 
 
-globalFeed : (Api.Response (List Article) -> msg) -> Effect msg
+globalFeed : (Api.Response Article.Feed -> msg) -> Effect msg
 globalFeed msg =
-    Hasura.Query.articles newestFirst articleSelection
+    globalFeedSelection
         |> Api.query msg
         |> Effect.loadGlobalFeed
+
+
+globalFeedSelection : SelectionSet Article.Feed RootQuery
+globalFeedSelection =
+    SelectionSet.succeed Article.Feed
+        |> with articlesSelection
+        |> with popularTagsSelection
+
+
+
+-- Popular Tags
+
+
+popularTagsSelection : SelectionSet (List Tag.Popular) RootQuery
+popularTagsSelection =
+    Hasura.Query.tags distinctAndLimit popularTagSelection
+        |> SelectionSet.map (List.sortBy .count >> List.reverse)
+
+
+distinctAndLimit : TagsOptionalArguments -> TagsOptionalArguments
+distinctAndLimit args =
+    { args | distinct_on = Present [ Tags_select_column.Tag ], limit = Present 20 }
+
+
+popularTagSelection : SelectionSet Tag.Popular Hasura.Object.Tags
+popularTagSelection =
+    SelectionSet.succeed Tag.Popular
+        |> with (SelectionSet.map Tag.one Tags.tag)
+        |> with (SelectionSet.map (Maybe.withDefault 0) Tags.count)
+
+
+
+-- Articles
+
+
+articlesSelection : SelectionSet (List Article) RootQuery
+articlesSelection =
+    Hasura.Query.articles newestFirst articleSelection
 
 
 articleSelection : SelectionSet Article Articles
@@ -97,5 +141,6 @@ toTagArg tag_ =
     { tag = Present (Tag.value tag_) }
 
 
+failOnNothing : SelectionSet (Maybe a) typeLock -> SelectionSet a typeLock
 failOnNothing =
     SelectionSet.mapOrFail (Result.fromMaybe "required")

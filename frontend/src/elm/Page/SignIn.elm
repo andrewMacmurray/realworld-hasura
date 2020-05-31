@@ -11,9 +11,7 @@ import Api.Users
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Button as Button
-import Element.Font as Font
 import Element.Layout as Layout
-import Element.Palette as Palette
 import Element.Scale as Scale
 import Element.Text as Text
 import Form.Field as Field
@@ -140,7 +138,7 @@ statusMessage request =
             Text.text [] "Signing In"
 
         Failed reason ->
-            Text.text [ Font.color Palette.red ] reason
+            Text.error [] reason
 
 
 signInButton : Element Msg

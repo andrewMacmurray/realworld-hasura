@@ -19,6 +19,20 @@ import Hasura.Union
 import Json.Decode as Decode exposing (Decoder)
 
 
+type alias InsertTagRequiredArguments =
+    { object : Hasura.InputObject.Tags_insert_input }
+
+
+{-| insert a single row into the table: "tags"
+
+  - object - the row to be inserted
+
+-}
+insert_tag : InsertTagRequiredArguments -> SelectionSet decodesTo Hasura.Object.Tags -> SelectionSet (Maybe decodesTo) RootMutation
+insert_tag requiredArgs object_ =
+    Object.selectionForCompositeField "insert_tag" [ Argument.required "object" requiredArgs.object Hasura.InputObject.encodeTags_insert_input ] object_ (identity >> Decode.nullable)
+
+
 type alias InsertTagsRequiredArguments =
     { objects : List Hasura.InputObject.Tags_insert_input }
 
@@ -31,20 +45,6 @@ type alias InsertTagsRequiredArguments =
 insert_tags : InsertTagsRequiredArguments -> SelectionSet decodesTo Hasura.Object.Tags_mutation_response -> SelectionSet (Maybe decodesTo) RootMutation
 insert_tags requiredArgs object_ =
     Object.selectionForCompositeField "insert_tags" [ Argument.required "objects" requiredArgs.objects (Hasura.InputObject.encodeTags_insert_input |> Encode.list) ] object_ (identity >> Decode.nullable)
-
-
-type alias InsertTagsOneRequiredArguments =
-    { object : Hasura.InputObject.Tags_insert_input }
-
-
-{-| insert a single row into the table: "tags"
-
-  - object - the row to be inserted
-
--}
-insert_tags_one : InsertTagsOneRequiredArguments -> SelectionSet decodesTo Hasura.Object.Tags -> SelectionSet (Maybe decodesTo) RootMutation
-insert_tags_one requiredArgs object_ =
-    Object.selectionForCompositeField "insert_tags_one" [ Argument.required "object" requiredArgs.object Hasura.InputObject.encodeTags_insert_input ] object_ (identity >> Decode.nullable)
 
 
 type alias LoginRequiredArguments =

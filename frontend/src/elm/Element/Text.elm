@@ -1,6 +1,9 @@
 module Element.Text exposing
     ( date
+    , error
     , greenLink
+    , greenSubtitle
+    , greenTitle
     , headline
     , label
     , large
@@ -29,12 +32,17 @@ headline attrs =
     title (attrs ++ [ Font.size extraLarge ])
 
 
+greenTitle : List (Element.Attribute msg) -> String -> Element.Element msg
+greenTitle attrs =
+    title (attrs ++ [ toFontColor Green ])
+
+
 title : List (Element.Attribute msg) -> String -> Element.Element msg
 title attrs content =
     Element.el
         (List.concat
             [ [ Font.size large
-              , Font.color Palette.black
+              , toFontColor Black
               ]
             , attrs
             ]
@@ -42,18 +50,18 @@ title attrs content =
         (Element.text content)
 
 
+greenSubtitle : List (Element.Attribute msg) -> String -> Element.Element msg
+greenSubtitle attrs =
+    subtitle (attrs ++ [ toFontColor Green ])
+
+
 subtitle : List (Element.Attribute msg) -> String -> Element.Element msg
-subtitle =
-    subtitle_ Black
-
-
-subtitle_ : Color -> List (Element.Attribute msg) -> String -> Element.Element msg
-subtitle_ color attrs content =
+subtitle attrs content =
     Element.el
         (List.concat
             [ [ Font.size medium
               , Font.bold
-              , toFontColor color
+              , toFontColor Black
               ]
             , attrs
             ]
@@ -106,6 +114,11 @@ text attrs content =
             ]
         )
         (Element.text content)
+
+
+error : List (Element.Attribute msg) -> String -> Element.Element msg
+error attrs content =
+    text (attrs ++ [ Font.color Palette.red ]) content
 
 
 greenLink : List (Element.Attribute msg) -> String -> Element.Element msg

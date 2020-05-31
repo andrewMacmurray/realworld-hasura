@@ -1,5 +1,6 @@
 module Tag exposing
-    ( Tag
+    ( Popular
+    , Tag
     , one
     , parse
     , value
@@ -16,8 +17,14 @@ type Tag
     = Tag String
 
 
+type alias Popular =
+    { tag : Tag
+    , count : Int
+    }
 
--- Construct
+
+
+-- Single
 
 
 one : String -> Tag
@@ -25,12 +32,36 @@ one =
     Tag
 
 
+
+-- Parse
+
+
 parse : String -> List Tag
 parse =
     Regex.replace specialCharacters (always " ")
         >> String.words
-        >> List.filter (not << String.isEmpty)
+        >> removeEmpties
+        >> removeDuplicates
         >> List.map Tag
+
+
+removeEmpties : List String -> List String
+removeEmpties =
+    List.filter (not << String.isEmpty)
+
+
+removeDuplicates : List a -> List a
+removeDuplicates =
+    List.foldr addTag []
+
+
+addTag : a -> List a -> List a
+addTag tag tags =
+    if List.member tag tags then
+        tags
+
+    else
+        tag :: tags
 
 
 

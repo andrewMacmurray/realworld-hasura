@@ -6,6 +6,7 @@ import Program
 import Program.Selector exposing (el)
 import ProgramTest exposing (expectViewHas)
 import Route
+import Tag
 import Test exposing (..)
 import Test.Html.Selector exposing (text)
 import Time exposing (Month(..))
@@ -17,13 +18,23 @@ suite =
         [ test "Guest User sees global feed on load" <|
             \_ ->
                 Program.withPage Route.Home
-                    |> Program.withGlobalFeed [ article "foo", article "bar" ]
+                    |> Program.withGlobalFeed [ article "foo", article "bar" ] []
                     |> Program.start
                     |> expectViewHas
                         [ el "global-feed"
                         , el "article-foo"
                         , el "article-bar"
                         , text "MON JAN 20 2020"
+                        ]
+        , test "Shows collection of popular tags" <|
+            \_ ->
+                Program.withPage Route.Home
+                    |> Program.withGlobalFeed [ article "foo", article "bar" ] (Tag.parse "tag1, tag2")
+                    |> Program.start
+                    |> expectViewHas
+                        [ el "popular-tags"
+                        , el "popular-tag1"
+                        , el "popular-tag2"
                         ]
         ]
 

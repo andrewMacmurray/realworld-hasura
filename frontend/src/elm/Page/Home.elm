@@ -14,6 +14,7 @@ import Element exposing (..)
 import Element.Anchor as Anchor
 import Element.Avatar as Avatar
 import Element.Background as Background
+import Element.Border as Border
 import Element.Divider as Divider
 import Element.Font as Font
 import Element.Layout as Layout
@@ -31,12 +32,12 @@ import WebData exposing (WebData)
 
 
 type alias Model =
-    { globalFeed : WebData (List Article)
+    { globalFeed : WebData Article.Feed
     }
 
 
 type Msg
-    = GlobalFeedResponseReceived (Api.Response (List Article))
+    = GlobalFeedResponseReceived (Api.Response Article.Feed)
 
 
 
@@ -75,7 +76,7 @@ view : User -> Model -> Element Msg
 view user model =
     Layout.user user
         |> Layout.withBanner [ Background.color Palette.green ] banner
-        |> Layout.toElement [ globalFeed model ]
+        |> Layout.toElement [ pageContents model ]
 
 
 banner : Element msg
@@ -86,29 +87,79 @@ banner =
         ]
 
 
-globalFeed : Model -> Element msg
-globalFeed model =
+pageContents : Model -> Element msg
+pageContents model =
     case model.globalFeed of
         WebData.Loading ->
-            feed (Text.text [] "Loading")
+            Text.text [] "Loading"
 
         WebData.Success feed_ ->
-            feed (column [ spacing Scale.large, width fill ] (List.map viewArticle feed_))
+            row [ width fill, spacing Scale.large ]
+                [ allArticles feed_.articles
+                , popularTags feed_.popularTags
+                ]
 
         WebData.Failure ->
-            feed (Text.text [] "Something Went wrong")
+            Text.error [] "Something Went wrong"
 
 
-feed : Element msg -> Element msg
-feed contents =
+popularTags : List Tag.Popular -> Element msg
+popularTags tags_ =
+    column
+        [ Anchor.description "popular-tags"
+        , alignTop
+        , spacing Scale.large
+        , width (fill |> maximum 300)
+        ]
+        [ Text.title [] "Popular Tags"
+        , wrappedRow [ spacing Scale.small ] (List.map viewPopularTag tags_)
+        ]
+
+
+viewPopularTag : Tag.Popular -> Element msg
+viewPopularTag t =
+    row
+        [ spacing 4
+        , Anchor.description ("popular-" ++ Tag.value t.tag)
+        ]
+        [ Text.link [] ("#" ++ Tag.value t.tag)
+        , el
+            [ Background.color Palette.deepGreen
+            , Border.rounded 10000
+            , alignTop
+            , moveUp 5
+            , width (px 18)
+            , height (px 18)
+            ]
+            (Text.label
+                [ centerX
+                , centerY
+                , Font.color Palette.white
+                ]
+                (String.fromInt t.count)
+            )
+        ]
+
+
+allArticles : List Article -> Element msg
+allArticles articles =
     column
         [ Anchor.description "global-feed"
         , width fill
         , spacing Scale.large
         ]
-        [ Text.greenLink [] "Global Feed"
-        , contents
+        [ Text.greenSubtitle [] "Global Feed"
+        , viewArticles articles
         ]
+
+
+viewArticles : List Article -> Element msg
+viewArticles articles =
+    column
+        [ spacing Scale.large
+        , width fill
+        ]
+        (List.map viewArticle articles)
 
 
 viewArticle : Article -> Element msg

@@ -1,5 +1,6 @@
 module Article exposing
     ( Article
+    , Feed
     , Id
     , ToCreate
     , about
@@ -46,6 +47,16 @@ type alias ToCreate =
     , about : String
     , content : String
     , tags : List Tag
+    }
+
+
+
+-- Feed
+
+
+type alias Feed =
+    { articles : List Article
+    , popularTags : List Tag.Popular
     }
 
 

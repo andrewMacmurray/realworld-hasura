@@ -19,6 +19,13 @@ import Hasura.Union
 import Json.Decode as Decode
 
 
+{-| A computed field, executes function "tag\_count"
+-}
+count : SelectionSet (Maybe Int) Hasura.Object.Tags
+count =
+    Object.selectionForField "(Maybe Int)" "count" [] (Decode.int |> Decode.nullable)
+
+
 tag : SelectionSet String Hasura.Object.Tags
 tag =
     Object.selectionForField "String" "tag" [] Decode.string
