@@ -16,9 +16,10 @@ export function generate(user: UserDetails): string {
       "https://hasura.io/jwt/claims": {
         "x-hasura-allowed-roles": ["user"],
         "x-hasura-default-role": "user",
-        "x-hasura-user-id": `${user.id}`
-      }
+        "x-hasura-user-id": `${user.id}`,
+      },
     },
-    JWT_SECRET
+    JWT_SECRET,
+    { expiresIn: "7d" }
   );
 }

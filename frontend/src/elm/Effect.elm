@@ -44,50 +44,62 @@ type Effect msg
     | PublishArticle (Api.Mutation () msg)
 
 
+none : Effect msg
 none =
     None
 
 
+batch : List (Effect msg) -> Effect msg
 batch =
     Batch
 
 
+loadUser : User.Profile -> Effect msg
 loadUser =
     LoadUser
 
 
+logout : Effect msg
 logout =
     Logout
 
 
+signUp : Api.Mutation User.Profile msg -> Effect msg
 signUp =
     SignUp
 
 
+signIn : Api.Mutation User.Profile msg -> Effect msg
 signIn =
     SignIn
 
 
+pushUrl : Url -> Effect msg
 pushUrl =
     PushUrl
 
 
+navigateTo : Route -> Effect msg
 navigateTo =
     NavigateTo
 
 
+loadUrl : String -> Effect msg
 loadUrl =
     LoadUrl
 
 
+loadGlobalFeed : Api.Query (List Article) msg -> Effect msg
 loadGlobalFeed =
     LoadGlobalFeed
 
 
+loadArticle : Api.Query (Maybe Article) msg -> Effect msg
 loadArticle =
     LoadArticle
 
 
+publishArticle : Api.Mutation () msg -> Effect msg
 publishArticle =
     PublishArticle
 

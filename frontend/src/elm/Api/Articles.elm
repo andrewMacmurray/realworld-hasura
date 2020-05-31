@@ -11,10 +11,10 @@ import Hasura.InputObject as Input exposing (Articles_insert_input, Articles_ord
 import Hasura.Mutation
 import Hasura.Object exposing (Articles)
 import Hasura.Object.Articles as Articles
+import Hasura.Object.Tags as Tags
 import Hasura.Object.Users as Users
 import Hasura.Query exposing (ArticlesOptionalArguments)
-import Tags
-import User
+import Tag
 
 
 
@@ -48,6 +48,12 @@ articleSelection =
         |> with Articles.content
         |> with (Articles.author Users.username)
         |> with (Date.fromScalar Articles.created_at)
+        |> with (Articles.tags identity tagSelection)
+
+
+tagSelection : SelectionSet Tag.Tag Hasura.Object.Tags
+tagSelection =
+    SelectionSet.map Tag.one Tags.tag
 
 
 newestFirst : ArticlesOptionalArguments -> ArticlesOptionalArguments
@@ -86,8 +92,9 @@ toPublishArgs article_ =
     }
 
 
+toTagArg : Tag.Tag -> { tag : OptionalArgument String }
 toTagArg tag_ =
-    { tag = Present (Tags.value tag_) }
+    { tag = Present (Tag.value tag_) }
 
 
 failOnNothing =

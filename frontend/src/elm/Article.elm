@@ -9,25 +9,31 @@ module Article exposing
     , createdAt
     , id
     , profileImage
+    , tags
     , title
     , toCreate
     )
 
 import Date exposing (Date)
-import Tags exposing (Tag)
+import Tag exposing (Tag)
 
 
 
 -- Article
 
 
-type alias Article =
+type Article
+    = Article Article_
+
+
+type alias Article_ =
     { id : Id
     , title : String
     , about : String
     , content : String
     , author : String
     , createdAt : Date
+    , tags : List Tag
     }
 
 
@@ -52,7 +58,7 @@ toCreate i =
     { title = i.title
     , about = i.about
     , content = i.content
-    , tags = Tags.fromString i.tags
+    , tags = Tag.parse i.tags
     }
 
 
@@ -60,9 +66,17 @@ toCreate i =
 -- Build
 
 
-build : Id -> String -> String -> String -> String -> Date -> Article
-build =
+build : Id -> String -> String -> String -> String -> Date -> List Tag -> Article
+build id_ title_ about_ content_ author_ createdAt_ tags_ =
     Article
+        { id = id_
+        , title = title_
+        , about = about_
+        , content = content_
+        , author = author_
+        , createdAt = createdAt_
+        , tags = tags_
+        }
 
 
 
@@ -71,34 +85,44 @@ build =
 
 id : Article -> Id
 id =
-    .id
+    article_ >> .id
 
 
 title : Article -> String
 title =
-    .title
+    article_ >> .title
 
 
 about : Article -> String
 about =
-    .about
+    article_ >> .about
 
 
 content : Article -> String
 content =
-    .content
+    article_ >> .content
 
 
 author : Article -> String
 author =
-    .author
+    article_ >> .author
 
 
 createdAt : Article -> Date
 createdAt =
-    .createdAt
+    article_ >> .createdAt
+
+
+tags : Article -> List Tag
+tags =
+    article_ >> .tags
 
 
 profileImage : Article -> String
 profileImage _ =
     "https://static.productionready.io/images/smiley-cyrus.jpg"
+
+
+article_ : Article -> Article_
+article_ (Article a) =
+    a

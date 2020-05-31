@@ -18,9 +18,10 @@ import Element.Divider as Divider
 import Element.Font as Font
 import Element.Layout as Layout
 import Element.Palette as Palette
-import Element.Scale as Scale
+import Element.Scale as Scale exposing (edges)
 import Element.Text as Text
 import Route
+import Tag
 import User exposing (User(..))
 import WebData exposing (WebData)
 
@@ -113,26 +114,68 @@ feed contents =
 viewArticle : Article -> Element msg
 viewArticle article =
     column
-        [ Anchor.description "article"
+        [ anchor article
         , spacing Scale.medium
         , width fill
         ]
         [ Divider.divider
-        , row [ spacing Scale.small ]
-            [ Avatar.large (Article.profileImage article)
-            , column [ spacing Scale.small ]
-                [ Text.greenLink [] (Article.author article)
-                , Text.date [] (Article.createdAt article)
+        , row [ width fill ]
+            [ column [ spacing Scale.medium, width fill ]
+                [ profile article
+                , articleSummary article
+                , readMore article
                 ]
+            , tags article
             ]
-        , linkToArticle article
-            (column [ spacing Scale.small ]
-                [ Text.subtitle [] (Article.title article)
-                , Text.text [] (Article.about article)
-                ]
-            )
-        , linkToArticle article (Text.label [] "Read more...")
         ]
+
+
+readMore : Article -> Element msg
+readMore article =
+    linkToArticle article (Text.label [] "Read more...")
+
+
+articleSummary : Article -> Element msg
+articleSummary article =
+    linkToArticle article
+        (column [ spacing Scale.small ]
+            [ Text.subtitle [] (Article.title article)
+            , Text.text [] (Article.about article)
+            ]
+        )
+
+
+anchor : Article -> Attribute msg
+anchor article =
+    Anchor.description ("article-" ++ Article.title article)
+
+
+profile : Article -> Element msg
+profile article =
+    row [ spacing Scale.small ]
+        [ Avatar.large (Article.profileImage article)
+        , column [ spacing Scale.small ]
+            [ Text.greenLink [] (Article.author article)
+            , Text.date [] (Article.createdAt article)
+            ]
+        ]
+
+
+tags : Article -> Element msg
+tags article =
+    el [ width fill, alignBottom ]
+        (wrappedRow
+            [ spacing Scale.small
+            , alignRight
+            , paddingEach { edges | left = Scale.medium }
+            ]
+            (List.map viewTag (Article.tags article))
+        )
+
+
+viewTag : Tag.Tag -> Element msg
+viewTag t =
+    Text.link [] ("#" ++ Tag.value t)
 
 
 linkToArticle : Article -> Element msg -> Element msg

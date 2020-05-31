@@ -20,7 +20,7 @@ import Element.Scale as Scale
 import Element.Text as Text
 import Form.Field as Field
 import Route
-import Tags exposing (Tag)
+import Tag exposing (Tag)
 import User exposing (User(..))
 
 
@@ -127,14 +127,14 @@ publishButton =
 
 showTags : String -> Element msg
 showTags =
-    Tags.fromString
+    Tag.parse
         >> List.map showTag
         >> wrappedRow [ spacing Scale.small ]
 
 
 showTag : Tag -> Element msg
 showTag tag_ =
-    Text.text [ Font.color Palette.green, Anchor.description "visible-tag" ] ("#" ++ Tags.value tag_)
+    Text.text [ Font.color Palette.green, Anchor.description "visible-tag" ] ("#" ++ Tag.value tag_)
 
 
 title : Inputs -> Element Msg

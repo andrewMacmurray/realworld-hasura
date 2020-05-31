@@ -35,6 +35,7 @@ suite =
         ]
 
 
+serverError : Graphql.Http.Error a
 serverError =
     HttpError NetworkError
 
@@ -47,3 +48,4 @@ article =
         "author"
         "contents"
         (Date.fromCalendarDate 2020 Jan 20)
+        []

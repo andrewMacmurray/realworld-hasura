@@ -1,6 +1,7 @@
-module Tags exposing
+module Tag exposing
     ( Tag
-    , fromString
+    , one
+    , parse
     , value
     )
 
@@ -19,8 +20,13 @@ type Tag
 -- Construct
 
 
-fromString : String -> List Tag
-fromString =
+one : String -> Tag
+one =
+    Tag
+
+
+parse : String -> List Tag
+parse =
     Regex.replace specialCharacters (always " ")
         >> String.words
         >> List.filter (not << String.isEmpty)

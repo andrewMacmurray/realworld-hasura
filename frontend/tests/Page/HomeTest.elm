@@ -21,8 +21,8 @@ suite =
                     |> Program.start
                     |> expectViewHas
                         [ el "global-feed"
-                        , text "foo"
-                        , text "bar"
+                        , el "article-foo"
+                        , el "article-bar"
                         , text "MON JAN 20 2020"
                         ]
         ]
@@ -36,3 +36,4 @@ article title =
         "author"
         "contents"
         (Date.fromCalendarDate 2020 Jan 20)
+        []
