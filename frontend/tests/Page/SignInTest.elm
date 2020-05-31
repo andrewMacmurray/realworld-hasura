@@ -22,7 +22,7 @@ suite =
                         , filledField "abc123"
                         ]
                     |> clickButton "Sign In"
-                    |> Expect.redirect Route.Home
+                    |> Expect.redirectHome
         , test "User sees authenticated navbar items when signed in" <|
             \_ ->
                 Program.withPage Route.SignIn

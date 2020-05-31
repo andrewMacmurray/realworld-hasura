@@ -2,9 +2,11 @@ module Api.Articles exposing
     ( globalFeed
     , loadArticle
     , publish
+    , tagFeed
     )
 
 import Api
+import Api.Argument as Argument
 import Api.Date as Date
 import Article exposing (Article)
 import Effect exposing (Effect)
@@ -50,6 +52,41 @@ globalFeedSelection =
     SelectionSet.succeed Article.Feed
         |> with articlesSelection
         |> with popularTagsSelection
+
+
+
+-- Tag Feed
+
+
+tagFeed : Tag -> (Api.Response Article.Feed -> msg) -> Effect msg
+tagFeed tag msg =
+    tagFeedSelection tag
+        |> Api.query msg
+        |> Effect.loadTagFeed
+
+
+tagFeedSelection : Tag -> SelectionSet Article.Feed RootQuery
+tagFeedSelection tag =
+    SelectionSet.succeed Article.Feed
+        |> with (articlesByTagSelection tag)
+        |> with popularTagsSelection
+
+
+articlesByTagSelection : Tag -> SelectionSet (List Article) RootQuery
+articlesByTagSelection tag =
+    Hasura.Query.articles (newestFirst >> containsTag tag) articleSelection
+
+
+containsTag : Tag -> ArticlesOptionalArguments -> ArticlesOptionalArguments
+containsTag tag =
+    Tag.value tag
+        |> Argument.eq_
+        |> Input.buildString_comparison_exp
+        |> Argument.tag
+        |> Input.buildTags_bool_exp
+        |> Argument.tags
+        |> Input.buildArticles_bool_exp
+        |> Argument.where_
 
 
 
@@ -102,17 +139,7 @@ tagSelection =
 
 newestFirst : ArticlesOptionalArguments -> ArticlesOptionalArguments
 newestFirst =
-    orderBy (Input.buildArticles_order_by (created_at Desc))
-
-
-orderBy : a -> { b | order_by : OptionalArgument (List a) } -> { b | order_by : OptionalArgument (List a) }
-orderBy val args_ =
-    { args_ | order_by = Present [ val ] }
-
-
-created_at : a -> { b | created_at : OptionalArgument a } -> { b | created_at : OptionalArgument a }
-created_at val args =
-    { args | created_at = Present val }
+    Argument.order_by (Input.buildArticles_order_by (Argument.created_at Desc))
 
 
 

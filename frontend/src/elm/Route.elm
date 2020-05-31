@@ -10,9 +10,11 @@ import Article
 import Element exposing (Element)
 import Element.Anchor as Anchor
 import Element.Text as Text
+import Tag exposing (Tag)
 import Url exposing (Url)
-import Url.Builder exposing (absolute)
-import Url.Parser as Parser exposing ((</>), int, oneOf, s, top)
+import Url.Builder as Url exposing (absolute)
+import Url.Parser as Parser exposing ((</>), (<?>), int, oneOf, s, top)
+import Url.Parser.Query as Query
 
 
 
@@ -20,7 +22,7 @@ import Url.Parser as Parser exposing ((</>), int, oneOf, s, top)
 
 
 type Route
-    = Home
+    = Home (Maybe Tag)
     | SignUp
     | SignIn
     | NewPost
@@ -31,13 +33,18 @@ type Route
 parser : Parser.Parser (Route -> c) c
 parser =
     oneOf
-        [ Parser.map Home top
+        [ Parser.map Home (top <?> tagQuery)
         , Parser.map SignUp (s "sign-up")
         , Parser.map SignIn (s "sign-in")
         , Parser.map NewPost (s "new-post")
         , Parser.map Settings (s "settings")
         , Parser.map Article (s "article" </> int)
         ]
+
+
+tagQuery : Query.Parser (Maybe Tag)
+tagQuery =
+    Query.string "tag" |> Query.map (Maybe.map Tag.one)
 
 
 link : Route -> String -> Element msg
@@ -60,8 +67,8 @@ el route el_ =
 routeToString : Route -> String
 routeToString route =
     case route of
-        Home ->
-            absolute [] []
+        Home tag_ ->
+            absolute [] (toTagQuery_ tag_)
 
         SignUp ->
             absolute [ "sign-up" ] []
@@ -77,6 +84,11 @@ routeToString route =
 
         Article id ->
             absolute [ "article", String.fromInt id ] []
+
+
+toTagQuery_ : Maybe Tag -> List Url.QueryParameter
+toTagQuery_ =
+    Maybe.map (Tag.value >> Url.string "tag" >> List.singleton) >> Maybe.withDefault []
 
 
 fromUrl : Url -> Maybe Route

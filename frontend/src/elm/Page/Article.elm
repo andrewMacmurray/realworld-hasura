@@ -19,6 +19,7 @@ import Element.Layout as Layout exposing (Layout)
 import Element.Palette as Palette
 import Element.Scale as Scale
 import Element.Text as Text
+import Route
 import Tag exposing (Tag)
 import User exposing (User(..))
 
@@ -119,7 +120,7 @@ tags article =
 
 viewTag : Tag -> Element msg
 viewTag tag =
-    Text.link [] ("#" ++ Tag.value tag)
+    Route.el (Route.Home (Just tag)) (Text.link [] ("#" ++ Tag.value tag))
 
 
 headline : Article -> Element msg

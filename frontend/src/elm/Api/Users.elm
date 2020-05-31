@@ -13,6 +13,10 @@ import Hasura.Object.TokenResponse
 import User exposing (User)
 
 
+
+-- Sign Up
+
+
 signUp : SignupRequiredArguments -> (Api.Response User.Profile -> msg) -> Effect msg
 signUp inputs msg =
     Hasura.Mutation.signup inputs userSelection
@@ -20,11 +24,19 @@ signUp inputs msg =
         |> Effect.signUp
 
 
+
+-- Sign In
+
+
 signIn : LoginRequiredArguments -> (Api.Response User.Profile -> msg) -> Effect msg
 signIn inputs msg =
     Hasura.Mutation.login inputs userSelection
         |> Api.mutation msg
         |> Effect.signIn
+
+
+
+-- Selections
 
 
 userSelection : SelectionSet User.Profile Hasura.Object.TokenResponse

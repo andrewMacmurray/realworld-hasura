@@ -4,6 +4,7 @@ module Program exposing
     , fillField
     , login
     , loginWithDetails
+    , onHomePage
     , start
     , withArticle
     , withGlobalFeed
@@ -46,7 +47,7 @@ type alias FakeNavKey =
 
 
 type alias Options =
-    { globalFeed : Api.Response Article.Feed
+    { feed : Api.Response Article.Feed
     , article : Api.Response (Maybe Article)
     , route : Route
     , user : Maybe Ports.User
@@ -60,6 +61,11 @@ type alias Options =
 withPage : Route -> Options
 withPage =
     defaultOptions
+
+
+onHomePage : Options
+onHomePage =
+    withPage (Route.Home Nothing)
 
 
 login : Options -> Options
@@ -87,7 +93,7 @@ withArticle article options =
 
 withGlobalFeed : List Article -> List Tag -> Options -> Options
 withGlobalFeed articles tags options =
-    { options | globalFeed = Ok (toGlobalFeed articles tags) }
+    { options | feed = Ok (toGlobalFeed articles tags) }
 
 
 toGlobalFeed : List Article -> List Tag -> Article.Feed
@@ -100,7 +106,7 @@ toGlobalFeed articles tags =
 defaultOptions : Route -> Options
 defaultOptions route =
     { route = route
-    , globalFeed = Ok emptyFeed
+    , feed = Ok emptyFeed
     , article = Ok Nothing
     , user = Nothing
     }
@@ -189,7 +195,7 @@ simulateEffects options eff =
             SimulatedEffect.Navigation.pushUrl (Route.routeToString route)
 
         Logout ->
-            SimulatedEffect.Navigation.pushUrl (Route.routeToString Route.Home)
+            SimulatedEffect.Navigation.pushUrl (Route.routeToString (Route.Home Nothing))
 
         PushUrl url ->
             SimulatedEffect.Navigation.pushUrl (Url.toString url)
@@ -207,7 +213,10 @@ simulateEffects options eff =
             SimulatedEffect.Cmd.none
 
         LoadGlobalFeed { msg } ->
-            simulateTask options.globalFeed msg
+            simulateTask options.feed msg
+
+        LoadTagFeed { msg } ->
+            simulateTask options.feed msg
 
         LoadArticle { msg } ->
             simulateTask options.article msg

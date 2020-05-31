@@ -17,7 +17,7 @@ suite =
     describe "Home Page"
         [ test "Guest User sees global feed on load" <|
             \_ ->
-                Program.withPage Route.Home
+                Program.onHomePage
                     |> Program.withGlobalFeed [ article "foo", article "bar" ] []
                     |> Program.start
                     |> expectViewHas
@@ -28,13 +28,20 @@ suite =
                         ]
         , test "Shows collection of popular tags" <|
             \_ ->
-                Program.withPage Route.Home
+                Program.onHomePage
                     |> Program.withGlobalFeed [ article "foo", article "bar" ] (Tag.parse "tag1, tag2")
                     |> Program.start
                     |> expectViewHas
                         [ el "popular-tags"
                         , el "popular-tag1"
                         , el "popular-tag2"
+                        ]
+        , test "Shows feed for a particular tag" <|
+            \_ ->
+                Program.withPage (Route.Home (Just (Tag.one "bread")))
+                    |> Program.start
+                    |> expectViewHas
+                        [ el "tag-feed-for-bread"
                         ]
         ]
 

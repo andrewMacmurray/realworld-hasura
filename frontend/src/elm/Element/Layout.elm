@@ -131,14 +131,14 @@ toNavBar options =
     case options.profile of
         Just _ ->
             navBar
-                [ Route.link Route.Home "Home"
+                [ Route.link (Route.Home Nothing) "Home"
                 , Route.link Route.NewPost "New Post"
                 , Route.link Route.Settings "Settings"
                 ]
 
         Nothing ->
             navBar
-                [ Route.link Route.Home "Home"
+                [ Route.link (Route.Home Nothing) "Home"
                 , Route.link Route.SignIn "Sign In"
                 , Route.link Route.SignUp "Sign Up"
                 ]
@@ -152,7 +152,7 @@ navBar links =
         , paddingXY Scale.medium 0
         ]
         (row [ width fill ]
-            [ Route.el Route.Home
+            [ Route.el (Route.Home Nothing)
                 (Text.title
                     [ Font.color Palette.green
                     , paddingXY 0 Scale.medium

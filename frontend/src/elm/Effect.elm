@@ -3,15 +3,16 @@ module Effect exposing
     , batch
     , loadArticle
     , loadGlobalFeed
+    , loadTagFeed
     , loadUrl
     , loadUser
     , logout
     , map
-    , navigateTo
     , none
     , perform
     , publishArticle
     , pushUrl
+    , redirectHome
     , signIn
     , signUp
     )
@@ -40,6 +41,7 @@ type Effect msg
     | SignUp (Api.Mutation User.Profile msg)
     | SignIn (Api.Mutation User.Profile msg)
     | LoadGlobalFeed (Api.Query Article.Feed msg)
+    | LoadTagFeed (Api.Query Article.Feed msg)
     | LoadArticle (Api.Query (Maybe Article) msg)
     | PublishArticle (Api.Mutation () msg)
 
@@ -79,9 +81,9 @@ pushUrl =
     PushUrl
 
 
-navigateTo : Route -> Effect msg
-navigateTo =
-    NavigateTo
+redirectHome : Effect msg
+redirectHome =
+    NavigateTo (Route.Home Nothing)
 
 
 loadUrl : String -> Effect msg
@@ -92,6 +94,11 @@ loadUrl =
 loadGlobalFeed : Api.Query Article.Feed msg -> Effect msg
 loadGlobalFeed =
     LoadGlobalFeed
+
+
+loadTagFeed : Api.Query Article.Feed msg -> Effect msg
+loadTagFeed =
+    LoadTagFeed
 
 
 loadArticle : Api.Query (Maybe Article) msg -> Effect msg
@@ -141,6 +148,9 @@ map toMsg effect =
         LoadGlobalFeed query ->
             LoadGlobalFeed (Api.map toMsg query)
 
+        LoadTagFeed query ->
+            LoadTagFeed (Api.map toMsg query)
+
         LoadArticle query ->
             LoadArticle (Api.map toMsg query)
 
@@ -176,7 +186,7 @@ perform pushUrl_ ( model, effect ) =
             ( { model | user = User.Guest }
             , Cmd.batch
                 [ Ports.logout
-                , pushUrl_ model.navKey (Route.routeToString Route.Home)
+                , Route.Home Nothing |> Route.routeToString |> pushUrl_ model.navKey
                 ]
             )
 
@@ -198,6 +208,9 @@ perform pushUrl_ ( model, effect ) =
             ( model, Api.doMutation model.user mutation )
 
         LoadGlobalFeed query ->
+            ( model, Api.doQuery model.user query )
+
+        LoadTagFeed query ->
             ( model, Api.doQuery model.user query )
 
         LoadArticle query ->

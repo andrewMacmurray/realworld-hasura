@@ -86,7 +86,7 @@ update msg model =
         SignInResponseReceived (Ok profile) ->
             ( model
             , Effect.batch
-                [ Effect.navigateTo Route.Home
+                [ Effect.redirectHome
                 , Effect.loadUser profile
                 ]
             )

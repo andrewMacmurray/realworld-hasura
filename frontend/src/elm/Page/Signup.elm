@@ -89,7 +89,7 @@ update msg model =
             ( model
             , Effect.batch
                 [ Effect.loadUser res
-                , Effect.navigateTo Route.Home
+                , Effect.redirectHome
                 ]
             )
 

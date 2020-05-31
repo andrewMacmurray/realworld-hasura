@@ -19,7 +19,6 @@ import Element.Palette as Palette
 import Element.Scale as Scale
 import Element.Text as Text
 import Form.Field as Field
-import Route
 import Tag exposing (Tag)
 import User exposing (User(..))
 
@@ -84,7 +83,7 @@ update msg model =
             ( model, publishArticle model.inputs )
 
         PublishResponseReceived (Ok _) ->
-            ( model, Effect.navigateTo Route.Home )
+            ( model, Effect.redirectHome )
 
         PublishResponseReceived (Err _) ->
             ( model, Effect.none )

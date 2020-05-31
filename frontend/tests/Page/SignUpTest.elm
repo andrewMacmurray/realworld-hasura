@@ -25,6 +25,6 @@ suite =
                     ]
                 |> clickButton "Sign Up"
                 |> Expect.all
-                    [ Expect.redirect Route.Home
+                    [ Expect.redirectHome
                     , expectViewHas [ el "new-post-link" ]
                     ]

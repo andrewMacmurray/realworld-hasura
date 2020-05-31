@@ -22,7 +22,7 @@ import Element.Palette as Palette
 import Element.Scale as Scale exposing (edges)
 import Element.Text as Text
 import Route
-import Tag
+import Tag exposing (Tag)
 import User exposing (User(..))
 import WebData exposing (WebData)
 
@@ -32,28 +32,39 @@ import WebData exposing (WebData)
 
 
 type alias Model =
-    { globalFeed : WebData Article.Feed
+    { feed : WebData Article.Feed
+    , selectedTag : Maybe Tag
     }
 
 
 type Msg
     = GlobalFeedResponseReceived (Api.Response Article.Feed)
+    | TagFeedResponseReceived (Api.Response Article.Feed)
 
 
 
 -- Init
 
 
-init : ( Model, Effect Msg )
-init =
-    ( initialModel
-    , Api.Articles.globalFeed GlobalFeedResponseReceived
-    )
+init : Maybe Tag -> ( Model, Effect Msg )
+init tag =
+    ( initialModel tag, fetchFeed tag )
 
 
-initialModel : Model
-initialModel =
-    { globalFeed = WebData.Loading
+fetchFeed : Maybe Tag -> Effect Msg
+fetchFeed selectedTag =
+    case selectedTag of
+        Just tag ->
+            Api.Articles.tagFeed tag TagFeedResponseReceived
+
+        Nothing ->
+            Api.Articles.globalFeed GlobalFeedResponseReceived
+
+
+initialModel : Maybe Tag -> Model
+initialModel tag =
+    { feed = WebData.Loading
+    , selectedTag = tag
     }
 
 
@@ -65,7 +76,10 @@ update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
         GlobalFeedResponseReceived response ->
-            ( { model | globalFeed = WebData.fromResult response }, Effect.none )
+            ( { model | feed = WebData.fromResult response }, Effect.none )
+
+        TagFeedResponseReceived response ->
+            ( { model | feed = WebData.fromResult response }, Effect.none )
 
 
 
@@ -89,13 +103,13 @@ banner =
 
 pageContents : Model -> Element msg
 pageContents model =
-    case model.globalFeed of
+    case model.feed of
         WebData.Loading ->
             Text.text [] "Loading"
 
         WebData.Success feed_ ->
             row [ width fill, spacing Scale.large ]
-                [ allArticles feed_.articles
+                [ feedArticles model.selectedTag feed_.articles
                 , popularTags feed_.popularTags
                 ]
 
@@ -141,16 +155,31 @@ viewPopularTag t =
         ]
 
 
-allArticles : List Article -> Element msg
-allArticles articles =
-    column
-        [ Anchor.description "global-feed"
-        , width fill
-        , spacing Scale.large
-        ]
-        [ Text.greenSubtitle [] "Global Feed"
-        , viewArticles articles
-        ]
+feedArticles : Maybe Tag -> List Article -> Element msg
+feedArticles selectedTag articles =
+    case selectedTag of
+        Just tag ->
+            column
+                [ Anchor.description ("tag-feed-for-" ++ Tag.value tag)
+                , width fill
+                , spacing Scale.large
+                ]
+                [ row [ spacing Scale.large ]
+                    [ Text.subtitle [] "Global Feed"
+                    , Text.greenSubtitle [] ("#" ++ Tag.value tag)
+                    ]
+                , viewArticles articles
+                ]
+
+        Nothing ->
+            column
+                [ Anchor.description "global-feed"
+                , width fill
+                , spacing Scale.large
+                ]
+                [ Text.greenSubtitle [] "Global Feed"
+                , viewArticles articles
+                ]
 
 
 viewArticles : List Article -> Element msg

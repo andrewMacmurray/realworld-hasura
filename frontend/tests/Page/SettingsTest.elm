@@ -19,7 +19,7 @@ suite =
                     |> ensureViewHas [ el "settings-title", el "logout" ]
                     |> clickButton "Logout"
                     |> ensureViewHas [ el "sign-in-link", el "sign-up-link" ]
-                    |> Expect.redirect Route.Home
+                    |> Expect.redirectHome
         , test "User can see their profile information" <|
             \_ ->
                 Program.withPage Route.Settings

@@ -43,7 +43,7 @@ suite =
                     |> Program.fillField "write-your-article-(in-markdown)" "some article content"
                     |> Program.fillField "enter-tags" "tag"
                     |> clickButton "Publish Article"
-                    |> Expect.redirect Route.Home
+                    |> Expect.redirectHome
         ]
 
 
