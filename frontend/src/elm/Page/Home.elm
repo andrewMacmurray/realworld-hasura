@@ -16,7 +16,7 @@ import Element.Avatar as Avatar
 import Element.Background as Background
 import Element.Border as Border
 import Element.Divider as Divider
-import Element.Font as Font
+import Element.FancyText as FancyText
 import Element.Layout as Layout
 import Element.Palette as Palette
 import Element.Scale as Scale exposing (edges)
@@ -97,9 +97,22 @@ view user model =
 banner : Element msg
 banner =
     column [ spacing Scale.medium, centerX ]
-        [ Text.headline [ Font.color Palette.white, centerX ] "conduit"
-        , Text.subtitle [ Font.color Palette.white, Font.regular, centerX ] "A place to share your knowledge"
+        [ el [ centerX ] (whiteHeadline "conduit")
+        , el [ centerX ] (whiteSubtitle "A place to share your knowledge")
         ]
+
+
+whiteSubtitle =
+    FancyText.subtitle
+        |> FancyText.regular
+        |> FancyText.white
+        |> FancyText.el
+
+
+whiteHeadline =
+    FancyText.headline
+        |> FancyText.white
+        |> FancyText.el
 
 
 pageContents : Model -> Element msg
@@ -115,7 +128,7 @@ pageContents model =
                 ]
 
         WebData.Failure ->
-            Text.error [] "Something Went wrong"
+            FancyText.error "Something Went wrong"
 
 
 popularTags : List Tag.Popular -> Element msg
@@ -126,7 +139,7 @@ popularTags tags_ =
         , spacing Scale.large
         , width (fill |> maximum 300)
         ]
-        [ Text.title [] "Popular Tags"
+        [ FancyText.el FancyText.title "Popular Tags"
         , wrappedRow [ spacing Scale.small ] (List.map viewPopularTag tags_)
         ]
 
@@ -147,15 +160,15 @@ viewPopularTag t =
                 , width (px 18)
                 , height (px 18)
                 ]
-                (Text.label
-                    [ centerX
-                    , centerY
-                    , Font.color Palette.white
-                    ]
-                    (String.fromInt t.count)
-                )
+                (el [ centerX, centerY ] (whiteLabel (String.fromInt t.count)))
             ]
         )
+
+
+whiteLabel =
+    FancyText.label
+        |> FancyText.white
+        |> FancyText.el
 
 
 feedArticles : Maybe Tag -> List Article -> Element msg
@@ -168,8 +181,8 @@ feedArticles selectedTag articles =
                 , spacing Scale.large
                 ]
                 [ row [ spacing Scale.large ]
-                    [ Text.subtitle [] "Global Feed"
-                    , Text.greenSubtitle [] ("#" ++ String.capitalize (Tag.value tag))
+                    [ subtitleLink "Global Feed"
+                    , greenSubtitle ("#" ++ String.capitalize (Tag.value tag))
                     ]
                 , viewArticles articles
                 ]
@@ -180,9 +193,17 @@ feedArticles selectedTag articles =
                 , width fill
                 , spacing Scale.large
                 ]
-                [ Text.greenSubtitle [] "Global Feed"
+                [ greenSubtitle "Global Feed"
                 , viewArticles articles
                 ]
+
+
+subtitleLink =
+    FancyText.subtitle |> FancyText.asLink |> FancyText.el
+
+
+greenSubtitle =
+    FancyText.subtitle |> FancyText.green |> FancyText.el
 
 
 viewArticles : List Article -> Element msg
@@ -214,7 +235,7 @@ viewArticle article =
 
 readMore : Article -> Element msg
 readMore article =
-    linkToArticle article (Text.label [] "Read more...")
+    linkToArticle article (FancyText.el FancyText.label "READ MORE...")
 
 
 articleSummary : Article -> Element msg
