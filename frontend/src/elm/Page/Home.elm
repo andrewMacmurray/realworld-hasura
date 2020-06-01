@@ -20,7 +20,6 @@ import Element.FancyText as FancyText
 import Element.Layout as Layout
 import Element.Palette as Palette
 import Element.Scale as Scale exposing (edges)
-import Element.Text as Text
 import Route
 import Tag exposing (Tag)
 import User exposing (User(..))
@@ -103,23 +102,18 @@ banner =
 
 
 whiteSubtitle =
-    FancyText.subtitle
-        |> FancyText.regular
-        |> FancyText.white
-        |> FancyText.el
+    FancyText.subtitle [ FancyText.regular, FancyText.white ]
 
 
 whiteHeadline =
-    FancyText.headline
-        |> FancyText.white
-        |> FancyText.el
+    FancyText.headline [ FancyText.white ]
 
 
 pageContents : Model -> Element msg
 pageContents model =
     case model.feed of
         WebData.Loading ->
-            Text.text [] "Loading"
+            FancyText.text [] "Loading"
 
         WebData.Success feed_ ->
             row [ width fill, spacing Scale.large ]
@@ -128,7 +122,7 @@ pageContents model =
                 ]
 
         WebData.Failure ->
-            FancyText.error "Something Went wrong"
+            FancyText.error [] "Something Went wrong"
 
 
 popularTags : List Tag.Popular -> Element msg
@@ -139,7 +133,7 @@ popularTags tags_ =
         , spacing Scale.large
         , width (fill |> maximum 300)
         ]
-        [ FancyText.el FancyText.title "Popular Tags"
+        [ FancyText.title [] "Popular Tags"
         , wrappedRow [ spacing Scale.small ] (List.map viewPopularTag tags_)
         ]
 
@@ -151,7 +145,7 @@ viewPopularTag t =
             [ spacing 4
             , Anchor.description ("popular-" ++ Tag.value t.tag)
             ]
-            [ Text.link [] ("#" ++ Tag.value t.tag)
+            [ FancyText.link [] ("#" ++ Tag.value t.tag)
             , el
                 [ Background.color Palette.deepGreen
                 , Border.rounded 10000
@@ -165,10 +159,9 @@ viewPopularTag t =
         )
 
 
+whiteLabel : String -> Element msg
 whiteLabel =
-    FancyText.label
-        |> FancyText.white
-        |> FancyText.el
+    FancyText.label [ FancyText.white ]
 
 
 feedArticles : Maybe Tag -> List Article -> Element msg
@@ -198,12 +191,14 @@ feedArticles selectedTag articles =
                 ]
 
 
+subtitleLink : String -> Element msg
 subtitleLink =
-    FancyText.subtitle |> FancyText.asLink |> FancyText.el
+    FancyText.subtitle [ FancyText.asLink ]
 
 
+greenSubtitle : String -> Element msg
 greenSubtitle =
-    FancyText.subtitle |> FancyText.green |> FancyText.el
+    FancyText.subtitle [ FancyText.green ]
 
 
 viewArticles : List Article -> Element msg
@@ -235,15 +230,15 @@ viewArticle article =
 
 readMore : Article -> Element msg
 readMore article =
-    linkToArticle article (FancyText.el FancyText.label "READ MORE...")
+    linkToArticle article (FancyText.label [] "READ MORE...")
 
 
 articleSummary : Article -> Element msg
 articleSummary article =
     linkToArticle article
         (column [ spacing Scale.small ]
-            [ paragraph [] [ Text.subtitle [] (Article.title article) ]
-            , Text.text [] (Article.about article)
+            [ paragraph [] [ FancyText.subtitle [] (Article.title article) ]
+            , FancyText.text [] (Article.about article)
             ]
         )
 
@@ -258,8 +253,8 @@ profile article =
     row [ spacing Scale.small ]
         [ Avatar.large (Article.profileImage article)
         , column [ spacing Scale.small ]
-            [ Text.greenLink [] (Article.author article)
-            , Text.date [] (Article.createdAt article)
+            [ FancyText.link [ FancyText.green ] (Article.author article)
+            , FancyText.date [] (Article.createdAt article)
             ]
         ]
 

@@ -1,12 +1,8 @@
 module Element.FancyText exposing
     ( asLink
     , date
-    , el
     , error
     , green
-    , greenLink
-    , greenSubtitle
-    , greenTitle
     , headline
     , label
     , large
@@ -17,11 +13,12 @@ module Element.FancyText exposing
     , subtitle
     , text
     , title
+    , toElement
     , white
     )
 
 import Date exposing (Date)
-import Element
+import Element exposing (Element)
 import Element.Font as Font
 import Element.Palette as Palette
 import Html.Attributes
@@ -60,8 +57,15 @@ type Color
 -- Default Options
 
 
-text_ : Options
-text_ =
+text_ : List (Options -> Options) -> List (Options -> Options) -> String -> Element msg
+text_ base extras =
+    (base ++ extras)
+        |> List.foldl identity defaultOptions
+        |> toElement
+
+
+defaultOptions : Options
+defaultOptions =
     { color = Grey
     , size = Body
     , weight = Regular
@@ -71,6 +75,16 @@ text_ =
 
 
 -- Configure
+
+
+green : Options -> Options
+green =
+    withColor Green
+
+
+white : Options -> Options
+white =
+    withColor White
 
 
 withSize : Size -> Options -> Options
@@ -102,65 +116,57 @@ asLink options =
 -- Standard Settings
 
 
-headline =
-    text_ |> withSize Headline
+headline : List (Options -> Options) -> String -> Element msg
+headline opts =
+    text_ [ withSize Headline ] opts
 
 
-greenTitle =
-    title |> withColor Green
+title : List (Options -> Options) -> String -> Element msg
+title opts =
+    text_ [ withSize Title, withColor Black ] opts
 
 
-title =
+subtitle : List (Options -> Options) -> String -> Element msg
+subtitle opts =
     text_
-        |> withSize Title
-        |> withColor Black
+        [ withSize Subtitle
+        , withColor Black
+        , bold
+        ]
+        opts
 
 
-greenSubtitle =
-    subtitle |> withColor Green
+text : List (Options -> Options) -> String -> Element msg
+text opts =
+    text_ [] opts
 
 
-subtitle =
-    text_
-        |> withSize Subtitle
-        |> withColor Black
-        |> bold
+label : List (Options -> Options) -> String -> Element msg
+label opts =
+    text_ [ withSize Label ] opts << String.toUpper
 
 
-green =
-    withColor Green
+error : List (Options -> Options) -> String -> Element msg
+error opts =
+    text_ [ withColor Red ] opts
 
 
-white =
-    withColor White
+link : List (Options -> Options) -> String -> Element msg
+link opts =
+    text_ [ withColor Grey, asLink ] opts
 
 
-label =
-    text_ |> withSize Label
-
-
-text =
-    text_
-
-
-error =
-    text_ |> withColor Red |> el
-
-
-greenLink =
-    link |> withColor Green
-
-
-link =
-    text_ |> withColor Black |> asLink
+date : List (Options -> Options) -> Date -> Element msg
+date opts d =
+    label opts (formatDate d)
 
 
 
 -- Render
 
 
-el : Options -> String -> Element.Element msg
-el options content =
+toElement : Options -> String -> Element.Element msg
+toElement options content =
     Element.el
         (List.concat
             [ [ toFontColor2 options
@@ -261,27 +267,6 @@ toHoverColors options =
 
         White ->
             Font.color Palette.grey
-
-
-
---date : List (Element.Attribute msg) -> Date -> Element.Element msg
-
-
-date attrs date_ =
-    Debug.todo ""
-
-
-
---label attrs (formatDate date_)
---text
---    (List.concat
---        [ [ Font.size extraSmall
---          , Font.letterSpacing 0.6
---          ]
---        , attrs
---        ]
---    )
---    (String.toUpper content)
 
 
 formatDate : Date -> String
