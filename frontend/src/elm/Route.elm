@@ -9,7 +9,6 @@ module Route exposing
 
 import Article
 import Element exposing (Element)
-import Element.Anchor as Anchor
 import Element.Text as Text
 import Tag exposing (Tag)
 import Url exposing (Url)
@@ -55,11 +54,7 @@ tagQuery =
 
 link : Route -> String -> Element msg
 link route label =
-    let
-        description =
-            Anchor.description (label ++ "-link")
-    in
-    el route (Text.link [ description ] label)
+    el route (Text.link [ Text.description (label ++ "-link") ] label)
 
 
 el : Route -> Element msg -> Element msg

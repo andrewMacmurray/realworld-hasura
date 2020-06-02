@@ -1,167 +1,301 @@
 module Element.Text exposing
-    ( date
+    ( asLink
+    , bold
+    , date
+    , description
     , error
-    , greenLink
-    , greenSubtitle
-    , greenTitle
+    , green
     , headline
     , label
     , large
     , link
     , medium
+    , regular
     , small
     , subtitle
     , text
     , title
+    , toElement
+    , white
     )
 
 import Date exposing (Date)
-import Element
+import Element exposing (Element)
+import Element.Anchor as Anchor
 import Element.Font as Font
 import Element.Palette as Palette
 import Html.Attributes
 
 
+
+-- Options
+
+
+type alias Option =
+    Properties_ -> Properties_
+
+
+type alias Properties_ =
+    { color : Color
+    , size : Size
+    , weight : Weight
+    , isLink : Bool
+    , description : Maybe String
+    }
+
+
+type Weight
+    = Regular
+    | Bold
+
+
+type Size
+    = Label
+    | Body
+    | Subtitle
+    | Title
+    | Headline
+
+
 type Color
     = Black
+    | Grey
     | Green
+    | Red
+    | White
 
 
-headline : List (Element.Attribute msg) -> String -> Element.Element msg
-headline attrs =
-    title (attrs ++ [ Font.size extraLarge ])
+
+-- Default Options
 
 
-greenTitle : List (Element.Attribute msg) -> String -> Element.Element msg
-greenTitle attrs =
-    title (attrs ++ [ toFontColor Green ])
+text_ : List Option -> List Option -> String -> Element msg
+text_ base extras =
+    (base ++ extras)
+        |> List.foldl identity defaultProperties
+        |> toElement
 
 
-title : List (Element.Attribute msg) -> String -> Element.Element msg
-title attrs content =
+defaultProperties : Properties_
+defaultProperties =
+    { color = Grey
+    , size = Body
+    , weight = Regular
+    , isLink = False
+    , description = Nothing
+    }
+
+
+
+-- Configure
+
+
+green : Properties_ -> Properties_
+green =
+    withColor Green
+
+
+white : Properties_ -> Properties_
+white =
+    withColor White
+
+
+withSize : Size -> Properties_ -> Properties_
+withSize size_ properties =
+    { properties | size = size_ }
+
+
+withColor : Color -> Properties_ -> Properties_
+withColor color properties =
+    { properties | color = color }
+
+
+bold : Properties_ -> Properties_
+bold properties =
+    { properties | weight = Bold }
+
+
+regular : Properties_ -> Properties_
+regular properties =
+    { properties | weight = Regular }
+
+
+asLink : Properties_ -> Properties_
+asLink properties =
+    { properties | isLink = True }
+
+
+description : String -> Properties_ -> Properties_
+description d properties =
+    { properties | description = Just d }
+
+
+
+-- Standard Settings
+
+
+headline : List Option -> String -> Element msg
+headline =
+    text_ [ withSize Headline ]
+
+
+title : List Option -> String -> Element msg
+title =
+    text_ [ withSize Title, withColor Black ]
+
+
+subtitle : List Option -> String -> Element msg
+subtitle =
+    text_ [ withSize Subtitle, withColor Black, bold ]
+
+
+text : List Option -> String -> Element msg
+text =
+    text_ []
+
+
+label : List Option -> String -> Element msg
+label options =
+    text_ [ withSize Label ] options << String.toUpper
+
+
+error : List Option -> String -> Element msg
+error =
+    text_ [ withColor Red ]
+
+
+link : List Option -> String -> Element msg
+link =
+    text_ [ withColor Grey, asLink ]
+
+
+date : List Option -> Date -> Element msg
+date options =
+    label options << formatDate
+
+
+
+-- Render
+
+
+toElement : Properties_ -> String -> Element.Element msg
+toElement properties content =
     Element.el
         (List.concat
-            [ [ Font.size large
-              , toFontColor Black
+            [ [ fontColor properties
+              , size properties
+              , weight properties
+              , letterSpacing properties
               ]
-            , attrs
+            , anchor properties
+            , linkStyles properties
             ]
         )
         (Element.text content)
 
 
-greenSubtitle : List (Element.Attribute msg) -> String -> Element.Element msg
-greenSubtitle attrs =
-    subtitle (attrs ++ [ toFontColor Green ])
+anchor : Properties_ -> List (Element.Attribute msg)
+anchor properties =
+    case properties.description of
+        Just d ->
+            [ Anchor.description d ]
+
+        Nothing ->
+            []
 
 
-subtitle : List (Element.Attribute msg) -> String -> Element.Element msg
-subtitle attrs content =
-    Element.el
-        (List.concat
-            [ [ Font.size medium
-              , Font.bold
-              , toFontColor Black
-              ]
-            , attrs
-            ]
-        )
-        (Element.text content)
-
-
-toFontColor : Color -> Element.Attr decorative msg
-toFontColor color =
-    case color of
+fontColor : Properties_ -> Element.Attr decorative msg
+fontColor properties =
+    case properties.color of
         Black ->
             Font.color Palette.black
+
+        Grey ->
+            Font.color Palette.grey
 
         Green ->
             Font.color Palette.green
 
+        Red ->
+            Font.color Palette.red
 
-date : List (Element.Attribute msg) -> Date -> Element.Element msg
-date attrs date_ =
-    label attrs (formatDate date_)
+        White ->
+            Font.color Palette.white
 
 
-label : List (Element.Attribute msg) -> String -> Element.Element msg
-label attrs content =
-    text
-        (List.concat
-            [ [ Font.size extraSmall
-              , Font.letterSpacing 0.6
-              ]
-            , attrs
-            ]
-        )
-        (String.toUpper content)
+size : Properties_ -> Element.Attr decorative msg
+size properties =
+    case properties.size of
+        Label ->
+            Font.size extraSmall
+
+        Body ->
+            Font.size small
+
+        Subtitle ->
+            Font.size medium
+
+        Title ->
+            Font.size large
+
+        Headline ->
+            Font.size extraLarge
+
+
+weight : Properties_ -> Element.Attribute msg
+weight properties =
+    case properties.weight of
+        Bold ->
+            Font.bold
+
+        Regular ->
+            Font.regular
+
+
+letterSpacing : Properties_ -> Element.Attribute msg
+letterSpacing properties =
+    case properties.size of
+        Label ->
+            Font.letterSpacing 0.6
+
+        _ ->
+            Font.letterSpacing 0
+
+
+linkStyles : Properties_ -> List (Element.Attribute msg)
+linkStyles properties =
+    if properties.isLink then
+        [ underlineOnHover
+        , Element.pointer
+        , Element.mouseOver [ hoverColors properties ]
+        ]
+
+    else
+        []
+
+
+hoverColors : Properties_ -> Element.Attr decorative msg
+hoverColors properties =
+    case properties.color of
+        Black ->
+            Font.color Palette.grey
+
+        Grey ->
+            Font.color Palette.black
+
+        Green ->
+            Font.color Palette.darkGreen
+
+        Red ->
+            Font.color Palette.darkRed
+
+        White ->
+            Font.color Palette.grey
 
 
 formatDate : Date -> String
 formatDate =
     Date.format "EEE MMM d y"
-
-
-text : List (Element.Attribute msg) -> String -> Element.Element msg
-text attrs content =
-    Element.el
-        (List.concat
-            [ [ Font.size small
-              , Element.pointer
-              , Font.color Palette.grey
-              ]
-            , attrs
-            ]
-        )
-        (Element.text content)
-
-
-error : List (Element.Attribute msg) -> String -> Element.Element msg
-error attrs content =
-    text (attrs ++ [ Font.color Palette.red ]) content
-
-
-greenLink : List (Element.Attribute msg) -> String -> Element.Element msg
-greenLink =
-    link_ Green
-
-
-link : List (Element.Attribute msg) -> String -> Element.Element msg
-link =
-    link_ Black
-
-
-link_ : Color -> List (Element.Attribute msg) -> String -> Element.Element msg
-link_ color attrs content =
-    let
-        fontColor =
-            case color of
-                Black ->
-                    Font.color Palette.grey
-
-                Green ->
-                    Font.color Palette.green
-
-        hoverColor =
-            case color of
-                Black ->
-                    Font.color Palette.black
-
-                Green ->
-                    Font.color Palette.darkGreen
-    in
-    Element.el
-        (List.concat
-            [ [ Font.size small
-              , Element.pointer
-              , fontColor
-              , underlineOnHover
-              , Element.mouseOver [ hoverColor ]
-              ]
-            , attrs
-            ]
-        )
-        (Element.text content)
 
 
 underlineOnHover : Element.Attribute msg

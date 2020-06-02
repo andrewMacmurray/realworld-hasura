@@ -11,11 +11,8 @@ import Api.Articles
 import Article
 import Effect exposing (Effect)
 import Element exposing (..)
-import Element.Anchor as Anchor
 import Element.Button as Button
-import Element.Font as Font
 import Element.Layout as Layout
-import Element.Palette as Palette
 import Element.Scale as Scale
 import Element.Text as Text
 import Form.Field as Field
@@ -133,7 +130,7 @@ showTags =
 
 showTag : Tag -> Element msg
 showTag tag_ =
-    Text.text [ Font.color Palette.green, Anchor.description "visible-tag" ] ("#" ++ Tag.value tag_)
+    Text.text [ Text.green, Text.description "visible-tag" ] ("#" ++ Tag.value tag_)
 
 
 title : Inputs -> Element Msg

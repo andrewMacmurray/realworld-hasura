@@ -11,10 +11,8 @@ import Api.Articles
 import Article exposing (Article)
 import Effect exposing (Effect)
 import Element exposing (..)
-import Element.Anchor as Anchor
 import Element.Avatar as Avatar
 import Element.Background as Background
-import Element.Font as Font
 import Element.Layout as Layout exposing (Layout)
 import Element.Palette as Palette
 import Element.Scale as Scale
@@ -127,8 +125,8 @@ headline : Article -> Element msg
 headline article =
     paragraph []
         [ Text.headline
-            [ Font.color Palette.white
-            , Anchor.description "article-title"
+            [ Text.white
+            , Text.description "article-title"
             ]
             (Article.title article)
         ]
@@ -139,7 +137,7 @@ author article =
     row [ spacing Scale.small ]
         [ Avatar.medium (Article.profileImage article)
         , column [ spacing Scale.extraSmall ]
-            [ Text.link [ Font.color Palette.white ] (Article.author article)
+            [ Text.link [ Text.white ] (Article.author article)
             , Text.date [] (Article.createdAt article)
             ]
         ]
@@ -155,10 +153,10 @@ articleBody article_ =
             showArticleBody a
 
         NotFound ->
-            Text.text [ Anchor.description "not-found-message" ] "Article Not Found"
+            Text.text [ Text.description "not-found-message" ] "Article Not Found"
 
         FailedToLoad ->
-            Text.text [ Anchor.description "error-message" ] "There was an error loading the article"
+            Text.text [ Text.description "error-message" ] "There was an error loading the article"
 
 
 showArticleBody : Article -> Element msg
