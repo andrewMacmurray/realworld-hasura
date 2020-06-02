@@ -70,25 +70,25 @@ prop a b =
 -- Helpers for building Graphql Optional Arguments
 
 
-order_by val args_ =
-    { args_ | order_by = Present [ val ] }
+order_by =
+    field (\val args -> { args | order_by = Present [ val ] })
 
 
-created_at val args =
-    { args | created_at = Present val }
+created_at =
+    prop (\val args -> { args | created_at = Present val })
 
 
-eq_ val args =
-    { args | eq_ = Present val }
+eq_ =
+    prop (\val args -> { args | eq_ = Present val })
 
 
-tag val args =
-    { args | tag = Present val }
+tag =
+    field (\val args -> { args | tag = Present val })
 
 
-tags val args =
-    { args | tags = Present val }
+tags =
+    field (\val args -> { args | tags = Present val })
 
 
-where_ val args =
-    { args | where_ = Present val }
+where_ =
+    field (\val args -> { args | where_ = Present val })
