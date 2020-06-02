@@ -82,7 +82,7 @@ view user model =
     Layout.authenticated user
         |> Layout.toElement
             [ column [ spacing Scale.medium, width fill, paddingXY 0 Scale.large ]
-                [ Text.title [ Anchor.description "settings-title", centerX ] "Your Settings"
+                [ el [ centerX ] (Text.title [ Text.description "settings-title" ] "Your Settings")
                 , settingsFields model
                 ]
             ]

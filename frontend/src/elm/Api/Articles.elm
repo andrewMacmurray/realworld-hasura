@@ -6,7 +6,7 @@ module Api.Articles exposing
     )
 
 import Api
-import Api.Argument as Argument
+import Api.Argument as Argument exposing (created_at, eq_, field, order_by, prop, tag, tags, where_)
 import Api.Date as Date
 import Article exposing (Article)
 import Effect exposing (Effect)
@@ -78,15 +78,12 @@ articlesByTagSelection tag =
 
 
 containsTag : Tag -> ArticlesOptionalArguments -> ArticlesOptionalArguments
-containsTag tag =
-    Tag.value tag
-        |> Argument.eq_
-        |> Input.buildString_comparison_exp
-        |> Argument.tag
-        |> Input.buildTags_bool_exp
-        |> Argument.tags
-        |> Input.buildArticles_bool_exp
-        |> Argument.where_
+containsTag tag_ =
+    Argument.combine4
+        (field where_ Input.buildArticles_bool_exp)
+        (field tags Input.buildTags_bool_exp)
+        (field tag Input.buildString_comparison_exp)
+        (prop eq_ (Tag.value tag_))
 
 
 
@@ -139,7 +136,9 @@ tagSelection =
 
 newestFirst : ArticlesOptionalArguments -> ArticlesOptionalArguments
 newestFirst =
-    Argument.order_by (Input.buildArticles_order_by (Argument.created_at Desc))
+    Argument.combine2
+        (field order_by Input.buildArticles_order_by)
+        (prop created_at Desc)
 
 
 

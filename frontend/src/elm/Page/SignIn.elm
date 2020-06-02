@@ -116,7 +116,7 @@ signup model =
         , spacing Scale.large
         , width fill
         ]
-        [ Text.title [ centerX ] "Sign In"
+        [ el [ centerX ] (Text.title [] "Sign In")
         , el [ centerX ] (Route.link Route.SignUp "Need an Account?")
         , Layout.halfWidth
             (column [ spacing Scale.medium, width fill ]

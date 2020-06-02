@@ -11,8 +11,6 @@ module Element.Layout exposing
     )
 
 import Element exposing (..)
-import Element.Font as Font
-import Element.Palette as Palette
 import Element.Scale as Scale
 import Element.Text as Text
 import Route
@@ -153,12 +151,8 @@ navBar links =
         ]
         (row [ width fill ]
             [ Route.el (Route.Home Nothing)
-                (Text.title
-                    [ Font.color Palette.green
-                    , paddingXY 0 Scale.medium
-                    , Font.bold
-                    ]
-                    "conduit"
+                (el [ paddingXY 0 Scale.medium ]
+                    (Text.title [ Text.green, Text.bold ] "conduit")
                 )
             , navItems links
             ]
@@ -170,6 +164,7 @@ navItems =
     row [ alignRight, spacing Scale.medium ]
 
 
+constrainWidth : Attribute msg
 constrainWidth =
     width (fill |> maximum maxWidth)
 

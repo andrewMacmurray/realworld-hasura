@@ -16,7 +16,6 @@ import Element.Avatar as Avatar
 import Element.Background as Background
 import Element.Border as Border
 import Element.Divider as Divider
-import Element.Font as Font
 import Element.Layout as Layout
 import Element.Palette as Palette
 import Element.Scale as Scale exposing (edges)
@@ -97,9 +96,17 @@ view user model =
 banner : Element msg
 banner =
     column [ spacing Scale.medium, centerX ]
-        [ Text.headline [ Font.color Palette.white, centerX ] "conduit"
-        , Text.subtitle [ Font.color Palette.white, Font.regular, centerX ] "A place to share your knowledge"
+        [ el [ centerX ] (whiteHeadline "conduit")
+        , el [ centerX ] (whiteSubtitle "A place to share your knowledge")
         ]
+
+
+whiteSubtitle =
+    Text.subtitle [ Text.regular, Text.white ]
+
+
+whiteHeadline =
+    Text.headline [ Text.white ]
 
 
 pageContents : Model -> Element msg
@@ -147,15 +154,14 @@ viewPopularTag t =
                 , width (px 18)
                 , height (px 18)
                 ]
-                (Text.label
-                    [ centerX
-                    , centerY
-                    , Font.color Palette.white
-                    ]
-                    (String.fromInt t.count)
-                )
+                (el [ centerX, centerY ] (whiteLabel (String.fromInt t.count)))
             ]
         )
+
+
+whiteLabel : String -> Element msg
+whiteLabel =
+    Text.label [ Text.white ]
 
 
 feedArticles : Maybe Tag -> List Article -> Element msg
@@ -168,8 +174,8 @@ feedArticles selectedTag articles =
                 , spacing Scale.large
                 ]
                 [ row [ spacing Scale.large ]
-                    [ Text.subtitle [] "Global Feed"
-                    , Text.greenSubtitle [] ("#" ++ String.capitalize (Tag.value tag))
+                    [ subtitleLink "Global Feed"
+                    , greenSubtitle ("#" ++ String.capitalize (Tag.value tag))
                     ]
                 , viewArticles articles
                 ]
@@ -180,9 +186,19 @@ feedArticles selectedTag articles =
                 , width fill
                 , spacing Scale.large
                 ]
-                [ Text.greenSubtitle [] "Global Feed"
+                [ greenSubtitle "Global Feed"
                 , viewArticles articles
                 ]
+
+
+subtitleLink : String -> Element msg
+subtitleLink =
+    Text.subtitle [ Text.asLink ]
+
+
+greenSubtitle : String -> Element msg
+greenSubtitle =
+    Text.subtitle [ Text.green ]
 
 
 viewArticles : List Article -> Element msg
@@ -214,7 +230,7 @@ viewArticle article =
 
 readMore : Article -> Element msg
 readMore article =
-    linkToArticle article (Text.label [] "Read more...")
+    linkToArticle article (Text.label [] "READ MORE...")
 
 
 articleSummary : Article -> Element msg
@@ -237,7 +253,7 @@ profile article =
     row [ spacing Scale.small ]
         [ Avatar.large (Article.profileImage article)
         , column [ spacing Scale.small ]
-            [ Text.greenLink [] (Article.author article)
+            [ Text.link [ Text.green ] (Article.author article)
             , Text.date [] (Article.createdAt article)
             ]
         ]

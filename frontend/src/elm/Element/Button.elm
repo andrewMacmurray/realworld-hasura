@@ -16,10 +16,10 @@ import Element.Transition as Transition
 
 
 type Button msg
-    = Button (Button_ msg)
+    = Button (Options msg)
 
 
-type alias Button_ msg =
+type alias Options msg =
     { fill : Fill
     , text : String
     , size : Size
@@ -70,67 +70,64 @@ primary msg text =
 
 
 toElement : Button msg -> Element msg
-toElement (Button button_) =
+toElement (Button options) =
     Input.button
-        [ toFill button_
+        [ fill options
         , Transition.colors
-        , toBorderColor button_
-        , toFontColor button_
+        , borderColor options
+        , fontColor options
         , Border.width 1
         , Border.rounded 5
-        , toPadding button_
-        , mouseOver (toHoverStyles button_)
+        , paddingXY Scale.medium Scale.small
+        , mouseOver (hoverStyles options)
         ]
-        { onPress = Just button_.onClick
-        , label = label button_
+        { onPress = Just options.onClick
+        , label = label options
         }
 
 
-toPadding : Button_ msg -> Attribute msg
-toPadding _ =
-    paddingXY Scale.medium Scale.small
-
-
-toHoverStyles button_ =
-    case button_.fill of
+hoverStyles : Options msg -> List Decoration
+hoverStyles options =
+    case options.fill of
         Solid ->
-            [ Background.color (toDarker button_.color)
-            , Border.color (toDarker button_.color)
+            [ Background.color (darkerColor options.color)
+            , Border.color (darkerColor options.color)
             ]
 
         Hollow ->
-            [ Background.color (toColor button_.color)
+            [ Background.color (color options.color)
             , Font.color Palette.white
             ]
 
 
-toFill : Button_ msg -> Attr decorative msg
-toFill button_ =
-    case ( button_.fill, button_.color ) of
-        ( Solid, color ) ->
-            Background.color (toColor color)
+fill : Options msg -> Attr decorative msg
+fill options =
+    case ( options.fill, options.color ) of
+        ( Solid, color_ ) ->
+            Background.color (color color_)
 
         ( Hollow, _ ) ->
             Background.color Palette.white
 
 
-toBorderColor : Button_ msg -> Attr decorative msg
-toBorderColor button_ =
-    Border.color (toColor button_.color)
+borderColor : Options msg -> Attr decorative msg
+borderColor options =
+    Border.color (color options.color)
 
 
-toFontColor button_ =
-    case button_.fill of
+fontColor : Options msg -> Attr decorative msg
+fontColor options =
+    case options.fill of
         Solid ->
             Font.color Palette.white
 
         Hollow ->
-            Font.color (toColor button_.color)
+            Font.color (color options.color)
 
 
-toColor : Color -> Element.Color
-toColor color =
-    case color of
+color : Color -> Element.Color
+color color_ =
+    case color_ of
         Green ->
             Palette.green
 
@@ -138,8 +135,9 @@ toColor color =
             Palette.red
 
 
-toDarker color =
-    case color of
+darkerColor : Color -> Element.Color
+darkerColor color_ =
+    case color_ of
         Green ->
             Palette.deepGreen
 
@@ -147,13 +145,14 @@ toDarker color =
             Palette.darkRed
 
 
-label : Button_ msg -> Element msg
-label button_ =
-    el [ toFontSize button_ ] (text button_.text)
+label : Options msg -> Element msg
+label options =
+    el [ toFontSize options ] (text options.text)
 
 
-toFontSize button_ =
-    case button_.size of
+toFontSize : Options msg -> Attr decorative msg
+toFontSize options =
+    case options.size of
         Large ->
             Font.size (Text.medium - 2)
 
