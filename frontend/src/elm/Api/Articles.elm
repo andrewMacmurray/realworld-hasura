@@ -19,6 +19,9 @@ import Hasura.InputObject as Input exposing (Articles_insert_input, Articles_ord
 import Hasura.Mutation
 import Hasura.Object exposing (Articles)
 import Hasura.Object.Articles as Articles
+import Hasura.Object.Likes as Likes
+import Hasura.Object.Likes_aggregate as LikesAggregate
+import Hasura.Object.Likes_aggregate_fields as LikesAggregateFields
 import Hasura.Object.Tags as Tags
 import Hasura.Object.Users as Users
 import Hasura.Query exposing (ArticlesOptionalArguments, TagsOptionalArguments)
@@ -117,7 +120,7 @@ articlesSelection =
     Hasura.Query.articles newestFirst articleSelection
 
 
-articleSelection : SelectionSet Article Articles
+articleSelection : SelectionSet Article Hasura.Object.Articles
 articleSelection =
     SelectionSet.succeed Article.build
         |> with Articles.id
@@ -127,6 +130,19 @@ articleSelection =
         |> with (Articles.author Users.username)
         |> with (Date.fromScalar Articles.created_at)
         |> with (Articles.tags identity tagSelection)
+        |> with (Articles.likes_aggregate identity likesCountSelection)
+        |> with (Articles.likes identity likedBySelection)
+
+
+likedBySelection : SelectionSet String Hasura.Object.Likes
+likedBySelection =
+    Likes.user Users.username
+
+
+likesCountSelection : SelectionSet Int Hasura.Object.Likes_aggregate
+likesCountSelection =
+    LikesAggregate.aggregate (LikesAggregateFields.count identity)
+        |> SelectionSet.map (Maybe.andThen identity >> Maybe.withDefault 0)
 
 
 tagSelection : SelectionSet Tag.Tag Hasura.Object.Tags
@@ -157,6 +173,7 @@ toPublishArgs article_ =
     , about = Present article_.about
     , content = Present article_.content
     , tags = Present { data = List.map toTagArg article_.tags }
+    , likes = Absent
     }
 
 

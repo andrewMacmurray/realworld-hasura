@@ -1,7 +1,7 @@
 module Page.HomeTest exposing (suite)
 
 import Article exposing (Article)
-import Date
+import Helpers
 import Program
 import Program.Selector exposing (el)
 import ProgramTest exposing (expectViewHas)
@@ -9,7 +9,6 @@ import Route
 import Tag
 import Test exposing (..)
 import Test.Html.Selector exposing (text)
-import Time exposing (Month(..))
 
 
 suite : Test
@@ -47,11 +46,5 @@ suite =
 
 
 article : String -> Article
-article title =
-    Article.build 1
-        title
-        "about something"
-        "author"
-        "contents"
-        (Date.fromCalendarDate 2020 Jan 20)
-        []
+article =
+    Helpers.article

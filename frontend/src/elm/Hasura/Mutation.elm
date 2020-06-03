@@ -47,6 +47,34 @@ insert_tags requiredArgs object_ =
     Object.selectionForCompositeField "insert_tags" [ Argument.required "objects" requiredArgs.objects (Hasura.InputObject.encodeTags_insert_input |> Encode.list) ] object_ (identity >> Decode.nullable)
 
 
+type alias LikeArticleRequiredArguments =
+    { object : Hasura.InputObject.Likes_insert_input }
+
+
+{-| insert a single row into the table: "likes"
+
+  - object - the row to be inserted
+
+-}
+like_article : LikeArticleRequiredArguments -> SelectionSet decodesTo Hasura.Object.Likes -> SelectionSet (Maybe decodesTo) RootMutation
+like_article requiredArgs object_ =
+    Object.selectionForCompositeField "like_article" [ Argument.required "object" requiredArgs.object Hasura.InputObject.encodeLikes_insert_input ] object_ (identity >> Decode.nullable)
+
+
+type alias LikeArticlesRequiredArguments =
+    { objects : List Hasura.InputObject.Likes_insert_input }
+
+
+{-| insert data into the table: "likes"
+
+  - objects - the rows to be inserted
+
+-}
+like_articles : LikeArticlesRequiredArguments -> SelectionSet decodesTo Hasura.Object.Likes_mutation_response -> SelectionSet (Maybe decodesTo) RootMutation
+like_articles requiredArgs object_ =
+    Object.selectionForCompositeField "like_articles" [ Argument.required "objects" requiredArgs.objects (Hasura.InputObject.encodeLikes_insert_input |> Encode.list) ] object_ (identity >> Decode.nullable)
+
+
 type alias LoginRequiredArguments =
     { password : String
     , username : String

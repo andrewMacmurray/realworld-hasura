@@ -68,9 +68,9 @@ buildArticles_bool_exp fillOptionals =
     let
         optionals =
             fillOptionals
-                { and_ = Absent, not_ = Absent, or_ = Absent, about = Absent, author = Absent, content = Absent, created_at = Absent, id = Absent, tags = Absent, title = Absent }
+                { and_ = Absent, not_ = Absent, or_ = Absent, about = Absent, author = Absent, content = Absent, created_at = Absent, id = Absent, likes = Absent, tags = Absent, title = Absent }
     in
-    Articles_bool_exp { and_ = optionals.and_, not_ = optionals.not_, or_ = optionals.or_, about = optionals.about, author = optionals.author, content = optionals.content, created_at = optionals.created_at, id = optionals.id, tags = optionals.tags, title = optionals.title }
+    Articles_bool_exp { and_ = optionals.and_, not_ = optionals.not_, or_ = optionals.or_, about = optionals.about, author = optionals.author, content = optionals.content, created_at = optionals.created_at, id = optionals.id, likes = optionals.likes, tags = optionals.tags, title = optionals.title }
 
 
 type alias Articles_bool_expOptionalFields =
@@ -82,6 +82,7 @@ type alias Articles_bool_expOptionalFields =
     , content : OptionalArgument String_comparison_exp
     , created_at : OptionalArgument Timestamptz_comparison_exp
     , id : OptionalArgument Int_comparison_exp
+    , likes : OptionalArgument Likes_bool_exp
     , tags : OptionalArgument Tags_bool_exp
     , title : OptionalArgument String_comparison_exp
     }
@@ -101,6 +102,7 @@ type alias Articles_bool_expRaw =
     , content : OptionalArgument String_comparison_exp
     , created_at : OptionalArgument Timestamptz_comparison_exp
     , id : OptionalArgument Int_comparison_exp
+    , likes : OptionalArgument Likes_bool_exp
     , tags : OptionalArgument Tags_bool_exp
     , title : OptionalArgument String_comparison_exp
     }
@@ -117,7 +119,7 @@ type Articles_bool_exp
 encodeArticles_bool_exp : Articles_bool_exp -> Value
 encodeArticles_bool_exp (Articles_bool_exp input) =
     Encode.maybeObject
-        [ ( "_and", (encodeArticles_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.and_ ), ( "_not", encodeArticles_bool_exp |> Encode.optional input.not_ ), ( "_or", (encodeArticles_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.or_ ), ( "about", encodeString_comparison_exp |> Encode.optional input.about ), ( "author", encodeUsers_bool_exp |> Encode.optional input.author ), ( "content", encodeString_comparison_exp |> Encode.optional input.content ), ( "created_at", encodeTimestamptz_comparison_exp |> Encode.optional input.created_at ), ( "id", encodeInt_comparison_exp |> Encode.optional input.id ), ( "tags", encodeTags_bool_exp |> Encode.optional input.tags ), ( "title", encodeString_comparison_exp |> Encode.optional input.title ) ]
+        [ ( "_and", (encodeArticles_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.and_ ), ( "_not", encodeArticles_bool_exp |> Encode.optional input.not_ ), ( "_or", (encodeArticles_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.or_ ), ( "about", encodeString_comparison_exp |> Encode.optional input.about ), ( "author", encodeUsers_bool_exp |> Encode.optional input.author ), ( "content", encodeString_comparison_exp |> Encode.optional input.content ), ( "created_at", encodeTimestamptz_comparison_exp |> Encode.optional input.created_at ), ( "id", encodeInt_comparison_exp |> Encode.optional input.id ), ( "likes", encodeLikes_bool_exp |> Encode.optional input.likes ), ( "tags", encodeTags_bool_exp |> Encode.optional input.tags ), ( "title", encodeString_comparison_exp |> Encode.optional input.title ) ]
 
 
 buildArticles_insert_input : (Articles_insert_inputOptionalFields -> Articles_insert_inputOptionalFields) -> Articles_insert_input
@@ -125,14 +127,15 @@ buildArticles_insert_input fillOptionals =
     let
         optionals =
             fillOptionals
-                { about = Absent, content = Absent, tags = Absent, title = Absent }
+                { about = Absent, content = Absent, likes = Absent, tags = Absent, title = Absent }
     in
-    { about = optionals.about, content = optionals.content, tags = optionals.tags, title = optionals.title }
+    { about = optionals.about, content = optionals.content, likes = optionals.likes, tags = optionals.tags, title = optionals.title }
 
 
 type alias Articles_insert_inputOptionalFields =
     { about : OptionalArgument String
     , content : OptionalArgument String
+    , likes : OptionalArgument Likes_arr_rel_insert_input
     , tags : OptionalArgument Tags_arr_rel_insert_input
     , title : OptionalArgument String
     }
@@ -143,6 +146,7 @@ type alias Articles_insert_inputOptionalFields =
 type alias Articles_insert_input =
     { about : OptionalArgument String
     , content : OptionalArgument String
+    , likes : OptionalArgument Likes_arr_rel_insert_input
     , tags : OptionalArgument Tags_arr_rel_insert_input
     , title : OptionalArgument String
     }
@@ -153,7 +157,7 @@ type alias Articles_insert_input =
 encodeArticles_insert_input : Articles_insert_input -> Value
 encodeArticles_insert_input input =
     Encode.maybeObject
-        [ ( "about", Encode.string |> Encode.optional input.about ), ( "content", Encode.string |> Encode.optional input.content ), ( "tags", encodeTags_arr_rel_insert_input |> Encode.optional input.tags ), ( "title", Encode.string |> Encode.optional input.title ) ]
+        [ ( "about", Encode.string |> Encode.optional input.about ), ( "content", Encode.string |> Encode.optional input.content ), ( "likes", encodeLikes_arr_rel_insert_input |> Encode.optional input.likes ), ( "tags", encodeTags_arr_rel_insert_input |> Encode.optional input.tags ), ( "title", Encode.string |> Encode.optional input.title ) ]
 
 
 buildArticles_obj_rel_insert_input : Articles_obj_rel_insert_inputRequiredFields -> (Articles_obj_rel_insert_inputOptionalFields -> Articles_obj_rel_insert_inputOptionalFields) -> Articles_obj_rel_insert_input
@@ -250,9 +254,9 @@ buildArticles_order_by fillOptionals =
     let
         optionals =
             fillOptionals
-                { about = Absent, author = Absent, content = Absent, created_at = Absent, id = Absent, title = Absent }
+                { about = Absent, author = Absent, content = Absent, created_at = Absent, id = Absent, likes_aggregate = Absent, title = Absent }
     in
-    { about = optionals.about, author = optionals.author, content = optionals.content, created_at = optionals.created_at, id = optionals.id, title = optionals.title }
+    { about = optionals.about, author = optionals.author, content = optionals.content, created_at = optionals.created_at, id = optionals.id, likes_aggregate = optionals.likes_aggregate, title = optionals.title }
 
 
 type alias Articles_order_byOptionalFields =
@@ -261,6 +265,7 @@ type alias Articles_order_byOptionalFields =
     , content : OptionalArgument Hasura.Enum.Order_by.Order_by
     , created_at : OptionalArgument Hasura.Enum.Order_by.Order_by
     , id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , likes_aggregate : OptionalArgument Likes_aggregate_order_by
     , title : OptionalArgument Hasura.Enum.Order_by.Order_by
     }
 
@@ -273,6 +278,7 @@ type alias Articles_order_by =
     , content : OptionalArgument Hasura.Enum.Order_by.Order_by
     , created_at : OptionalArgument Hasura.Enum.Order_by.Order_by
     , id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , likes_aggregate : OptionalArgument Likes_aggregate_order_by
     , title : OptionalArgument Hasura.Enum.Order_by.Order_by
     }
 
@@ -282,7 +288,7 @@ type alias Articles_order_by =
 encodeArticles_order_by : Articles_order_by -> Value
 encodeArticles_order_by input =
     Encode.maybeObject
-        [ ( "about", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.about ), ( "author", encodeUsers_order_by |> Encode.optional input.author ), ( "content", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.content ), ( "created_at", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.created_at ), ( "id", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.id ), ( "title", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.title ) ]
+        [ ( "about", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.about ), ( "author", encodeUsers_order_by |> Encode.optional input.author ), ( "content", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.content ), ( "created_at", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.created_at ), ( "id", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.id ), ( "likes_aggregate", encodeLikes_aggregate_order_by |> Encode.optional input.likes_aggregate ), ( "title", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.title ) ]
 
 
 buildArticles_pk_columns_input : Articles_pk_columns_inputRequiredFields -> Articles_pk_columns_input
@@ -432,6 +438,560 @@ encodeJson_comparison_exp : Json_comparison_exp -> Value
 encodeJson_comparison_exp input =
     Encode.maybeObject
         [ ( "_eq", (Hasura.ScalarCodecs.codecs |> Hasura.Scalar.unwrapEncoder .codecJson) |> Encode.optional input.eq_ ), ( "_gt", (Hasura.ScalarCodecs.codecs |> Hasura.Scalar.unwrapEncoder .codecJson) |> Encode.optional input.gt_ ), ( "_gte", (Hasura.ScalarCodecs.codecs |> Hasura.Scalar.unwrapEncoder .codecJson) |> Encode.optional input.gte_ ), ( "_in", ((Hasura.ScalarCodecs.codecs |> Hasura.Scalar.unwrapEncoder .codecJson) |> Encode.list) |> Encode.optional input.in_ ), ( "_is_null", Encode.bool |> Encode.optional input.is_null_ ), ( "_lt", (Hasura.ScalarCodecs.codecs |> Hasura.Scalar.unwrapEncoder .codecJson) |> Encode.optional input.lt_ ), ( "_lte", (Hasura.ScalarCodecs.codecs |> Hasura.Scalar.unwrapEncoder .codecJson) |> Encode.optional input.lte_ ), ( "_neq", (Hasura.ScalarCodecs.codecs |> Hasura.Scalar.unwrapEncoder .codecJson) |> Encode.optional input.neq_ ), ( "_nin", ((Hasura.ScalarCodecs.codecs |> Hasura.Scalar.unwrapEncoder .codecJson) |> Encode.list) |> Encode.optional input.nin_ ) ]
+
+
+buildLikes_aggregate_order_by : (Likes_aggregate_order_byOptionalFields -> Likes_aggregate_order_byOptionalFields) -> Likes_aggregate_order_by
+buildLikes_aggregate_order_by fillOptionals =
+    let
+        optionals =
+            fillOptionals
+                { avg = Absent, count = Absent, max = Absent, min = Absent, stddev = Absent, stddev_pop = Absent, stddev_samp = Absent, sum = Absent, var_pop = Absent, var_samp = Absent, variance = Absent }
+    in
+    { avg = optionals.avg, count = optionals.count, max = optionals.max, min = optionals.min, stddev = optionals.stddev, stddev_pop = optionals.stddev_pop, stddev_samp = optionals.stddev_samp, sum = optionals.sum, var_pop = optionals.var_pop, var_samp = optionals.var_samp, variance = optionals.variance }
+
+
+type alias Likes_aggregate_order_byOptionalFields =
+    { avg : OptionalArgument Likes_avg_order_by
+    , count : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , max : OptionalArgument Likes_max_order_by
+    , min : OptionalArgument Likes_min_order_by
+    , stddev : OptionalArgument Likes_stddev_order_by
+    , stddev_pop : OptionalArgument Likes_stddev_pop_order_by
+    , stddev_samp : OptionalArgument Likes_stddev_samp_order_by
+    , sum : OptionalArgument Likes_sum_order_by
+    , var_pop : OptionalArgument Likes_var_pop_order_by
+    , var_samp : OptionalArgument Likes_var_samp_order_by
+    , variance : OptionalArgument Likes_variance_order_by
+    }
+
+
+{-| Type for the Likes\_aggregate\_order\_by input object.
+-}
+type alias Likes_aggregate_order_by =
+    { avg : OptionalArgument Likes_avg_order_by
+    , count : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , max : OptionalArgument Likes_max_order_by
+    , min : OptionalArgument Likes_min_order_by
+    , stddev : OptionalArgument Likes_stddev_order_by
+    , stddev_pop : OptionalArgument Likes_stddev_pop_order_by
+    , stddev_samp : OptionalArgument Likes_stddev_samp_order_by
+    , sum : OptionalArgument Likes_sum_order_by
+    , var_pop : OptionalArgument Likes_var_pop_order_by
+    , var_samp : OptionalArgument Likes_var_samp_order_by
+    , variance : OptionalArgument Likes_variance_order_by
+    }
+
+
+{-| Encode a Likes\_aggregate\_order\_by into a value that can be used as an argument.
+-}
+encodeLikes_aggregate_order_by : Likes_aggregate_order_by -> Value
+encodeLikes_aggregate_order_by input =
+    Encode.maybeObject
+        [ ( "avg", encodeLikes_avg_order_by |> Encode.optional input.avg ), ( "count", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.count ), ( "max", encodeLikes_max_order_by |> Encode.optional input.max ), ( "min", encodeLikes_min_order_by |> Encode.optional input.min ), ( "stddev", encodeLikes_stddev_order_by |> Encode.optional input.stddev ), ( "stddev_pop", encodeLikes_stddev_pop_order_by |> Encode.optional input.stddev_pop ), ( "stddev_samp", encodeLikes_stddev_samp_order_by |> Encode.optional input.stddev_samp ), ( "sum", encodeLikes_sum_order_by |> Encode.optional input.sum ), ( "var_pop", encodeLikes_var_pop_order_by |> Encode.optional input.var_pop ), ( "var_samp", encodeLikes_var_samp_order_by |> Encode.optional input.var_samp ), ( "variance", encodeLikes_variance_order_by |> Encode.optional input.variance ) ]
+
+
+buildLikes_arr_rel_insert_input : Likes_arr_rel_insert_inputRequiredFields -> Likes_arr_rel_insert_input
+buildLikes_arr_rel_insert_input required =
+    { data = required.data }
+
+
+type alias Likes_arr_rel_insert_inputRequiredFields =
+    { data : List Likes_insert_input }
+
+
+{-| Type for the Likes\_arr\_rel\_insert\_input input object.
+-}
+type alias Likes_arr_rel_insert_input =
+    { data : List Likes_insert_input }
+
+
+{-| Encode a Likes\_arr\_rel\_insert\_input into a value that can be used as an argument.
+-}
+encodeLikes_arr_rel_insert_input : Likes_arr_rel_insert_input -> Value
+encodeLikes_arr_rel_insert_input input =
+    Encode.maybeObject
+        [ ( "data", (encodeLikes_insert_input |> Encode.list) input.data |> Just ) ]
+
+
+buildLikes_avg_order_by : (Likes_avg_order_byOptionalFields -> Likes_avg_order_byOptionalFields) -> Likes_avg_order_by
+buildLikes_avg_order_by fillOptionals =
+    let
+        optionals =
+            fillOptionals
+                { article_id = Absent, user_id = Absent }
+    in
+    { article_id = optionals.article_id, user_id = optionals.user_id }
+
+
+type alias Likes_avg_order_byOptionalFields =
+    { article_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , user_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    }
+
+
+{-| Type for the Likes\_avg\_order\_by input object.
+-}
+type alias Likes_avg_order_by =
+    { article_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , user_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    }
+
+
+{-| Encode a Likes\_avg\_order\_by into a value that can be used as an argument.
+-}
+encodeLikes_avg_order_by : Likes_avg_order_by -> Value
+encodeLikes_avg_order_by input =
+    Encode.maybeObject
+        [ ( "article_id", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.article_id ), ( "user_id", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.user_id ) ]
+
+
+buildLikes_bool_exp : (Likes_bool_expOptionalFields -> Likes_bool_expOptionalFields) -> Likes_bool_exp
+buildLikes_bool_exp fillOptionals =
+    let
+        optionals =
+            fillOptionals
+                { and_ = Absent, not_ = Absent, or_ = Absent, article_id = Absent, user = Absent, user_id = Absent }
+    in
+    Likes_bool_exp { and_ = optionals.and_, not_ = optionals.not_, or_ = optionals.or_, article_id = optionals.article_id, user = optionals.user, user_id = optionals.user_id }
+
+
+type alias Likes_bool_expOptionalFields =
+    { and_ : OptionalArgument (List (Maybe Likes_bool_exp))
+    , not_ : OptionalArgument Likes_bool_exp
+    , or_ : OptionalArgument (List (Maybe Likes_bool_exp))
+    , article_id : OptionalArgument Int_comparison_exp
+    , user : OptionalArgument Users_bool_exp
+    , user_id : OptionalArgument Int_comparison_exp
+    }
+
+
+{-| Type alias for the `Likes_bool_exp` attributes. Note that this type
+needs to use the `Likes_bool_exp` type (not just a plain type alias) because it has
+references to itself either directly (recursive) or indirectly (circular). See
+<https://github.com/dillonkearns/elm-graphql/issues/33>.
+-}
+type alias Likes_bool_expRaw =
+    { and_ : OptionalArgument (List (Maybe Likes_bool_exp))
+    , not_ : OptionalArgument Likes_bool_exp
+    , or_ : OptionalArgument (List (Maybe Likes_bool_exp))
+    , article_id : OptionalArgument Int_comparison_exp
+    , user : OptionalArgument Users_bool_exp
+    , user_id : OptionalArgument Int_comparison_exp
+    }
+
+
+{-| Type for the Likes\_bool\_exp input object.
+-}
+type Likes_bool_exp
+    = Likes_bool_exp Likes_bool_expRaw
+
+
+{-| Encode a Likes\_bool\_exp into a value that can be used as an argument.
+-}
+encodeLikes_bool_exp : Likes_bool_exp -> Value
+encodeLikes_bool_exp (Likes_bool_exp input) =
+    Encode.maybeObject
+        [ ( "_and", (encodeLikes_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.and_ ), ( "_not", encodeLikes_bool_exp |> Encode.optional input.not_ ), ( "_or", (encodeLikes_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.or_ ), ( "article_id", encodeInt_comparison_exp |> Encode.optional input.article_id ), ( "user", encodeUsers_bool_exp |> Encode.optional input.user ), ( "user_id", encodeInt_comparison_exp |> Encode.optional input.user_id ) ]
+
+
+buildLikes_insert_input : (Likes_insert_inputOptionalFields -> Likes_insert_inputOptionalFields) -> Likes_insert_input
+buildLikes_insert_input fillOptionals =
+    let
+        optionals =
+            fillOptionals
+                { article_id = Absent, user_id = Absent }
+    in
+    { article_id = optionals.article_id, user_id = optionals.user_id }
+
+
+type alias Likes_insert_inputOptionalFields =
+    { article_id : OptionalArgument Int
+    , user_id : OptionalArgument Int
+    }
+
+
+{-| Type for the Likes\_insert\_input input object.
+-}
+type alias Likes_insert_input =
+    { article_id : OptionalArgument Int
+    , user_id : OptionalArgument Int
+    }
+
+
+{-| Encode a Likes\_insert\_input into a value that can be used as an argument.
+-}
+encodeLikes_insert_input : Likes_insert_input -> Value
+encodeLikes_insert_input input =
+    Encode.maybeObject
+        [ ( "article_id", Encode.int |> Encode.optional input.article_id ), ( "user_id", Encode.int |> Encode.optional input.user_id ) ]
+
+
+buildLikes_max_order_by : (Likes_max_order_byOptionalFields -> Likes_max_order_byOptionalFields) -> Likes_max_order_by
+buildLikes_max_order_by fillOptionals =
+    let
+        optionals =
+            fillOptionals
+                { article_id = Absent, user_id = Absent }
+    in
+    { article_id = optionals.article_id, user_id = optionals.user_id }
+
+
+type alias Likes_max_order_byOptionalFields =
+    { article_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , user_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    }
+
+
+{-| Type for the Likes\_max\_order\_by input object.
+-}
+type alias Likes_max_order_by =
+    { article_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , user_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    }
+
+
+{-| Encode a Likes\_max\_order\_by into a value that can be used as an argument.
+-}
+encodeLikes_max_order_by : Likes_max_order_by -> Value
+encodeLikes_max_order_by input =
+    Encode.maybeObject
+        [ ( "article_id", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.article_id ), ( "user_id", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.user_id ) ]
+
+
+buildLikes_min_order_by : (Likes_min_order_byOptionalFields -> Likes_min_order_byOptionalFields) -> Likes_min_order_by
+buildLikes_min_order_by fillOptionals =
+    let
+        optionals =
+            fillOptionals
+                { article_id = Absent, user_id = Absent }
+    in
+    { article_id = optionals.article_id, user_id = optionals.user_id }
+
+
+type alias Likes_min_order_byOptionalFields =
+    { article_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , user_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    }
+
+
+{-| Type for the Likes\_min\_order\_by input object.
+-}
+type alias Likes_min_order_by =
+    { article_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , user_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    }
+
+
+{-| Encode a Likes\_min\_order\_by into a value that can be used as an argument.
+-}
+encodeLikes_min_order_by : Likes_min_order_by -> Value
+encodeLikes_min_order_by input =
+    Encode.maybeObject
+        [ ( "article_id", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.article_id ), ( "user_id", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.user_id ) ]
+
+
+buildLikes_obj_rel_insert_input : Likes_obj_rel_insert_inputRequiredFields -> Likes_obj_rel_insert_input
+buildLikes_obj_rel_insert_input required =
+    { data = required.data }
+
+
+type alias Likes_obj_rel_insert_inputRequiredFields =
+    { data : Likes_insert_input }
+
+
+{-| Type for the Likes\_obj\_rel\_insert\_input input object.
+-}
+type alias Likes_obj_rel_insert_input =
+    { data : Likes_insert_input }
+
+
+{-| Encode a Likes\_obj\_rel\_insert\_input into a value that can be used as an argument.
+-}
+encodeLikes_obj_rel_insert_input : Likes_obj_rel_insert_input -> Value
+encodeLikes_obj_rel_insert_input input =
+    Encode.maybeObject
+        [ ( "data", encodeLikes_insert_input input.data |> Just ) ]
+
+
+buildLikes_order_by : (Likes_order_byOptionalFields -> Likes_order_byOptionalFields) -> Likes_order_by
+buildLikes_order_by fillOptionals =
+    let
+        optionals =
+            fillOptionals
+                { article_id = Absent, user = Absent, user_id = Absent }
+    in
+    { article_id = optionals.article_id, user = optionals.user, user_id = optionals.user_id }
+
+
+type alias Likes_order_byOptionalFields =
+    { article_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , user : OptionalArgument Users_order_by
+    , user_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    }
+
+
+{-| Type for the Likes\_order\_by input object.
+-}
+type alias Likes_order_by =
+    { article_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , user : OptionalArgument Users_order_by
+    , user_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    }
+
+
+{-| Encode a Likes\_order\_by into a value that can be used as an argument.
+-}
+encodeLikes_order_by : Likes_order_by -> Value
+encodeLikes_order_by input =
+    Encode.maybeObject
+        [ ( "article_id", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.article_id ), ( "user", encodeUsers_order_by |> Encode.optional input.user ), ( "user_id", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.user_id ) ]
+
+
+buildLikes_pk_columns_input : Likes_pk_columns_inputRequiredFields -> Likes_pk_columns_input
+buildLikes_pk_columns_input required =
+    { id = required.id }
+
+
+type alias Likes_pk_columns_inputRequiredFields =
+    { id : Int }
+
+
+{-| Type for the Likes\_pk\_columns\_input input object.
+-}
+type alias Likes_pk_columns_input =
+    { id : Int }
+
+
+{-| Encode a Likes\_pk\_columns\_input into a value that can be used as an argument.
+-}
+encodeLikes_pk_columns_input : Likes_pk_columns_input -> Value
+encodeLikes_pk_columns_input input =
+    Encode.maybeObject
+        [ ( "id", Encode.int input.id |> Just ) ]
+
+
+buildLikes_stddev_order_by : (Likes_stddev_order_byOptionalFields -> Likes_stddev_order_byOptionalFields) -> Likes_stddev_order_by
+buildLikes_stddev_order_by fillOptionals =
+    let
+        optionals =
+            fillOptionals
+                { article_id = Absent, user_id = Absent }
+    in
+    { article_id = optionals.article_id, user_id = optionals.user_id }
+
+
+type alias Likes_stddev_order_byOptionalFields =
+    { article_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , user_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    }
+
+
+{-| Type for the Likes\_stddev\_order\_by input object.
+-}
+type alias Likes_stddev_order_by =
+    { article_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , user_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    }
+
+
+{-| Encode a Likes\_stddev\_order\_by into a value that can be used as an argument.
+-}
+encodeLikes_stddev_order_by : Likes_stddev_order_by -> Value
+encodeLikes_stddev_order_by input =
+    Encode.maybeObject
+        [ ( "article_id", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.article_id ), ( "user_id", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.user_id ) ]
+
+
+buildLikes_stddev_pop_order_by : (Likes_stddev_pop_order_byOptionalFields -> Likes_stddev_pop_order_byOptionalFields) -> Likes_stddev_pop_order_by
+buildLikes_stddev_pop_order_by fillOptionals =
+    let
+        optionals =
+            fillOptionals
+                { article_id = Absent, user_id = Absent }
+    in
+    { article_id = optionals.article_id, user_id = optionals.user_id }
+
+
+type alias Likes_stddev_pop_order_byOptionalFields =
+    { article_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , user_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    }
+
+
+{-| Type for the Likes\_stddev\_pop\_order\_by input object.
+-}
+type alias Likes_stddev_pop_order_by =
+    { article_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , user_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    }
+
+
+{-| Encode a Likes\_stddev\_pop\_order\_by into a value that can be used as an argument.
+-}
+encodeLikes_stddev_pop_order_by : Likes_stddev_pop_order_by -> Value
+encodeLikes_stddev_pop_order_by input =
+    Encode.maybeObject
+        [ ( "article_id", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.article_id ), ( "user_id", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.user_id ) ]
+
+
+buildLikes_stddev_samp_order_by : (Likes_stddev_samp_order_byOptionalFields -> Likes_stddev_samp_order_byOptionalFields) -> Likes_stddev_samp_order_by
+buildLikes_stddev_samp_order_by fillOptionals =
+    let
+        optionals =
+            fillOptionals
+                { article_id = Absent, user_id = Absent }
+    in
+    { article_id = optionals.article_id, user_id = optionals.user_id }
+
+
+type alias Likes_stddev_samp_order_byOptionalFields =
+    { article_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , user_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    }
+
+
+{-| Type for the Likes\_stddev\_samp\_order\_by input object.
+-}
+type alias Likes_stddev_samp_order_by =
+    { article_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , user_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    }
+
+
+{-| Encode a Likes\_stddev\_samp\_order\_by into a value that can be used as an argument.
+-}
+encodeLikes_stddev_samp_order_by : Likes_stddev_samp_order_by -> Value
+encodeLikes_stddev_samp_order_by input =
+    Encode.maybeObject
+        [ ( "article_id", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.article_id ), ( "user_id", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.user_id ) ]
+
+
+buildLikes_sum_order_by : (Likes_sum_order_byOptionalFields -> Likes_sum_order_byOptionalFields) -> Likes_sum_order_by
+buildLikes_sum_order_by fillOptionals =
+    let
+        optionals =
+            fillOptionals
+                { article_id = Absent, user_id = Absent }
+    in
+    { article_id = optionals.article_id, user_id = optionals.user_id }
+
+
+type alias Likes_sum_order_byOptionalFields =
+    { article_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , user_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    }
+
+
+{-| Type for the Likes\_sum\_order\_by input object.
+-}
+type alias Likes_sum_order_by =
+    { article_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , user_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    }
+
+
+{-| Encode a Likes\_sum\_order\_by into a value that can be used as an argument.
+-}
+encodeLikes_sum_order_by : Likes_sum_order_by -> Value
+encodeLikes_sum_order_by input =
+    Encode.maybeObject
+        [ ( "article_id", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.article_id ), ( "user_id", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.user_id ) ]
+
+
+buildLikes_var_pop_order_by : (Likes_var_pop_order_byOptionalFields -> Likes_var_pop_order_byOptionalFields) -> Likes_var_pop_order_by
+buildLikes_var_pop_order_by fillOptionals =
+    let
+        optionals =
+            fillOptionals
+                { article_id = Absent, user_id = Absent }
+    in
+    { article_id = optionals.article_id, user_id = optionals.user_id }
+
+
+type alias Likes_var_pop_order_byOptionalFields =
+    { article_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , user_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    }
+
+
+{-| Type for the Likes\_var\_pop\_order\_by input object.
+-}
+type alias Likes_var_pop_order_by =
+    { article_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , user_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    }
+
+
+{-| Encode a Likes\_var\_pop\_order\_by into a value that can be used as an argument.
+-}
+encodeLikes_var_pop_order_by : Likes_var_pop_order_by -> Value
+encodeLikes_var_pop_order_by input =
+    Encode.maybeObject
+        [ ( "article_id", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.article_id ), ( "user_id", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.user_id ) ]
+
+
+buildLikes_var_samp_order_by : (Likes_var_samp_order_byOptionalFields -> Likes_var_samp_order_byOptionalFields) -> Likes_var_samp_order_by
+buildLikes_var_samp_order_by fillOptionals =
+    let
+        optionals =
+            fillOptionals
+                { article_id = Absent, user_id = Absent }
+    in
+    { article_id = optionals.article_id, user_id = optionals.user_id }
+
+
+type alias Likes_var_samp_order_byOptionalFields =
+    { article_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , user_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    }
+
+
+{-| Type for the Likes\_var\_samp\_order\_by input object.
+-}
+type alias Likes_var_samp_order_by =
+    { article_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , user_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    }
+
+
+{-| Encode a Likes\_var\_samp\_order\_by into a value that can be used as an argument.
+-}
+encodeLikes_var_samp_order_by : Likes_var_samp_order_by -> Value
+encodeLikes_var_samp_order_by input =
+    Encode.maybeObject
+        [ ( "article_id", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.article_id ), ( "user_id", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.user_id ) ]
+
+
+buildLikes_variance_order_by : (Likes_variance_order_byOptionalFields -> Likes_variance_order_byOptionalFields) -> Likes_variance_order_by
+buildLikes_variance_order_by fillOptionals =
+    let
+        optionals =
+            fillOptionals
+                { article_id = Absent, user_id = Absent }
+    in
+    { article_id = optionals.article_id, user_id = optionals.user_id }
+
+
+type alias Likes_variance_order_byOptionalFields =
+    { article_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , user_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    }
+
+
+{-| Type for the Likes\_variance\_order\_by input object.
+-}
+type alias Likes_variance_order_by =
+    { article_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , user_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    }
+
+
+{-| Encode a Likes\_variance\_order\_by into a value that can be used as an argument.
+-}
+encodeLikes_variance_order_by : Likes_variance_order_by -> Value
+encodeLikes_variance_order_by input =
+    Encode.maybeObject
+        [ ( "article_id", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.article_id ), ( "user_id", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.user_id ) ]
 
 
 buildString_comparison_exp : (String_comparison_expOptionalFields -> String_comparison_expOptionalFields) -> String_comparison_exp

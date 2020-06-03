@@ -11,6 +11,7 @@ import Graphql.Operation exposing (RootMutation, RootQuery, RootSubscription)
 import Graphql.OptionalArgument exposing (OptionalArgument(..))
 import Graphql.SelectionSet exposing (SelectionSet)
 import Hasura.Enum.Articles_select_column
+import Hasura.Enum.Likes_select_column
 import Hasura.Enum.Tags_select_column
 import Hasura.Enum.User_profile_select_column
 import Hasura.Enum.Users_select_column
@@ -63,6 +64,79 @@ articles fillInOptionals object_ =
                 |> List.filterMap identity
     in
     Object.selectionForCompositeField "articles" optionalArgs object_ (identity >> Decode.list)
+
+
+type alias LikesOptionalArguments =
+    { distinct_on : OptionalArgument (List Hasura.Enum.Likes_select_column.Likes_select_column)
+    , limit : OptionalArgument Int
+    , offset : OptionalArgument Int
+    , order_by : OptionalArgument (List Hasura.InputObject.Likes_order_by)
+    , where_ : OptionalArgument Hasura.InputObject.Likes_bool_exp
+    }
+
+
+{-| fetch data from the table: "likes"
+
+  - distinct\_on - distinct select on columns
+  - limit - limit the number of rows returned
+  - offset - skip the first n rows. Use only with order\_by
+  - order\_by - sort the rows by one or more columns
+  - where\_ - filter the rows returned
+
+-}
+likes : (LikesOptionalArguments -> LikesOptionalArguments) -> SelectionSet decodesTo Hasura.Object.Likes -> SelectionSet (List decodesTo) RootQuery
+likes fillInOptionals object_ =
+    let
+        filledInOptionals =
+            fillInOptionals { distinct_on = Absent, limit = Absent, offset = Absent, order_by = Absent, where_ = Absent }
+
+        optionalArgs =
+            [ Argument.optional "distinct_on" filledInOptionals.distinct_on (Encode.enum Hasura.Enum.Likes_select_column.toString |> Encode.list), Argument.optional "limit" filledInOptionals.limit Encode.int, Argument.optional "offset" filledInOptionals.offset Encode.int, Argument.optional "order_by" filledInOptionals.order_by (Hasura.InputObject.encodeLikes_order_by |> Encode.list), Argument.optional "where" filledInOptionals.where_ Hasura.InputObject.encodeLikes_bool_exp ]
+                |> List.filterMap identity
+    in
+    Object.selectionForCompositeField "likes" optionalArgs object_ (identity >> Decode.list)
+
+
+type alias LikesAggregateOptionalArguments =
+    { distinct_on : OptionalArgument (List Hasura.Enum.Likes_select_column.Likes_select_column)
+    , limit : OptionalArgument Int
+    , offset : OptionalArgument Int
+    , order_by : OptionalArgument (List Hasura.InputObject.Likes_order_by)
+    , where_ : OptionalArgument Hasura.InputObject.Likes_bool_exp
+    }
+
+
+{-| fetch aggregated fields from the table: "likes"
+
+  - distinct\_on - distinct select on columns
+  - limit - limit the number of rows returned
+  - offset - skip the first n rows. Use only with order\_by
+  - order\_by - sort the rows by one or more columns
+  - where\_ - filter the rows returned
+
+-}
+likes_aggregate : (LikesAggregateOptionalArguments -> LikesAggregateOptionalArguments) -> SelectionSet decodesTo Hasura.Object.Likes_aggregate -> SelectionSet decodesTo RootQuery
+likes_aggregate fillInOptionals object_ =
+    let
+        filledInOptionals =
+            fillInOptionals { distinct_on = Absent, limit = Absent, offset = Absent, order_by = Absent, where_ = Absent }
+
+        optionalArgs =
+            [ Argument.optional "distinct_on" filledInOptionals.distinct_on (Encode.enum Hasura.Enum.Likes_select_column.toString |> Encode.list), Argument.optional "limit" filledInOptionals.limit Encode.int, Argument.optional "offset" filledInOptionals.offset Encode.int, Argument.optional "order_by" filledInOptionals.order_by (Hasura.InputObject.encodeLikes_order_by |> Encode.list), Argument.optional "where" filledInOptionals.where_ Hasura.InputObject.encodeLikes_bool_exp ]
+                |> List.filterMap identity
+    in
+    Object.selectionForCompositeField "likes_aggregate" optionalArgs object_ identity
+
+
+type alias LikesByPkRequiredArguments =
+    { id : Int }
+
+
+{-| fetch data from the table: "likes" using primary key columns
+-}
+likes_by_pk : LikesByPkRequiredArguments -> SelectionSet decodesTo Hasura.Object.Likes -> SelectionSet (Maybe decodesTo) RootQuery
+likes_by_pk requiredArgs object_ =
+    Object.selectionForCompositeField "likes_by_pk" [ Argument.required "id" requiredArgs.id Encode.int ] object_ (identity >> Decode.nullable)
 
 
 type alias ProfileOptionalArguments =

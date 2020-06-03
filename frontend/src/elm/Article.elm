@@ -9,6 +9,8 @@ module Article exposing
     , content
     , createdAt
     , id
+    , likedByMe
+    , likes
     , profileImage
     , tags
     , title
@@ -17,6 +19,7 @@ module Article exposing
 
 import Date exposing (Date)
 import Tag exposing (Tag)
+import User
 
 
 
@@ -32,10 +35,16 @@ type alias Article_ =
     , title : String
     , about : String
     , content : String
-    , author : String
+    , author : Author
     , createdAt : Date
     , tags : List Tag
+    , likes : Int
+    , likedBy : List Author
     }
+
+
+type alias Author =
+    String
 
 
 type alias Id =
@@ -77,8 +86,8 @@ toCreate i =
 -- Build
 
 
-build : Id -> String -> String -> String -> String -> Date -> List Tag -> Article
-build id_ title_ about_ content_ author_ createdAt_ tags_ =
+build : Id -> String -> String -> String -> String -> Date -> List Tag -> Int -> List Author -> Article
+build id_ title_ about_ content_ author_ createdAt_ tags_ likes_ likedBy_ =
     Article
         { id = id_
         , title = title_
@@ -87,6 +96,8 @@ build id_ title_ about_ content_ author_ createdAt_ tags_ =
         , author = author_
         , createdAt = createdAt_
         , tags = tags_
+        , likes = likes_
+        , likedBy = likedBy_
         }
 
 
@@ -127,6 +138,21 @@ createdAt =
 tags : Article -> List Tag
 tags =
     article_ >> .tags
+
+
+likes : Article -> Int
+likes =
+    article_ >> .likes
+
+
+likedByMe : User.Profile -> Article -> Bool
+likedByMe profile article =
+    List.member (User.username profile) (likedBy article)
+
+
+likedBy : Article -> List Author
+likedBy =
+    article_ >> .likedBy
 
 
 profileImage : Article -> String

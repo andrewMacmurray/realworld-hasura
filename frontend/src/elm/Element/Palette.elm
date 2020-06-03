@@ -7,11 +7,12 @@ module Element.Palette exposing
     , grey
     , lightGrey
     , red
+    , toRgbString
     , transparent
     , white
     )
 
-import Element exposing (Color, rgb255, rgba255)
+import Element exposing (Color, rgb255, rgba255, toRgb)
 
 
 green : Color
@@ -62,3 +63,33 @@ black =
 transparent : Color
 transparent =
     rgba255 0 0 0 0
+
+
+
+-- To RGB String
+
+
+toRgbString : Color -> String
+toRgbString color =
+    let
+        c =
+            toRgb color
+    in
+    String.concat
+        [ "rgb("
+        , String.fromInt (to255RgbValue c.red)
+        , ", "
+        , String.fromInt (to255RgbValue c.green)
+        , ", "
+        , String.fromInt (to255RgbValue c.blue)
+        , ")"
+        ]
+
+
+to255RgbValue : Float -> Int
+to255RgbValue value =
+    if value <= 1 then
+        round (value * 255)
+
+    else
+        round value

@@ -5,3 +5,11 @@
 .circular-image img {
   border-radius: 100%;
 }
+
+.icon-white-hover-target {
+  transition: fill 0.2s ease;
+}
+
+.icon-white-hover:hover .icon-white-hover-target {
+  fill: white;
+}

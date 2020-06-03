@@ -1,14 +1,13 @@
 module Page.ArticleTest exposing (..)
 
 import Article exposing (Article)
-import Date
 import Graphql.Http exposing (HttpError(..), RawError(..))
+import Helpers
 import Program
 import Program.Selector exposing (el)
 import ProgramTest exposing (expectViewHas)
 import Route
 import Test exposing (..)
-import Time exposing (Month(..))
 
 
 suite : Test
@@ -35,17 +34,11 @@ suite =
         ]
 
 
+article : Article
+article =
+    Helpers.article "An Article"
+
+
 serverError : Graphql.Http.Error a
 serverError =
     HttpError NetworkError
-
-
-article : Article
-article =
-    Article.build 1
-        "title"
-        "about something"
-        "author"
-        "contents"
-        (Date.fromCalendarDate 2020 Jan 20)
-        []

@@ -15,6 +15,7 @@ import Element.Anchor as Anchor
 import Element.Avatar as Avatar
 import Element.Background as Background
 import Element.Border as Border
+import Element.Button as Button
 import Element.Divider as Divider
 import Element.Layout as Layout
 import Element.Palette as Palette
@@ -40,6 +41,7 @@ type alias Model =
 type Msg
     = GlobalFeedResponseReceived (Api.Response Article.Feed)
     | TagFeedResponseReceived (Api.Response Article.Feed)
+    | LikeArticleClicked Article
 
 
 
@@ -81,6 +83,9 @@ update msg model =
         TagFeedResponseReceived response ->
             ( { model | feed = WebData.fromResult response }, Effect.none )
 
+        LikeArticleClicked article ->
+            ( model, Effect.none )
+
 
 
 -- View
@@ -90,7 +95,7 @@ view : User -> Model -> Element Msg
 view user model =
     Layout.user user
         |> Layout.withBanner [ Background.color Palette.green ] banner
-        |> Layout.toElement [ pageContents model ]
+        |> Layout.toElement [ pageContents user model ]
 
 
 banner : Element msg
@@ -101,23 +106,25 @@ banner =
         ]
 
 
+whiteSubtitle : String -> Element msg
 whiteSubtitle =
     Text.subtitle [ Text.regular, Text.white ]
 
 
+whiteHeadline : String -> Element msg
 whiteHeadline =
     Text.headline [ Text.white ]
 
 
-pageContents : Model -> Element msg
-pageContents model =
+pageContents : User -> Model -> Element Msg
+pageContents user model =
     case model.feed of
         WebData.Loading ->
             Text.text [] "Loading"
 
         WebData.Success feed_ ->
             row [ width fill, spacing Scale.large ]
-                [ feedArticles model.selectedTag feed_.articles
+                [ feedArticles user model.selectedTag feed_.articles
                 , popularTags feed_.popularTags
                 ]
 
@@ -164,8 +171,8 @@ whiteLabel =
     Text.label [ Text.white ]
 
 
-feedArticles : Maybe Tag -> List Article -> Element msg
-feedArticles selectedTag articles =
+feedArticles : User -> Maybe Tag -> List Article -> Element Msg
+feedArticles user selectedTag articles =
     case selectedTag of
         Just tag ->
             column
@@ -177,7 +184,7 @@ feedArticles selectedTag articles =
                     [ subtitleLink "Global Feed"
                     , greenSubtitle ("#" ++ String.capitalize (Tag.value tag))
                     ]
-                , viewArticles articles
+                , viewArticles user articles
                 ]
 
         Nothing ->
@@ -187,7 +194,7 @@ feedArticles selectedTag articles =
                 , spacing Scale.large
                 ]
                 [ greenSubtitle "Global Feed"
-                , viewArticles articles
+                , viewArticles user articles
                 ]
 
 
@@ -201,17 +208,17 @@ greenSubtitle =
     Text.subtitle [ Text.green ]
 
 
-viewArticles : List Article -> Element msg
-viewArticles articles =
+viewArticles : User -> List Article -> Element Msg
+viewArticles user articles =
     column
         [ spacing Scale.large
         , width fill
         ]
-        (List.map viewArticle articles)
+        (List.map (viewArticle user) articles)
 
 
-viewArticle : Article -> Element msg
-viewArticle article =
+viewArticle : User -> Article -> Element Msg
+viewArticle user article =
     column
         [ anchor article
         , spacing Scale.medium
@@ -220,12 +227,39 @@ viewArticle article =
         [ Divider.divider
         , row [ width fill ]
             [ column [ spacing Scale.medium, width fill ]
-                [ profile article
+                [ row [ width fill ] [ profile article, likes user article ]
                 , articleSummary article
                 , row [ width fill ] [ readMore article, tags article ]
                 ]
             ]
         ]
+
+
+likes : User -> Article -> Element Msg
+likes user article =
+    let
+        likeCount =
+            Article.likes article |> String.fromInt
+    in
+    el [ alignRight ]
+        (case user of
+            Guest ->
+                Button.decorative likeCount
+                    |> Button.like
+                    |> Button.toElement
+
+            LoggedIn profile_ ->
+                if Article.likedByMe profile_ article then
+                    Button.decorative likeCount
+                        |> Button.like
+                        |> Button.solid
+                        |> Button.toElement
+
+                else
+                    Button.button (LikeArticleClicked article) likeCount
+                        |> Button.like
+                        |> Button.toElement
+        )
 
 
 readMore : Article -> Element msg
