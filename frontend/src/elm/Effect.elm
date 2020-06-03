@@ -1,6 +1,7 @@
 module Effect exposing
     ( Effect(..)
     , batch
+    , likeArticle
     , loadArticle
     , loadGlobalFeed
     , loadTagFeed
@@ -44,6 +45,7 @@ type Effect msg
     | LoadTagFeed (Api.Query Article.Feed msg)
     | LoadArticle (Api.Query (Maybe Article) msg)
     | PublishArticle (Api.Mutation () msg)
+    | LikeArticle (Api.Mutation Article msg)
 
 
 none : Effect msg
@@ -111,6 +113,11 @@ publishArticle =
     PublishArticle
 
 
+likeArticle : Api.Mutation Article msg -> Effect msg
+likeArticle =
+    LikeArticle
+
+
 
 -- Transform
 
@@ -156,6 +163,9 @@ map toMsg effect =
 
         PublishArticle mut ->
             PublishArticle (Api.map toMsg mut)
+
+        LikeArticle mut ->
+            LikeArticle (Api.map toMsg mut)
 
 
 
@@ -217,6 +227,9 @@ perform pushUrl_ ( model, effect ) =
             ( model, Api.doQuery model.user query )
 
         PublishArticle mutation ->
+            ( model, Api.doMutation model.user mutation )
+
+        LikeArticle mutation ->
             ( model, Api.doMutation model.user mutation )
 
 

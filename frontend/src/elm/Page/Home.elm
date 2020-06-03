@@ -42,6 +42,7 @@ type Msg
     = GlobalFeedResponseReceived (Api.Response Article.Feed)
     | TagFeedResponseReceived (Api.Response Article.Feed)
     | LikeArticleClicked Article
+    | LikeArticleResponseReceived (Api.Response Article)
 
 
 
@@ -84,7 +85,18 @@ update msg model =
             ( { model | feed = WebData.fromResult response }, Effect.none )
 
         LikeArticleClicked article ->
+            ( model, likeArticle article )
+
+        LikeArticleResponseReceived (Ok article) ->
+            ( { model | feed = WebData.map (Article.replace article) model.feed }, Effect.none )
+
+        LikeArticleResponseReceived (Err _) ->
             ( model, Effect.none )
+
+
+likeArticle : Article -> Effect Msg
+likeArticle article =
+    Api.Articles.like article LikeArticleResponseReceived
 
 
 
@@ -181,7 +193,7 @@ feedArticles user selectedTag articles =
                 , spacing Scale.large
                 ]
                 [ row [ spacing Scale.large ]
-                    [ subtitleLink "Global Feed"
+                    [ Route.el Route.home (subtitleLink "Global Feed")
                     , greenSubtitle ("#" ++ String.capitalize (Tag.value tag))
                     ]
                 , viewArticles user articles

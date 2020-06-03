@@ -2,6 +2,7 @@ module Route exposing
     ( Route(..)
     , el
     , fromUrl
+    , home
     , link
     , routeToString
     , tagFeed
@@ -45,6 +46,11 @@ parser =
 tagFeed : Tag -> Route
 tagFeed tag =
     Home (Just tag)
+
+
+home : Route
+home =
+    Home Nothing
 
 
 tagQuery : Query.Parser (Maybe Tag)

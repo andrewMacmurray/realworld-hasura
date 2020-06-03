@@ -129,7 +129,7 @@ buildArticles_insert_input fillOptionals =
             fillOptionals
                 { about = Absent, content = Absent, likes = Absent, tags = Absent, title = Absent }
     in
-    { about = optionals.about, content = optionals.content, likes = optionals.likes, tags = optionals.tags, title = optionals.title }
+    Articles_insert_input { about = optionals.about, content = optionals.content, likes = optionals.likes, tags = optionals.tags, title = optionals.title }
 
 
 type alias Articles_insert_inputOptionalFields =
@@ -141,9 +141,12 @@ type alias Articles_insert_inputOptionalFields =
     }
 
 
-{-| Type for the Articles\_insert\_input input object.
+{-| Type alias for the `Articles_insert_input` attributes. Note that this type
+needs to use the `Articles_insert_input` type (not just a plain type alias) because it has
+references to itself either directly (recursive) or indirectly (circular). See
+<https://github.com/dillonkearns/elm-graphql/issues/33>.
 -}
-type alias Articles_insert_input =
+type alias Articles_insert_inputRaw =
     { about : OptionalArgument String
     , content : OptionalArgument String
     , likes : OptionalArgument Likes_arr_rel_insert_input
@@ -152,10 +155,16 @@ type alias Articles_insert_input =
     }
 
 
+{-| Type for the Articles\_insert\_input input object.
+-}
+type Articles_insert_input
+    = Articles_insert_input Articles_insert_inputRaw
+
+
 {-| Encode a Articles\_insert\_input into a value that can be used as an argument.
 -}
 encodeArticles_insert_input : Articles_insert_input -> Value
-encodeArticles_insert_input input =
+encodeArticles_insert_input (Articles_insert_input input) =
     Encode.maybeObject
         [ ( "about", Encode.string |> Encode.optional input.about ), ( "content", Encode.string |> Encode.optional input.content ), ( "likes", encodeLikes_arr_rel_insert_input |> Encode.optional input.likes ), ( "tags", encodeTags_arr_rel_insert_input |> Encode.optional input.tags ), ( "title", Encode.string |> Encode.optional input.title ) ]
 
@@ -492,23 +501,32 @@ encodeLikes_aggregate_order_by input =
 
 buildLikes_arr_rel_insert_input : Likes_arr_rel_insert_inputRequiredFields -> Likes_arr_rel_insert_input
 buildLikes_arr_rel_insert_input required =
-    { data = required.data }
+    Likes_arr_rel_insert_input { data = required.data }
 
 
 type alias Likes_arr_rel_insert_inputRequiredFields =
     { data : List Likes_insert_input }
 
 
+{-| Type alias for the `Likes_arr_rel_insert_input` attributes. Note that this type
+needs to use the `Likes_arr_rel_insert_input` type (not just a plain type alias) because it has
+references to itself either directly (recursive) or indirectly (circular). See
+<https://github.com/dillonkearns/elm-graphql/issues/33>.
+-}
+type alias Likes_arr_rel_insert_inputRaw =
+    { data : List Likes_insert_input }
+
+
 {-| Type for the Likes\_arr\_rel\_insert\_input input object.
 -}
-type alias Likes_arr_rel_insert_input =
-    { data : List Likes_insert_input }
+type Likes_arr_rel_insert_input
+    = Likes_arr_rel_insert_input Likes_arr_rel_insert_inputRaw
 
 
 {-| Encode a Likes\_arr\_rel\_insert\_input into a value that can be used as an argument.
 -}
 encodeLikes_arr_rel_insert_input : Likes_arr_rel_insert_input -> Value
-encodeLikes_arr_rel_insert_input input =
+encodeLikes_arr_rel_insert_input (Likes_arr_rel_insert_input input) =
     Encode.maybeObject
         [ ( "data", (encodeLikes_insert_input |> Encode.list) input.data |> Just ) ]
 
@@ -550,15 +568,16 @@ buildLikes_bool_exp fillOptionals =
     let
         optionals =
             fillOptionals
-                { and_ = Absent, not_ = Absent, or_ = Absent, article_id = Absent, user = Absent, user_id = Absent }
+                { and_ = Absent, not_ = Absent, or_ = Absent, article = Absent, article_id = Absent, user = Absent, user_id = Absent }
     in
-    Likes_bool_exp { and_ = optionals.and_, not_ = optionals.not_, or_ = optionals.or_, article_id = optionals.article_id, user = optionals.user, user_id = optionals.user_id }
+    Likes_bool_exp { and_ = optionals.and_, not_ = optionals.not_, or_ = optionals.or_, article = optionals.article, article_id = optionals.article_id, user = optionals.user, user_id = optionals.user_id }
 
 
 type alias Likes_bool_expOptionalFields =
     { and_ : OptionalArgument (List (Maybe Likes_bool_exp))
     , not_ : OptionalArgument Likes_bool_exp
     , or_ : OptionalArgument (List (Maybe Likes_bool_exp))
+    , article : OptionalArgument Articles_bool_exp
     , article_id : OptionalArgument Int_comparison_exp
     , user : OptionalArgument Users_bool_exp
     , user_id : OptionalArgument Int_comparison_exp
@@ -574,6 +593,7 @@ type alias Likes_bool_expRaw =
     { and_ : OptionalArgument (List (Maybe Likes_bool_exp))
     , not_ : OptionalArgument Likes_bool_exp
     , or_ : OptionalArgument (List (Maybe Likes_bool_exp))
+    , article : OptionalArgument Articles_bool_exp
     , article_id : OptionalArgument Int_comparison_exp
     , user : OptionalArgument Users_bool_exp
     , user_id : OptionalArgument Int_comparison_exp
@@ -591,7 +611,7 @@ type Likes_bool_exp
 encodeLikes_bool_exp : Likes_bool_exp -> Value
 encodeLikes_bool_exp (Likes_bool_exp input) =
     Encode.maybeObject
-        [ ( "_and", (encodeLikes_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.and_ ), ( "_not", encodeLikes_bool_exp |> Encode.optional input.not_ ), ( "_or", (encodeLikes_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.or_ ), ( "article_id", encodeInt_comparison_exp |> Encode.optional input.article_id ), ( "user", encodeUsers_bool_exp |> Encode.optional input.user ), ( "user_id", encodeInt_comparison_exp |> Encode.optional input.user_id ) ]
+        [ ( "_and", (encodeLikes_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.and_ ), ( "_not", encodeLikes_bool_exp |> Encode.optional input.not_ ), ( "_or", (encodeLikes_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.or_ ), ( "article", encodeArticles_bool_exp |> Encode.optional input.article ), ( "article_id", encodeInt_comparison_exp |> Encode.optional input.article_id ), ( "user", encodeUsers_bool_exp |> Encode.optional input.user ), ( "user_id", encodeInt_comparison_exp |> Encode.optional input.user_id ) ]
 
 
 buildLikes_insert_input : (Likes_insert_inputOptionalFields -> Likes_insert_inputOptionalFields) -> Likes_insert_input
@@ -599,31 +619,40 @@ buildLikes_insert_input fillOptionals =
     let
         optionals =
             fillOptionals
-                { article_id = Absent, user_id = Absent }
+                { article = Absent, article_id = Absent }
     in
-    { article_id = optionals.article_id, user_id = optionals.user_id }
+    Likes_insert_input { article = optionals.article, article_id = optionals.article_id }
 
 
 type alias Likes_insert_inputOptionalFields =
-    { article_id : OptionalArgument Int
-    , user_id : OptionalArgument Int
+    { article : OptionalArgument Articles_obj_rel_insert_input
+    , article_id : OptionalArgument Int
+    }
+
+
+{-| Type alias for the `Likes_insert_input` attributes. Note that this type
+needs to use the `Likes_insert_input` type (not just a plain type alias) because it has
+references to itself either directly (recursive) or indirectly (circular). See
+<https://github.com/dillonkearns/elm-graphql/issues/33>.
+-}
+type alias Likes_insert_inputRaw =
+    { article : OptionalArgument Articles_obj_rel_insert_input
+    , article_id : OptionalArgument Int
     }
 
 
 {-| Type for the Likes\_insert\_input input object.
 -}
-type alias Likes_insert_input =
-    { article_id : OptionalArgument Int
-    , user_id : OptionalArgument Int
-    }
+type Likes_insert_input
+    = Likes_insert_input Likes_insert_inputRaw
 
 
 {-| Encode a Likes\_insert\_input into a value that can be used as an argument.
 -}
 encodeLikes_insert_input : Likes_insert_input -> Value
-encodeLikes_insert_input input =
+encodeLikes_insert_input (Likes_insert_input input) =
     Encode.maybeObject
-        [ ( "article_id", Encode.int |> Encode.optional input.article_id ), ( "user_id", Encode.int |> Encode.optional input.user_id ) ]
+        [ ( "article", encodeArticles_obj_rel_insert_input |> Encode.optional input.article ), ( "article_id", Encode.int |> Encode.optional input.article_id ) ]
 
 
 buildLikes_max_order_by : (Likes_max_order_byOptionalFields -> Likes_max_order_byOptionalFields) -> Likes_max_order_by
@@ -692,23 +721,32 @@ encodeLikes_min_order_by input =
 
 buildLikes_obj_rel_insert_input : Likes_obj_rel_insert_inputRequiredFields -> Likes_obj_rel_insert_input
 buildLikes_obj_rel_insert_input required =
-    { data = required.data }
+    Likes_obj_rel_insert_input { data = required.data }
 
 
 type alias Likes_obj_rel_insert_inputRequiredFields =
     { data : Likes_insert_input }
 
 
+{-| Type alias for the `Likes_obj_rel_insert_input` attributes. Note that this type
+needs to use the `Likes_obj_rel_insert_input` type (not just a plain type alias) because it has
+references to itself either directly (recursive) or indirectly (circular). See
+<https://github.com/dillonkearns/elm-graphql/issues/33>.
+-}
+type alias Likes_obj_rel_insert_inputRaw =
+    { data : Likes_insert_input }
+
+
 {-| Type for the Likes\_obj\_rel\_insert\_input input object.
 -}
-type alias Likes_obj_rel_insert_input =
-    { data : Likes_insert_input }
+type Likes_obj_rel_insert_input
+    = Likes_obj_rel_insert_input Likes_obj_rel_insert_inputRaw
 
 
 {-| Encode a Likes\_obj\_rel\_insert\_input into a value that can be used as an argument.
 -}
 encodeLikes_obj_rel_insert_input : Likes_obj_rel_insert_input -> Value
-encodeLikes_obj_rel_insert_input input =
+encodeLikes_obj_rel_insert_input (Likes_obj_rel_insert_input input) =
     Encode.maybeObject
         [ ( "data", encodeLikes_insert_input input.data |> Just ) ]
 
@@ -718,13 +756,27 @@ buildLikes_order_by fillOptionals =
     let
         optionals =
             fillOptionals
-                { article_id = Absent, user = Absent, user_id = Absent }
+                { article = Absent, article_id = Absent, user = Absent, user_id = Absent }
     in
-    { article_id = optionals.article_id, user = optionals.user, user_id = optionals.user_id }
+    Likes_order_by { article = optionals.article, article_id = optionals.article_id, user = optionals.user, user_id = optionals.user_id }
 
 
 type alias Likes_order_byOptionalFields =
-    { article_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    { article : OptionalArgument Articles_order_by
+    , article_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , user : OptionalArgument Users_order_by
+    , user_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    }
+
+
+{-| Type alias for the `Likes_order_by` attributes. Note that this type
+needs to use the `Likes_order_by` type (not just a plain type alias) because it has
+references to itself either directly (recursive) or indirectly (circular). See
+<https://github.com/dillonkearns/elm-graphql/issues/33>.
+-}
+type alias Likes_order_byRaw =
+    { article : OptionalArgument Articles_order_by
+    , article_id : OptionalArgument Hasura.Enum.Order_by.Order_by
     , user : OptionalArgument Users_order_by
     , user_id : OptionalArgument Hasura.Enum.Order_by.Order_by
     }
@@ -732,19 +784,16 @@ type alias Likes_order_byOptionalFields =
 
 {-| Type for the Likes\_order\_by input object.
 -}
-type alias Likes_order_by =
-    { article_id : OptionalArgument Hasura.Enum.Order_by.Order_by
-    , user : OptionalArgument Users_order_by
-    , user_id : OptionalArgument Hasura.Enum.Order_by.Order_by
-    }
+type Likes_order_by
+    = Likes_order_by Likes_order_byRaw
 
 
 {-| Encode a Likes\_order\_by into a value that can be used as an argument.
 -}
 encodeLikes_order_by : Likes_order_by -> Value
-encodeLikes_order_by input =
+encodeLikes_order_by (Likes_order_by input) =
     Encode.maybeObject
-        [ ( "article_id", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.article_id ), ( "user", encodeUsers_order_by |> Encode.optional input.user ), ( "user_id", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.user_id ) ]
+        [ ( "article", encodeArticles_order_by |> Encode.optional input.article ), ( "article_id", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.article_id ), ( "user", encodeUsers_order_by |> Encode.optional input.user ), ( "user_id", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.user_id ) ]
 
 
 buildLikes_pk_columns_input : Likes_pk_columns_inputRequiredFields -> Likes_pk_columns_input

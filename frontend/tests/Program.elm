@@ -15,6 +15,7 @@ import Api
 import Article exposing (Article)
 import Effect exposing (Effect(..))
 import Element.Anchor as Anchor
+import Helpers
 import Json.Encode as Encode
 import Main
 import Ports
@@ -223,6 +224,9 @@ simulateEffects options eff =
 
         PublishArticle { msg } ->
             simulateTask (Ok ()) msg
+
+        LikeArticle { msg } ->
+            simulateTask (Ok (Helpers.article "updated")) msg
 
 
 defaultProfile : User.Profile

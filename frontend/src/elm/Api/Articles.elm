@@ -1,5 +1,6 @@
 module Api.Articles exposing
     ( globalFeed
+    , like
     , loadArticle
     , publish
     , tagFeed
@@ -169,12 +170,15 @@ publish msg article_ =
 
 toPublishArgs : Article.ToCreate -> Articles_insert_input
 toPublishArgs article_ =
-    { title = Present article_.title
-    , about = Present article_.about
-    , content = Present article_.content
-    , tags = Present { data = List.map toTagArg article_.tags }
-    , likes = Absent
-    }
+    Input.buildArticles_insert_input
+        (\args ->
+            { args
+                | title = Present article_.title
+                , about = Present article_.about
+                , content = Present article_.content
+                , tags = Present { data = List.map toTagArg article_.tags }
+            }
+        )
 
 
 toTagArg : Tag.Tag -> { tag : OptionalArgument String }
@@ -185,3 +189,20 @@ toTagArg tag_ =
 failOnNothing : SelectionSet (Maybe a) typeLock -> SelectionSet a typeLock
 failOnNothing =
     SelectionSet.mapOrFail (Result.fromMaybe "required")
+
+
+
+-- Like
+
+
+like : Article -> (Api.Response Article -> msg) -> Effect msg
+like article msg =
+    Hasura.Mutation.like_article { object = likeArticleArgs article } (Likes.article articleSelection)
+        |> failOnNothing
+        |> Api.mutation msg
+        |> Effect.likeArticle
+
+
+likeArticleArgs : Article -> Input.Likes_insert_input
+likeArticleArgs article =
+    Input.buildLikes_insert_input (\args -> { args | article_id = Present (Article.id article) })

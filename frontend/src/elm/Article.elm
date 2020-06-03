@@ -12,6 +12,7 @@ module Article exposing
     , likedByMe
     , likes
     , profileImage
+    , replace
     , tags
     , title
     , toCreate
@@ -158,6 +159,33 @@ likedBy =
 profileImage : Article -> String
 profileImage _ =
     "https://static.productionready.io/images/smiley-cyrus.jpg"
+
+
+equals : Article -> Article -> Bool
+equals a b =
+    id a == id b
+
+
+
+-- Update
+
+
+replace : Article -> Feed -> Feed
+replace article feed =
+    { feed | articles = List.map (replace_ article) feed.articles }
+
+
+replace_ : Article -> Article -> Article
+replace_ articleA articleB =
+    if equals articleA articleB then
+        articleA
+
+    else
+        articleB
+
+
+
+-- Helpers
 
 
 article_ : Article -> Article_

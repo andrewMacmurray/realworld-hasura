@@ -19,6 +19,13 @@ import Hasura.Union
 import Json.Decode as Decode
 
 
+{-| An object relationship
+-}
+article : SelectionSet decodesTo Hasura.Object.Articles -> SelectionSet decodesTo Hasura.Object.Likes
+article object_ =
+    Object.selectionForCompositeField "article" [] object_ identity
+
+
 article_id : SelectionSet Int Hasura.Object.Likes
 article_id =
     Object.selectionForField "Int" "article_id" [] Decode.int
