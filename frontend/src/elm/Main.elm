@@ -11,7 +11,8 @@ module Main exposing
 import Browser exposing (Document, UrlRequest)
 import Browser.Navigation as Nav
 import Effect exposing (Effect)
-import Element exposing (layout)
+import Element
+import Element.Layout as Layout
 import Page exposing (Page)
 import Ports
 import Url exposing (Url)
@@ -140,7 +141,7 @@ subscriptions _ =
 view : Model key -> Document Msg
 view model =
     { title = "Conduit"
-    , body = [ layout [] (view_ model) ]
+    , body = [ Layout.toHtml (view_ model) ]
     }
 
 

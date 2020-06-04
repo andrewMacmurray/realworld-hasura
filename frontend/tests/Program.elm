@@ -1,32 +1,36 @@
 module Program exposing
     ( BlogProgramTest
     , baseUrl
+    , clickEl
+    , expectMutationContaining
     , fillField
     , login
     , loginWithDetails
     , onHomePage
+    , simulateArticle
+    , simulateGlobalFeed
     , start
-    , withArticle
-    , withGlobalFeed
     , withPage
     )
 
 import Api
 import Article exposing (Article)
 import Effect exposing (Effect(..))
-import Element.Anchor as Anchor
+import Expect
+import Graphql.Document
 import Helpers
 import Json.Encode as Encode
 import Main
 import Ports
-import ProgramTest exposing (ProgramDefinition, ProgramTest, SimulatedEffect, SimulatedTask)
+import Program.Selector as Selector
+import ProgramTest exposing (ProgramDefinition, ProgramTest, SimulatedEffect, SimulatedTask, expectHttpRequest)
 import Route exposing (Route)
 import SimulatedEffect.Cmd
+import SimulatedEffect.Http
 import SimulatedEffect.Navigation
 import SimulatedEffect.Task
 import Tag exposing (Tag)
 import Test.Html.Query
-import Test.Html.Selector
 import Url
 import User
 
@@ -87,13 +91,13 @@ user name email =
     }
 
 
-withArticle : Api.Response (Maybe Article) -> Options -> Options
-withArticle article options =
+simulateArticle : Api.Response (Maybe Article) -> Options -> Options
+simulateArticle article options =
     { options | article = article }
 
 
-withGlobalFeed : List Article -> List Tag -> Options -> Options
-withGlobalFeed articles tags options =
+simulateGlobalFeed : List Article -> List Tag -> Options -> Options
+simulateGlobalFeed articles tags options =
     { options | feed = Ok (toGlobalFeed articles tags) }
 
 
@@ -204,11 +208,11 @@ simulateEffects options eff =
         LoadUrl _ ->
             SimulatedEffect.Cmd.none
 
-        SignUp { msg } ->
-            simulateTask (Ok defaultProfile) msg
+        SignUp mut ->
+            simulateMutation mut (Ok defaultProfile)
 
-        SignIn { msg } ->
-            simulateTask (Ok defaultProfile) msg
+        SignIn mut ->
+            simulateMutation mut (Ok defaultProfile)
 
         LoadUser _ ->
             SimulatedEffect.Cmd.none
@@ -222,11 +226,48 @@ simulateEffects options eff =
         LoadArticle { msg } ->
             simulateTask options.article msg
 
-        PublishArticle { msg } ->
-            simulateTask (Ok ()) msg
+        PublishArticle mut ->
+            simulateMutation mut (Ok ())
 
-        LikeArticle { msg } ->
-            simulateTask (Ok (Helpers.article "updated")) msg
+        LikeArticle mut ->
+            simulateMutation mut (Ok (Helpers.article "liked"))
+
+        UnLikeArticle mut ->
+            simulateMutation mut (Ok (Helpers.article "unliked"))
+
+
+simulateMutation : Api.Mutation a msg -> Api.Response a -> SimulatedEffect msg
+simulateMutation mut res =
+    SimulatedEffect.Cmd.batch
+        [ simulateMutationPost res mut
+        , simulateTask res mut.msg
+        ]
+
+
+simulateMutationPost : Api.Response a -> Api.Mutation a msg -> SimulatedEffect msg
+simulateMutationPost res mut =
+    SimulatedEffect.Http.post
+        { url = apiUrl
+        , body = SimulatedEffect.Http.stringBody "application/json" (Graphql.Document.serializeMutation mut.selection)
+        , expect = SimulatedEffect.Http.expectStringResponse mut.msg (\_ -> res)
+        }
+
+
+expectMutationContaining : List String -> ProgramTest model msg effect -> Expect.Expectation
+expectMutationContaining fragments =
+    expectHttpRequest "POST"
+        apiUrl
+        (\r ->
+            "mutation"
+                :: fragments
+                |> List.all (\x -> String.contains x r.body)
+                |> Expect.true ("does not contain expected mutation: expected to contain: " ++ String.join ", " fragments)
+        )
+
+
+apiUrl : String
+apiUrl =
+    "http://localhost:8080/v1/graphql"
 
 
 defaultProfile : User.Profile
@@ -256,13 +297,17 @@ taskFromResult res =
 fillField : String -> String -> ProgramTest model msg effect -> ProgramTest model msg effect
 fillField label content =
     ProgramTest.simulateDomEvent
-        (Test.Html.Query.find
-            [ Test.Html.Selector.attribute (Anchor.htmlDescription label)
-            ]
-        )
+        (Test.Html.Query.find [ Selector.el label ])
         ( "input", targetValue content )
 
 
 targetValue : String -> Encode.Value
 targetValue val =
     Encode.object [ ( "target", Encode.object [ ( "value", Encode.string val ) ] ) ]
+
+
+clickEl : String -> ProgramTest model msg effect -> ProgramTest model msg effect
+clickEl label =
+    ProgramTest.simulateDomEvent
+        (Test.Html.Query.find [ Selector.el label ])
+        ( "click", Encode.null )

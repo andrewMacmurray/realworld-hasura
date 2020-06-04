@@ -15,11 +15,22 @@ type Mutation {
 }
 
 
+type Mutation {
+  unlike_article (
+    article_id: Int!
+  ): UnlikeResponse!
+}
+
+
 
 
 type TokenResponse {
   token : String!
   username : String!
   email : String!
+}
+
+type UnlikeResponse {
+  article_id : Int
 }
 

@@ -10,16 +10,22 @@ provider:
 
 functions:
   login:
-    handler: auth/login.handler
+    handler: src/auth/login.handler
     events:
       - http:
           path: login
           method: post
   signup:
-    handler: auth/signup.handler
+    handler: src/auth/signup.handler
     events:
       - http:
           path: signup
+          method: post
+  unlike:
+    handler: src/articles/unlike.handler
+    events:
+      - http:
+          path: unlike
           method: post
 
 plugins:

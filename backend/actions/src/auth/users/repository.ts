@@ -1,4 +1,4 @@
-import * as client from "./client";
+import * as Client from "../../client";
 
 interface Create {
   passwordHash: string;
@@ -25,9 +25,8 @@ interface CreateResponse {
 }
 
 export async function find(variables: Find): Promise<FindResponse> {
-  return client
-    .query(
-      `query($email: String, $username: String) {
+  return Client.execute(
+    `query($email: String, $username: String) {
           users(where: {_or: {email: {_eq: $email}, username: {_eq: $username}}}) {
             password_hash,
             username,
@@ -36,9 +35,8 @@ export async function find(variables: Find): Promise<FindResponse> {
           }
         }
     `,
-      variables
-    )
-    .then(toUserDetails);
+    variables
+  ).then(toUserDetails);
 }
 
 function toUserDetails({ users }): FindResponse {
@@ -56,9 +54,8 @@ function toUserDetails({ users }): FindResponse {
 }
 
 export async function create(variables: Create): Promise<CreateResponse> {
-  return client
-    .query(
-      `mutation($email: String!, $username: String!, $passwordHash: String!) {
+  return Client.execute(
+    `mutation($email: String!, $username: String!, $passwordHash: String!) {
           insert_users(objects: {email: $email, password_hash: $passwordHash, username: $username}) {
             returning {
               id
@@ -66,8 +63,8 @@ export async function create(variables: Create): Promise<CreateResponse> {
           }
         }
     `,
-      variables
-    )
+    variables
+  )
     .then((res) => toCreateResponse(variables, res))
     .catch((_) => {
       throw new Error("Error creating user");

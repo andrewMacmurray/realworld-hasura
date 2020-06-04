@@ -2,6 +2,7 @@ module Element.Button exposing
     ( Button
     , button
     , decorative
+    , description
     , like
     , primary
     , secondary
@@ -10,6 +11,7 @@ module Element.Button exposing
     )
 
 import Element exposing (..)
+import Element.Anchor as Anchor
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
@@ -37,6 +39,7 @@ type alias Options msg =
     , color : Color
     , icon : Maybe Icon
     , onClick : Maybe msg
+    , description : Maybe String
     , hover : Bool
     }
 
@@ -75,6 +78,7 @@ defaults msg text =
         , icon = Nothing
         , text = text
         , onClick = msg
+        , description = Nothing
         , hover = True
         }
 
@@ -125,6 +129,11 @@ small (Button options) =
     Button { options | size = Small }
 
 
+description : String -> Button msg -> Button msg
+description d (Button options) =
+    Button { options | description = Just d }
+
+
 borderless : Button msg -> Button msg
 borderless (Button options) =
     Button { options | fill = Borderless }
@@ -167,12 +176,20 @@ toElement (Button options) =
               , padding_ options
               , mouseOver (hoverStyles options)
               ]
+            , description_ options
             , iconHover options
             ]
         )
         { onPress = options.onClick
         , label = label options
         }
+
+
+description_ : Options msg -> List (Attribute msg)
+description_ options =
+    options.description
+        |> Maybe.map (Anchor.description >> List.singleton)
+        |> Maybe.withDefault []
 
 
 padding_ : Options msg -> Attribute msg
@@ -302,6 +319,7 @@ icon _ options =
             Heart.icon Palette.red
 
 
+text_ : Options msg -> Element msg
 text_ options =
     el [ toFontSize options ] (text options.text)
 

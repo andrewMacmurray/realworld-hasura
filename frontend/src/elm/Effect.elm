@@ -16,6 +16,7 @@ module Effect exposing
     , redirectHome
     , signIn
     , signUp
+    , unlikeArticle
     )
 
 import Api
@@ -46,6 +47,7 @@ type Effect msg
     | LoadArticle (Api.Query (Maybe Article) msg)
     | PublishArticle (Api.Mutation () msg)
     | LikeArticle (Api.Mutation Article msg)
+    | UnLikeArticle (Api.Mutation Article msg)
 
 
 none : Effect msg
@@ -118,6 +120,11 @@ likeArticle =
     LikeArticle
 
 
+unlikeArticle : Api.Mutation Article msg -> Effect msg
+unlikeArticle =
+    UnLikeArticle
+
+
 
 -- Transform
 
@@ -166,6 +173,9 @@ map toMsg effect =
 
         LikeArticle mut ->
             LikeArticle (Api.map toMsg mut)
+
+        UnLikeArticle mut ->
+            UnLikeArticle (Api.map toMsg mut)
 
 
 
@@ -230,6 +240,9 @@ perform pushUrl_ ( model, effect ) =
             ( model, Api.doMutation model.user mutation )
 
         LikeArticle mutation ->
+            ( model, Api.doMutation model.user mutation )
+
+        UnLikeArticle mutation ->
             ( model, Api.doMutation model.user mutation )
 
 

@@ -42,7 +42,8 @@ type Msg
     = GlobalFeedResponseReceived (Api.Response Article.Feed)
     | TagFeedResponseReceived (Api.Response Article.Feed)
     | LikeArticleClicked Article
-    | LikeArticleResponseReceived (Api.Response Article)
+    | UnLikeArticleClicked Article
+    | UpdateArticleResponseReceived (Api.Response Article)
 
 
 
@@ -87,16 +88,24 @@ update msg model =
         LikeArticleClicked article ->
             ( model, likeArticle article )
 
-        LikeArticleResponseReceived (Ok article) ->
+        UnLikeArticleClicked article ->
+            ( model, unlikeArticle article )
+
+        UpdateArticleResponseReceived (Ok article) ->
             ( { model | feed = WebData.map (Article.replace article) model.feed }, Effect.none )
 
-        LikeArticleResponseReceived (Err _) ->
+        UpdateArticleResponseReceived (Err _) ->
             ( model, Effect.none )
 
 
 likeArticle : Article -> Effect Msg
 likeArticle article =
-    Api.Articles.like article LikeArticleResponseReceived
+    Api.Articles.like article UpdateArticleResponseReceived
+
+
+unlikeArticle : Article -> Effect Msg
+unlikeArticle article =
+    Api.Articles.unlike article UpdateArticleResponseReceived
 
 
 
@@ -262,13 +271,15 @@ likes user article =
 
             LoggedIn profile_ ->
                 if Article.likedByMe profile_ article then
-                    Button.decorative likeCount
+                    Button.button (UnLikeArticleClicked article) likeCount
+                        |> Button.description ("unlike-" ++ Article.title article)
                         |> Button.like
                         |> Button.solid
                         |> Button.toElement
 
                 else
                     Button.button (LikeArticleClicked article) likeCount
+                        |> Button.description ("like-" ++ Article.title article)
                         |> Button.like
                         |> Button.toElement
         )

@@ -6,6 +6,7 @@ module Element.Layout exposing
     , maxWidth
     , padded
     , toElement
+    , toHtml
     , user
     , withBanner
     )
@@ -13,6 +14,7 @@ module Element.Layout exposing
 import Element exposing (..)
 import Element.Scale as Scale
 import Element.Text as Text
+import Html exposing (Html)
 import Route
 import User exposing (User)
 
@@ -72,6 +74,25 @@ user user_ =
 withBanner : List (Attribute msg) -> Element msg -> Layout msg -> Layout msg
 withBanner attr el (Layout options) =
     Layout { options | banner = Just ( attr, el ) }
+
+
+
+-- To Html
+
+
+toHtml : Element msg -> Html msg
+toHtml =
+    layoutWith { options = layoutOptions } []
+
+
+layoutOptions : List Element.Option
+layoutOptions =
+    [ focusStyle
+        { borderColor = Nothing
+        , backgroundColor = Nothing
+        , shadow = Nothing
+        }
+    ]
 
 
 
