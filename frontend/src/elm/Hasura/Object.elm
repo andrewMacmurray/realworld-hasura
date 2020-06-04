@@ -81,6 +81,10 @@ type TokenResponse
     = TokenResponse
 
 
+type UnlikeResponse
+    = UnlikeResponse
+
+
 type User_profile
     = User_profile
 

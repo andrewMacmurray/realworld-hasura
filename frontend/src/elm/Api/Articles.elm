@@ -4,6 +4,7 @@ module Api.Articles exposing
     , loadArticle
     , publish
     , tagFeed
+    , unlike
     )
 
 import Api
@@ -24,6 +25,7 @@ import Hasura.Object.Likes as Likes
 import Hasura.Object.Likes_aggregate as LikesAggregate
 import Hasura.Object.Likes_aggregate_fields as LikesAggregateFields
 import Hasura.Object.Tags as Tags
+import Hasura.Object.UnlikeResponse as UnlikeResponse
 import Hasura.Object.Users as Users
 import Hasura.Query exposing (ArticlesOptionalArguments, TagsOptionalArguments)
 import Tag exposing (Tag)
@@ -206,3 +208,15 @@ like article msg =
 likeArticleArgs : Article -> Input.Likes_insert_input
 likeArticleArgs article =
     Input.buildLikes_insert_input (\args -> { args | article_id = Present (Article.id article) })
+
+
+
+-- Unlike
+
+
+unlike : Article -> (Api.Response Article -> msg) -> Effect msg
+unlike article msg =
+    Hasura.Mutation.unlike_article { article_id = Article.id article } (UnlikeResponse.article articleSelection)
+        |> failOnNothing
+        |> Api.mutation msg
+        |> Effect.unlikeArticle

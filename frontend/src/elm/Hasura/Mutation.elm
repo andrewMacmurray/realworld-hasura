@@ -156,6 +156,17 @@ signup requiredArgs object_ =
     Object.selectionForCompositeField "signup" [ Argument.required "email" requiredArgs.email Encode.string, Argument.required "password" requiredArgs.password Encode.string, Argument.required "username" requiredArgs.username Encode.string ] object_ identity
 
 
+type alias UnlikeArticleRequiredArguments =
+    { article_id : Int }
+
+
+{-| perform the action: "unlike\_article"
+-}
+unlike_article : UnlikeArticleRequiredArguments -> SelectionSet decodesTo Hasura.Object.UnlikeResponse -> SelectionSet decodesTo RootMutation
+unlike_article requiredArgs object_ =
+    Object.selectionForCompositeField "unlike_article" [ Argument.required "article_id" requiredArgs.article_id Encode.int ] object_ identity
+
+
 type alias UpdateArticlesOptionalArguments =
     { set_ : OptionalArgument Hasura.InputObject.Articles_set_input }
 

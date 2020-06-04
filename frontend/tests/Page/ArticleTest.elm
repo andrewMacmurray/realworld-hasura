@@ -16,19 +16,19 @@ suite =
         [ test "User sees article on successful load" <|
             \_ ->
                 Program.withPage (Route.Article 1)
-                    |> Program.withArticle (Ok (Just article))
+                    |> Program.simulateArticle (Ok (Just article))
                     |> Program.start
                     |> expectViewHas [ el "article-title" ]
         , test "User sees not found message if server does not find article for given id" <|
             \_ ->
                 Program.withPage (Route.Article 2)
-                    |> Program.withArticle (Ok Nothing)
+                    |> Program.simulateArticle (Ok Nothing)
                     |> Program.start
                     |> expectViewHas [ el "not-found-message" ]
         , test "User sees failure message if server returns an error" <|
             \_ ->
                 Program.withPage (Route.Article 2)
-                    |> Program.withArticle (Err serverError)
+                    |> Program.simulateArticle (Err serverError)
                     |> Program.start
                     |> expectViewHas [ el "error-message" ]
         ]

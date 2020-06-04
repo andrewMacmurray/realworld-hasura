@@ -17,7 +17,7 @@ suite =
         [ test "Guest User sees global feed on load" <|
             \_ ->
                 Program.onHomePage
-                    |> Program.withGlobalFeed [ article "foo", article "bar" ] []
+                    |> Program.simulateGlobalFeed [ article "foo", article "bar" ] []
                     |> Program.start
                     |> expectViewHas
                         [ el "global-feed"
@@ -28,7 +28,7 @@ suite =
         , test "Shows collection of popular tags" <|
             \_ ->
                 Program.onHomePage
-                    |> Program.withGlobalFeed [ article "foo", article "bar" ] (Tag.parse "tag1, tag2")
+                    |> Program.simulateGlobalFeed [ article "foo", article "bar" ] (Tag.parse "tag1, tag2")
                     |> Program.start
                     |> expectViewHas
                         [ el "popular-tags"
@@ -42,6 +42,22 @@ suite =
                     |> expectViewHas
                         [ el "tag-feed-for-bread"
                         ]
+        , test "Logged in User can like an article" <|
+            \_ ->
+                Program.withPage Route.home
+                    |> Program.login
+                    |> Program.simulateGlobalFeed [ article "foo" ] []
+                    |> Program.start
+                    |> Program.clickEl "like-foo"
+                    |> Program.expectMutationContaining [ "like_article" ]
+        , test "Logged in User can unlike an article previously liked by them" <|
+            \_ ->
+                Program.withPage Route.home
+                    |> Program.loginWithDetails "amacmurray" "a@b.com"
+                    |> Program.simulateGlobalFeed [ Helpers.articleLikedBy "amacmurray" { title = "foo" } ] []
+                    |> Program.start
+                    |> Program.clickEl "unlike-foo"
+                    |> Program.expectMutationContaining [ "unlike_article" ]
         ]
 
 

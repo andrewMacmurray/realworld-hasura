@@ -1,5 +1,6 @@
 module Article exposing
     ( Article
+    , Author
     , Feed
     , Id
     , ToCreate
