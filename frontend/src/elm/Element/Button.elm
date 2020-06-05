@@ -36,12 +36,18 @@ type alias Options msg =
     { fill : Fill
     , text : String
     , size : Size
+    , shape : Shape
     , color : Color
     , icon : Maybe Icon
     , onClick : Maybe msg
     , description : Maybe String
     , hover : Bool
     }
+
+
+type Shape
+    = Square
+    | Pill
 
 
 type Size
@@ -76,6 +82,7 @@ defaults msg text =
         , color = Green
         , size = Medium
         , icon = Nothing
+        , shape = Square
         , text = text
         , onClick = msg
         , description = Nothing
@@ -116,7 +123,7 @@ button msg text =
 
 like : Button msg -> Button msg
 like =
-    borderless >> heart >> small
+    borderless >> heart >> small >> pill
 
 
 red : Button msg -> Button msg
@@ -127,6 +134,11 @@ red (Button options) =
 small : Button msg -> Button msg
 small (Button options) =
     Button { options | size = Small }
+
+
+pill : Button msg -> Button msg
+pill (Button options) =
+    Button { options | shape = Pill }
 
 
 description : String -> Button msg -> Button msg
@@ -172,7 +184,7 @@ toElement (Button options) =
               , borderColor options
               , fontColor options
               , Border.width 1
-              , Border.rounded 5
+              , borderRadius_ options
               , padding_ options
               , mouseOver (hoverStyles options)
               ]
@@ -190,6 +202,16 @@ description_ options =
     options.description
         |> Maybe.map (Anchor.description >> List.singleton)
         |> Maybe.withDefault []
+
+
+borderRadius_ : Options msg -> Attribute msg
+borderRadius_ options =
+    case options.shape of
+        Square ->
+            Border.rounded 5
+
+        Pill ->
+            Border.rounded 100
 
 
 padding_ : Options msg -> Attribute msg

@@ -262,7 +262,7 @@ likes user article =
         likeCount =
             Article.likes article |> String.fromInt
     in
-    el [ alignRight ]
+    el [ alignRight, alignTop ]
         (case user of
             Guest ->
                 Button.decorative likeCount

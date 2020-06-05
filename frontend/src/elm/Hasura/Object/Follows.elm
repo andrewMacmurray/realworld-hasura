@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Hasura.Object.User_profile exposing (..)
+module Hasura.Object.Follows exposing (..)
 
 import Graphql.Internal.Builder.Argument as Argument exposing (Argument)
 import Graphql.Internal.Builder.Object as Object
@@ -19,11 +19,13 @@ import Hasura.Union
 import Json.Decode as Decode
 
 
-email : SelectionSet (Maybe String) Hasura.Object.User_profile
-email =
-    Object.selectionForField "(Maybe String)" "email" [] (Decode.string |> Decode.nullable)
+following_id : SelectionSet Int Hasura.Object.Follows
+following_id =
+    Object.selectionForField "Int" "following_id" [] Decode.int
 
 
-username : SelectionSet (Maybe String) Hasura.Object.User_profile
-username =
-    Object.selectionForField "(Maybe String)" "username" [] (Decode.string |> Decode.nullable)
+{-| An object relationship
+-}
+user : SelectionSet decodesTo Hasura.Object.Users -> SelectionSet decodesTo Hasura.Object.Follows
+user object_ =
+    Object.selectionForCompositeField "user" [] object_ identity

@@ -8,7 +8,7 @@ import Api.Token as Token exposing (Token)
 import Effect exposing (Effect)
 import Graphql.SelectionSet as SelectionSet exposing (SelectionSet(..), with)
 import Hasura.Mutation exposing (LoginRequiredArguments, SignupRequiredArguments)
-import Hasura.Object exposing (User_profile)
+import Hasura.Object
 import Hasura.Object.TokenResponse
 import User exposing (User)
 

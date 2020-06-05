@@ -13,6 +13,10 @@ type Articles_mutation_response
     = Articles_mutation_response
 
 
+type Follows
+    = Follows
+
+
 type Likes
     = Likes
 
@@ -83,10 +87,6 @@ type TokenResponse
 
 type UnlikeResponse
     = UnlikeResponse
-
-
-type User_profile
-    = User_profile
 
 
 type Users

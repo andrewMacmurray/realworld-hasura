@@ -357,6 +357,108 @@ encodeArticles_set_input input =
         [ ( "about", Encode.string |> Encode.optional input.about ), ( "content", Encode.string |> Encode.optional input.content ), ( "title", Encode.string |> Encode.optional input.title ) ]
 
 
+buildFollows_bool_exp : (Follows_bool_expOptionalFields -> Follows_bool_expOptionalFields) -> Follows_bool_exp
+buildFollows_bool_exp fillOptionals =
+    let
+        optionals =
+            fillOptionals
+                { and_ = Absent, not_ = Absent, or_ = Absent, following_id = Absent, user = Absent }
+    in
+    Follows_bool_exp { and_ = optionals.and_, not_ = optionals.not_, or_ = optionals.or_, following_id = optionals.following_id, user = optionals.user }
+
+
+type alias Follows_bool_expOptionalFields =
+    { and_ : OptionalArgument (List (Maybe Follows_bool_exp))
+    , not_ : OptionalArgument Follows_bool_exp
+    , or_ : OptionalArgument (List (Maybe Follows_bool_exp))
+    , following_id : OptionalArgument Int_comparison_exp
+    , user : OptionalArgument Users_bool_exp
+    }
+
+
+{-| Type alias for the `Follows_bool_exp` attributes. Note that this type
+needs to use the `Follows_bool_exp` type (not just a plain type alias) because it has
+references to itself either directly (recursive) or indirectly (circular). See
+<https://github.com/dillonkearns/elm-graphql/issues/33>.
+-}
+type alias Follows_bool_expRaw =
+    { and_ : OptionalArgument (List (Maybe Follows_bool_exp))
+    , not_ : OptionalArgument Follows_bool_exp
+    , or_ : OptionalArgument (List (Maybe Follows_bool_exp))
+    , following_id : OptionalArgument Int_comparison_exp
+    , user : OptionalArgument Users_bool_exp
+    }
+
+
+{-| Type for the Follows\_bool\_exp input object.
+-}
+type Follows_bool_exp
+    = Follows_bool_exp Follows_bool_expRaw
+
+
+{-| Encode a Follows\_bool\_exp into a value that can be used as an argument.
+-}
+encodeFollows_bool_exp : Follows_bool_exp -> Value
+encodeFollows_bool_exp (Follows_bool_exp input) =
+    Encode.maybeObject
+        [ ( "_and", (encodeFollows_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.and_ ), ( "_not", encodeFollows_bool_exp |> Encode.optional input.not_ ), ( "_or", (encodeFollows_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.or_ ), ( "following_id", encodeInt_comparison_exp |> Encode.optional input.following_id ), ( "user", encodeUsers_bool_exp |> Encode.optional input.user ) ]
+
+
+buildFollows_order_by : (Follows_order_byOptionalFields -> Follows_order_byOptionalFields) -> Follows_order_by
+buildFollows_order_by fillOptionals =
+    let
+        optionals =
+            fillOptionals
+                { following_id = Absent, user = Absent }
+    in
+    { following_id = optionals.following_id, user = optionals.user }
+
+
+type alias Follows_order_byOptionalFields =
+    { following_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , user : OptionalArgument Users_order_by
+    }
+
+
+{-| Type for the Follows\_order\_by input object.
+-}
+type alias Follows_order_by =
+    { following_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , user : OptionalArgument Users_order_by
+    }
+
+
+{-| Encode a Follows\_order\_by into a value that can be used as an argument.
+-}
+encodeFollows_order_by : Follows_order_by -> Value
+encodeFollows_order_by input =
+    Encode.maybeObject
+        [ ( "following_id", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.following_id ), ( "user", encodeUsers_order_by |> Encode.optional input.user ) ]
+
+
+buildFollows_pk_columns_input : Follows_pk_columns_inputRequiredFields -> Follows_pk_columns_input
+buildFollows_pk_columns_input required =
+    { id = required.id }
+
+
+type alias Follows_pk_columns_inputRequiredFields =
+    { id : Int }
+
+
+{-| Type for the Follows\_pk\_columns\_input input object.
+-}
+type alias Follows_pk_columns_input =
+    { id : Int }
+
+
+{-| Encode a Follows\_pk\_columns\_input into a value that can be used as an argument.
+-}
+encodeFollows_pk_columns_input : Follows_pk_columns_input -> Value
+encodeFollows_pk_columns_input input =
+    Encode.maybeObject
+        [ ( "id", Encode.int input.id |> Just ) ]
+
+
 buildInt_comparison_exp : (Int_comparison_expOptionalFields -> Int_comparison_expOptionalFields) -> Int_comparison_exp
 buildInt_comparison_exp fillOptionals =
     let
@@ -1317,93 +1419,14 @@ encodeTimestamptz_comparison_exp input =
         [ ( "_eq", (Hasura.ScalarCodecs.codecs |> Hasura.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.eq_ ), ( "_gt", (Hasura.ScalarCodecs.codecs |> Hasura.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.gt_ ), ( "_gte", (Hasura.ScalarCodecs.codecs |> Hasura.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.gte_ ), ( "_in", ((Hasura.ScalarCodecs.codecs |> Hasura.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.list) |> Encode.optional input.in_ ), ( "_is_null", Encode.bool |> Encode.optional input.is_null_ ), ( "_lt", (Hasura.ScalarCodecs.codecs |> Hasura.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.lt_ ), ( "_lte", (Hasura.ScalarCodecs.codecs |> Hasura.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.lte_ ), ( "_neq", (Hasura.ScalarCodecs.codecs |> Hasura.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.neq_ ), ( "_nin", ((Hasura.ScalarCodecs.codecs |> Hasura.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.list) |> Encode.optional input.nin_ ) ]
 
 
-buildUser_profile_bool_exp : (User_profile_bool_expOptionalFields -> User_profile_bool_expOptionalFields) -> User_profile_bool_exp
-buildUser_profile_bool_exp fillOptionals =
-    let
-        optionals =
-            fillOptionals
-                { and_ = Absent, not_ = Absent, or_ = Absent, email = Absent, username = Absent }
-    in
-    User_profile_bool_exp { and_ = optionals.and_, not_ = optionals.not_, or_ = optionals.or_, email = optionals.email, username = optionals.username }
-
-
-type alias User_profile_bool_expOptionalFields =
-    { and_ : OptionalArgument (List (Maybe User_profile_bool_exp))
-    , not_ : OptionalArgument User_profile_bool_exp
-    , or_ : OptionalArgument (List (Maybe User_profile_bool_exp))
-    , email : OptionalArgument String_comparison_exp
-    , username : OptionalArgument String_comparison_exp
-    }
-
-
-{-| Type alias for the `User_profile_bool_exp` attributes. Note that this type
-needs to use the `User_profile_bool_exp` type (not just a plain type alias) because it has
-references to itself either directly (recursive) or indirectly (circular). See
-<https://github.com/dillonkearns/elm-graphql/issues/33>.
--}
-type alias User_profile_bool_expRaw =
-    { and_ : OptionalArgument (List (Maybe User_profile_bool_exp))
-    , not_ : OptionalArgument User_profile_bool_exp
-    , or_ : OptionalArgument (List (Maybe User_profile_bool_exp))
-    , email : OptionalArgument String_comparison_exp
-    , username : OptionalArgument String_comparison_exp
-    }
-
-
-{-| Type for the User\_profile\_bool\_exp input object.
--}
-type User_profile_bool_exp
-    = User_profile_bool_exp User_profile_bool_expRaw
-
-
-{-| Encode a User\_profile\_bool\_exp into a value that can be used as an argument.
--}
-encodeUser_profile_bool_exp : User_profile_bool_exp -> Value
-encodeUser_profile_bool_exp (User_profile_bool_exp input) =
-    Encode.maybeObject
-        [ ( "_and", (encodeUser_profile_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.and_ ), ( "_not", encodeUser_profile_bool_exp |> Encode.optional input.not_ ), ( "_or", (encodeUser_profile_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.or_ ), ( "email", encodeString_comparison_exp |> Encode.optional input.email ), ( "username", encodeString_comparison_exp |> Encode.optional input.username ) ]
-
-
-buildUser_profile_order_by : (User_profile_order_byOptionalFields -> User_profile_order_byOptionalFields) -> User_profile_order_by
-buildUser_profile_order_by fillOptionals =
-    let
-        optionals =
-            fillOptionals
-                { email = Absent, username = Absent }
-    in
-    { email = optionals.email, username = optionals.username }
-
-
-type alias User_profile_order_byOptionalFields =
-    { email : OptionalArgument Hasura.Enum.Order_by.Order_by
-    , username : OptionalArgument Hasura.Enum.Order_by.Order_by
-    }
-
-
-{-| Type for the User\_profile\_order\_by input object.
--}
-type alias User_profile_order_by =
-    { email : OptionalArgument Hasura.Enum.Order_by.Order_by
-    , username : OptionalArgument Hasura.Enum.Order_by.Order_by
-    }
-
-
-{-| Encode a User\_profile\_order\_by into a value that can be used as an argument.
--}
-encodeUser_profile_order_by : User_profile_order_by -> Value
-encodeUser_profile_order_by input =
-    Encode.maybeObject
-        [ ( "email", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.email ), ( "username", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.username ) ]
-
-
 buildUsers_bool_exp : (Users_bool_expOptionalFields -> Users_bool_expOptionalFields) -> Users_bool_exp
 buildUsers_bool_exp fillOptionals =
     let
         optionals =
             fillOptionals
-                { and_ = Absent, not_ = Absent, or_ = Absent, articles = Absent, username = Absent }
+                { and_ = Absent, not_ = Absent, or_ = Absent, articles = Absent, follows = Absent, username = Absent }
     in
-    Users_bool_exp { and_ = optionals.and_, not_ = optionals.not_, or_ = optionals.or_, articles = optionals.articles, username = optionals.username }
+    Users_bool_exp { and_ = optionals.and_, not_ = optionals.not_, or_ = optionals.or_, articles = optionals.articles, follows = optionals.follows, username = optionals.username }
 
 
 type alias Users_bool_expOptionalFields =
@@ -1411,6 +1434,7 @@ type alias Users_bool_expOptionalFields =
     , not_ : OptionalArgument Users_bool_exp
     , or_ : OptionalArgument (List (Maybe Users_bool_exp))
     , articles : OptionalArgument Articles_bool_exp
+    , follows : OptionalArgument Follows_bool_exp
     , username : OptionalArgument String_comparison_exp
     }
 
@@ -1425,6 +1449,7 @@ type alias Users_bool_expRaw =
     , not_ : OptionalArgument Users_bool_exp
     , or_ : OptionalArgument (List (Maybe Users_bool_exp))
     , articles : OptionalArgument Articles_bool_exp
+    , follows : OptionalArgument Follows_bool_exp
     , username : OptionalArgument String_comparison_exp
     }
 
@@ -1440,7 +1465,7 @@ type Users_bool_exp
 encodeUsers_bool_exp : Users_bool_exp -> Value
 encodeUsers_bool_exp (Users_bool_exp input) =
     Encode.maybeObject
-        [ ( "_and", (encodeUsers_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.and_ ), ( "_not", encodeUsers_bool_exp |> Encode.optional input.not_ ), ( "_or", (encodeUsers_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.or_ ), ( "articles", encodeArticles_bool_exp |> Encode.optional input.articles ), ( "username", encodeString_comparison_exp |> Encode.optional input.username ) ]
+        [ ( "_and", (encodeUsers_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.and_ ), ( "_not", encodeUsers_bool_exp |> Encode.optional input.not_ ), ( "_or", (encodeUsers_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.or_ ), ( "articles", encodeArticles_bool_exp |> Encode.optional input.articles ), ( "follows", encodeFollows_bool_exp |> Encode.optional input.follows ), ( "username", encodeString_comparison_exp |> Encode.optional input.username ) ]
 
 
 buildUsers_order_by : (Users_order_byOptionalFields -> Users_order_byOptionalFields) -> Users_order_by
