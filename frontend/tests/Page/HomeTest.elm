@@ -48,16 +48,14 @@ suite =
                     |> Program.login
                     |> Program.simulateGlobalFeed [ article "foo" ] []
                     |> Program.start
-                    |> Program.clickEl "like-foo"
-                    |> Program.expectMutationContaining [ "like_article" ]
+                    |> expectViewHas [ el "like-foo" ]
         , test "Logged in User can unlike an article previously liked by them" <|
             \_ ->
                 Program.withPage Route.home
-                    |> Program.loginWithDetails "amacmurray" "a@b.com"
+                    |> Program.loginWithUser "amacmurray"
                     |> Program.simulateGlobalFeed [ Helpers.articleLikedBy "amacmurray" { title = "foo" } ] []
                     |> Program.start
-                    |> Program.clickEl "unlike-foo"
-                    |> Program.expectMutationContaining [ "unlike_article" ]
+                    |> expectViewHas [ el "unlike-foo" ]
         ]
 
 

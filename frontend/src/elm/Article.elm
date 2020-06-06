@@ -6,10 +6,13 @@ module Article exposing
     , ToCreate
     , about
     , author
+    , authorId
+    , authorUsername
     , build
     , content
     , createdAt
     , id
+    , isAuthoredBy
     , likedByMe
     , likes
     , profileImage
@@ -21,7 +24,7 @@ module Article exposing
 
 import Date exposing (Date)
 import Tag exposing (Tag)
-import User
+import User exposing (User)
 
 
 
@@ -46,7 +49,10 @@ type alias Article_ =
 
 
 type alias Author =
-    String
+    { id : Id
+    , username : String
+    , profileImage : Maybe String
+    }
 
 
 type alias Id =
@@ -88,7 +94,7 @@ toCreate i =
 -- Build
 
 
-build : Id -> String -> String -> String -> String -> Date -> List Tag -> Int -> List Author -> Article
+build : Id -> String -> String -> String -> Author -> Date -> List Tag -> Int -> List Author -> Article
 build id_ title_ about_ content_ author_ createdAt_ tags_ likes_ likedBy_ =
     Article
         { id = id_
@@ -127,9 +133,19 @@ content =
     article_ >> .content
 
 
-author : Article -> String
+author : Article -> Author
 author =
     article_ >> .author
+
+
+authorId : Article -> Id
+authorId =
+    author >> .id
+
+
+authorUsername : Article -> String
+authorUsername =
+    author >> .username
 
 
 createdAt : Article -> Date
@@ -147,9 +163,16 @@ likes =
     article_ >> .likes
 
 
+isAuthoredBy : User.Profile -> Article -> Bool
+isAuthoredBy profile article =
+    authorUsername article == User.username profile
+
+
 likedByMe : User.Profile -> Article -> Bool
 likedByMe profile article =
-    List.member (User.username profile) (likedBy article)
+    likedBy article
+        |> List.map .username
+        |> List.member (User.username profile)
 
 
 likedBy : Article -> List Author
@@ -158,8 +181,10 @@ likedBy =
 
 
 profileImage : Article -> String
-profileImage _ =
-    "https://static.productionready.io/images/smiley-cyrus.jpg"
+profileImage =
+    author
+        >> .profileImage
+        >> Maybe.withDefault "https://static.productionready.io/images/smiley-cyrus.jpg"
 
 
 equals : Article -> Article -> Bool

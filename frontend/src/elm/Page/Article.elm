@@ -8,11 +8,13 @@ module Page.Article exposing
 
 import Api
 import Api.Articles
+import Api.Users
 import Article exposing (Article)
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Avatar as Avatar
 import Element.Background as Background
+import Element.Button as Button
 import Element.Layout as Layout exposing (Layout)
 import Element.Palette as Palette
 import Element.Scale as Scale
@@ -33,6 +35,10 @@ type alias Model =
 
 type Msg
     = ArticleReceived (Api.Response (Maybe Article))
+    | FollowAuthorClicked Article
+    | FollowResponseReceived (Api.Response Int)
+    | UnfollowAuthorClicked Article
+    | UnfollowResponseReceived (Api.Response Int)
 
 
 type LoadStatus a
@@ -78,6 +84,34 @@ update msg model =
         ArticleReceived (Err _) ->
             ( { model | article = FailedToLoad }, Effect.none )
 
+        FollowAuthorClicked article ->
+            ( model, followAuthor article )
+
+        FollowResponseReceived (Ok following_id) ->
+            ( model, Effect.addToUserFollows following_id )
+
+        FollowResponseReceived (Err _) ->
+            ( model, Effect.none )
+
+        UnfollowAuthorClicked article ->
+            ( model, unfollowAuthor article )
+
+        UnfollowResponseReceived (Ok following_id) ->
+            ( model, Effect.removeFromUserFollows following_id )
+
+        UnfollowResponseReceived (Err _) ->
+            ( model, Effect.none )
+
+
+followAuthor : Article -> Effect Msg
+followAuthor article =
+    Api.Users.follow (Article.author article) FollowResponseReceived
+
+
+unfollowAuthor : Article -> Effect Msg
+unfollowAuthor article =
+    Api.Users.unfollow (Article.author article) UnfollowResponseReceived
+
 
 
 -- View
@@ -86,29 +120,55 @@ update msg model =
 view : User -> Model -> Element Msg
 view user model =
     Layout.user user
-        |> withBanner model
+        |> withBanner user model
         |> Layout.toElement [ articleBody model.article ]
 
 
-withBanner : Model -> Layout msg -> Layout msg
-withBanner model layout =
+withBanner : User -> Model -> Layout Msg -> Layout Msg
+withBanner user model layout =
     case model.article of
         Loaded article ->
-            banner article layout
+            banner user article layout
 
         _ ->
             layout
 
 
-banner : Article -> Layout msg -> Layout msg
-banner article =
+banner : User -> Article -> Layout Msg -> Layout Msg
+banner user article =
     Layout.withBanner
         [ Background.color Palette.black ]
         (column [ spacing Scale.large ]
             [ headline article
-            , author article
+            , row [ spacing Scale.medium ]
+                [ author article
+                , followButton user article
+                ]
             ]
         )
+
+
+followButton : User -> Article -> Element Msg
+followButton user article =
+    case user of
+        User.Guest ->
+            none
+
+        User.LoggedIn profile ->
+            if Article.isAuthoredBy profile article then
+                none
+
+            else if User.follows (Article.authorId article) profile then
+                Button.button (UnfollowAuthorClicked article) "Unfollow"
+                    |> Button.description ("unfollow-" ++ Article.authorUsername article)
+                    |> Button.follow
+                    |> Button.toElement
+
+            else
+                Button.button (FollowAuthorClicked article) "Follow"
+                    |> Button.description ("follow-" ++ Article.authorUsername article)
+                    |> Button.follow
+                    |> Button.toElement
 
 
 tags : Article -> Element msg
@@ -137,7 +197,7 @@ author article =
     row [ spacing Scale.small ]
         [ Avatar.medium (Article.profileImage article)
         , column [ spacing Scale.extraSmall ]
-            [ Text.link [ Text.white ] (Article.author article)
+            [ Text.link [ Text.white ] (Article.authorUsername article)
             , Text.date [] (Article.createdAt article)
             ]
         ]

@@ -19,6 +19,9 @@ type alias User =
     { username : String
     , email : String
     , token : String
+    , bio : Maybe String
+    , profileImage : Maybe String
+    , following : List Int
     }
 
 
@@ -30,6 +33,9 @@ toUser user =
     { username = User.username user
     , email = User.email user
     , token = Token.value (User.token user)
+    , bio = User.bio user
+    , profileImage = User.profileImage user
+    , following = User.following user
     }
 
 
@@ -40,7 +46,13 @@ toLoggedIn =
 
 toProfile : User -> User.Profile
 toProfile u =
-    User.profile (Token.token u.token) u.username u.email
+    User.profile (Token.token u.token)
+        { username = u.username
+        , email = u.email
+        , bio = u.bio
+        , profileImage = u.profileImage
+        , following = u.following
+        }
 
 
 

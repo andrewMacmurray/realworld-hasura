@@ -147,7 +147,9 @@ statusMessage request =
 
 signupButton : Element Msg
 signupButton =
-    Button.primary SignupClicked "Sign Up"
+    Button.button SignupClicked "Sign Up"
+        |> Button.primary
+        |> Button.toElement
 
 
 email : Inputs -> Element Msg

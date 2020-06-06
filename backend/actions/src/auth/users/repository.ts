@@ -12,16 +12,20 @@ interface Find {
 }
 
 interface FindResponse {
-  id: string;
+  id: number;
   username: string;
   email: string;
   passwordHash: string;
+  bio: string | null;
+  profile_image: string | null;
 }
 
 interface CreateResponse {
-  id: string;
+  id: number;
   email: string;
   username: string;
+  bio: string | null;
+  profile_image: string | null;
 }
 
 export async function find(variables: Find): Promise<FindResponse> {
@@ -31,6 +35,8 @@ export async function find(variables: Find): Promise<FindResponse> {
             password_hash,
             username,
             email,
+            bio,
+            profile_image,
             id
           }
         }
@@ -41,12 +47,14 @@ export async function find(variables: Find): Promise<FindResponse> {
 
 function toUserDetails({ users }): FindResponse {
   if (users.length === 1) {
-    const { id, username, email, password_hash } = users[0];
+    const { id, username, email, password_hash, bio, profile_image } = users[0];
     return {
       id,
       username,
       email,
       passwordHash: password_hash,
+      bio: bio,
+      profile_image: profile_image,
     };
   } else {
     throw new Error("Invalid username / password combination");
@@ -73,8 +81,10 @@ export async function create(variables: Create): Promise<CreateResponse> {
 
 function toCreateResponse(variables, res): CreateResponse {
   return {
-    id: res.insert_users.returning[0],
+    id: res.insert_users.returning[0].id,
     email: variables.email,
     username: variables.username,
+    bio: null,
+    profile_image: null,
   };
 }

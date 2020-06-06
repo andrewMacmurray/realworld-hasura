@@ -19,6 +19,45 @@ import Hasura.Union
 import Json.Decode as Decode exposing (Decoder)
 
 
+type alias DeleteFollowsByPkRequiredArguments =
+    { id : Int }
+
+
+{-| delete single row from the table: "follows"
+-}
+delete_follows_by_pk : DeleteFollowsByPkRequiredArguments -> SelectionSet decodesTo Hasura.Object.Follows -> SelectionSet (Maybe decodesTo) RootMutation
+delete_follows_by_pk requiredArgs object_ =
+    Object.selectionForCompositeField "delete_follows_by_pk" [ Argument.required "id" requiredArgs.id Encode.int ] object_ (identity >> Decode.nullable)
+
+
+type alias FollowAuthorRequiredArguments =
+    { object : Hasura.InputObject.Follows_insert_input }
+
+
+{-| insert a single row into the table: "follows"
+
+  - object - the row to be inserted
+
+-}
+follow_author : FollowAuthorRequiredArguments -> SelectionSet decodesTo Hasura.Object.Follows -> SelectionSet (Maybe decodesTo) RootMutation
+follow_author requiredArgs object_ =
+    Object.selectionForCompositeField "follow_author" [ Argument.required "object" requiredArgs.object Hasura.InputObject.encodeFollows_insert_input ] object_ (identity >> Decode.nullable)
+
+
+type alias FollowAuthorsRequiredArguments =
+    { objects : List Hasura.InputObject.Follows_insert_input }
+
+
+{-| insert data into the table: "follows"
+
+  - objects - the rows to be inserted
+
+-}
+follow_authors : FollowAuthorsRequiredArguments -> SelectionSet decodesTo Hasura.Object.Follows_mutation_response -> SelectionSet (Maybe decodesTo) RootMutation
+follow_authors requiredArgs object_ =
+    Object.selectionForCompositeField "follow_authors" [ Argument.required "objects" requiredArgs.objects (Hasura.InputObject.encodeFollows_insert_input |> Encode.list) ] object_ (identity >> Decode.nullable)
+
+
 type alias InsertTagRequiredArguments =
     { object : Hasura.InputObject.Tags_insert_input }
 
@@ -154,6 +193,20 @@ type alias SignupRequiredArguments =
 signup : SignupRequiredArguments -> SelectionSet decodesTo Hasura.Object.TokenResponse -> SelectionSet decodesTo RootMutation
 signup requiredArgs object_ =
     Object.selectionForCompositeField "signup" [ Argument.required "email" requiredArgs.email Encode.string, Argument.required "password" requiredArgs.password Encode.string, Argument.required "username" requiredArgs.username Encode.string ] object_ identity
+
+
+type alias UnfollowAuthorsRequiredArguments =
+    { where_ : Hasura.InputObject.Follows_bool_exp }
+
+
+{-| delete data from the table: "follows"
+
+  - where\_ - filter the rows which have to be deleted
+
+-}
+unfollow_authors : UnfollowAuthorsRequiredArguments -> SelectionSet decodesTo Hasura.Object.Follows_mutation_response -> SelectionSet (Maybe decodesTo) RootMutation
+unfollow_authors requiredArgs object_ =
+    Object.selectionForCompositeField "unfollow_authors" [ Argument.required "where" requiredArgs.where_ Hasura.InputObject.encodeFollows_bool_exp ] object_ (identity >> Decode.nullable)
 
 
 type alias UnlikeArticleRequiredArguments =

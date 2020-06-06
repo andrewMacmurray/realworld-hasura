@@ -144,7 +144,9 @@ statusMessage request =
 
 signInButton : Element Msg
 signInButton =
-    Button.primary SignInClicked "Sign In"
+    Button.button SignInClicked "Sign In"
+        |> Button.primary
+        |> Button.toElement
 
 
 username : Inputs -> Element Msg

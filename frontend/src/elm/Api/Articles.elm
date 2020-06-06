@@ -29,6 +29,7 @@ import Hasura.Object.UnlikeResponse as UnlikeResponse
 import Hasura.Object.Users as Users
 import Hasura.Query exposing (ArticlesOptionalArguments, TagsOptionalArguments)
 import Tag exposing (Tag)
+import Utils.SelectionSet as SelectionSet
 
 
 
@@ -130,16 +131,27 @@ articleSelection =
         |> with Articles.title
         |> with Articles.about
         |> with Articles.content
-        |> with (Articles.author Users.username)
+        |> with authorSelection
         |> with (Date.fromScalar Articles.created_at)
         |> with (Articles.tags identity tagSelection)
         |> with (Articles.likes_aggregate identity likesCountSelection)
         |> with (Articles.likes identity likedBySelection)
 
 
-likedBySelection : SelectionSet String Hasura.Object.Likes
+authorSelection : SelectionSet Article.Author Articles
+authorSelection =
+    SelectionSet.succeed Article.Author
+        |> with (Articles.author Users.id)
+        |> with (Articles.author Users.username)
+        |> with (Articles.author Users.profile_image)
+
+
+likedBySelection : SelectionSet Article.Author Hasura.Object.Likes
 likedBySelection =
-    Likes.user Users.username
+    SelectionSet.succeed Article.Author
+        |> with (Likes.user Users.id)
+        |> with (Likes.user Users.username)
+        |> with (Likes.user Users.profile_image)
 
 
 likesCountSelection : SelectionSet Int Hasura.Object.Likes_aggregate
@@ -165,7 +177,7 @@ newestFirst =
 publish : (Api.Response () -> msg) -> Article.ToCreate -> Effect msg
 publish msg article_ =
     Hasura.Mutation.publish_article identity { object = toPublishArgs article_ } SelectionSet.empty
-        |> failOnNothing
+        |> SelectionSet.failOnNothing
         |> Api.mutation msg
         |> Effect.publishArticle
 
@@ -188,11 +200,6 @@ toTagArg tag_ =
     { tag = Present (Tag.value tag_) }
 
 
-failOnNothing : SelectionSet (Maybe a) typeLock -> SelectionSet a typeLock
-failOnNothing =
-    SelectionSet.mapOrFail (Result.fromMaybe "required")
-
-
 
 -- Like
 
@@ -200,7 +207,7 @@ failOnNothing =
 like : Article -> (Api.Response Article -> msg) -> Effect msg
 like article msg =
     Hasura.Mutation.like_article { object = likeArticleArgs article } (Likes.article articleSelection)
-        |> failOnNothing
+        |> SelectionSet.failOnNothing
         |> Api.mutation msg
         |> Effect.likeArticle
 
@@ -217,6 +224,6 @@ likeArticleArgs article =
 unlike : Article -> (Api.Response Article -> msg) -> Effect msg
 unlike article msg =
     Hasura.Mutation.unlike_article { article_id = Article.id article } (UnlikeResponse.article articleSelection)
-        |> failOnNothing
+        |> SelectionSet.failOnNothing
         |> Api.mutation msg
         |> Effect.unlikeArticle

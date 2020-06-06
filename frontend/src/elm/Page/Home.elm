@@ -262,7 +262,7 @@ likes user article =
         likeCount =
             Article.likes article |> String.fromInt
     in
-    el [ alignRight ]
+    el [ alignRight, alignTop ]
         (case user of
             Guest ->
                 Button.decorative likeCount
@@ -310,7 +310,7 @@ profile article =
     row [ spacing Scale.small ]
         [ Avatar.large (Article.profileImage article)
         , column [ spacing Scale.small ]
-            [ Text.link [ Text.green ] (Article.author article)
+            [ Text.link [ Text.green ] (Article.authorUsername article)
             , Text.date [] (Article.createdAt article)
             ]
         ]
