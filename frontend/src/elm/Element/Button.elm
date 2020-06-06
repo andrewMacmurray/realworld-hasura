@@ -3,6 +3,7 @@ module Element.Button exposing
     , button
     , decorative
     , description
+    , follow
     , like
     , primary
     , secondary
@@ -17,6 +18,7 @@ import Element.Border as Border
 import Element.Font as Font
 import Element.Icon as Icon
 import Element.Icon.Heart as Heart
+import Element.Icon.Plus as Plus
 import Element.Input as Input
 import Element.Palette as Palette
 import Element.Scale as Scale
@@ -65,10 +67,12 @@ type Fill
 type Color
     = Green
     | Red
+    | Grey
 
 
 type Icon
     = Heart
+    | Plus
 
 
 
@@ -94,19 +98,6 @@ defaults msg text =
 -- Construct
 
 
-primary : msg -> String -> Element msg
-primary msg text =
-    toElement (button msg text)
-
-
-secondary : msg -> String -> Element msg
-secondary msg text =
-    button msg text
-        |> red
-        |> hollow
-        |> toElement
-
-
 decorative : String -> Button msg
 decorative text =
     defaults Nothing text |> noHover
@@ -121,14 +112,39 @@ button msg text =
 -- Configure
 
 
+primary : Button msg -> Button msg
+primary =
+    identity
+
+
+secondary : Button msg -> Button msg
+secondary =
+    red >> hollow
+
+
 like : Button msg -> Button msg
 like =
     borderless >> heart >> small >> pill
 
 
+follow : Button msg -> Button msg
+follow =
+    borderless >> plus >> grey >> small
+
+
 red : Button msg -> Button msg
 red (Button options) =
     Button { options | color = Red }
+
+
+plus : Button msg -> Button msg
+plus (Button options) =
+    Button { options | icon = Just Plus }
+
+
+grey : Button msg -> Button msg
+grey (Button options) =
+    Button { options | color = Grey }
 
 
 small : Button msg -> Button msg
@@ -224,7 +240,7 @@ padding_ options =
             paddingXY Scale.medium Scale.small
 
         Small ->
-            paddingXY Scale.small Scale.extraSmall
+            paddingXY (Scale.small - 2) Scale.extraSmall
 
 
 hoverStyles : Options msg -> List Decoration
@@ -256,10 +272,10 @@ fill_ options =
             Background.color (color color_)
 
         ( Hollow, _ ) ->
-            Background.color Palette.white
+            Background.color Palette.transparent
 
         ( Borderless, _ ) ->
-            Background.color Palette.white
+            Background.color Palette.transparent
 
 
 borderColor : Options msg -> Attr decorative msg
@@ -294,6 +310,9 @@ color color_ =
         Red ->
             Palette.red
 
+        Grey ->
+            Palette.grey
+
 
 darkerColor : Color -> Element.Color
 darkerColor color_ =
@@ -303,6 +322,9 @@ darkerColor color_ =
 
         Red ->
             Palette.darkRed
+
+        Grey ->
+            Palette.black
 
 
 label : Options msg -> Element msg
@@ -320,25 +342,38 @@ label options =
 
 iconHover : Options msg -> List (Attribute msg)
 iconHover options =
-    case options.icon of
-        Just _ ->
+    case ( options.icon, options.hover ) of
+        ( Just _, True ) ->
             [ Icon.enableHover ]
 
-        Nothing ->
+        ( _, _ ) ->
             []
 
 
 icon : Icon -> Options msg -> Element msg
-icon _ options =
+icon icon_ options =
+    case icon_ of
+        Heart ->
+            Heart.icon (iconColor options)
+
+        Plus ->
+            Plus.icon (iconColor options)
+
+
+iconColor : Options msg -> Element.Color
+iconColor options =
     case ( options.color, options.fill ) of
         ( _, Solid ) ->
-            Heart.icon Palette.white
+            Palette.white
 
         ( Green, _ ) ->
-            Heart.icon Palette.green
+            Palette.green
 
         ( Red, _ ) ->
-            Heart.icon Palette.red
+            Palette.red
+
+        ( Grey, _ ) ->
+            Palette.grey
 
 
 text_ : Options msg -> Element msg

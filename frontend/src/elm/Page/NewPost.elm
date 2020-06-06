@@ -118,7 +118,11 @@ view user model =
 
 publishButton : Element Msg
 publishButton =
-    el [ alignRight ] (Button.primary PublishClicked "Publish Article")
+    el [ alignRight ]
+        (Button.button PublishClicked "Publish Article"
+            |> Button.primary
+            |> Button.toElement
+        )
 
 
 showTags : String -> Element msg

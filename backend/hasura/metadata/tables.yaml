@@ -70,10 +70,27 @@
 - table:
     schema: public
     name: follows
+  configuration:
+    custom_root_fields:
+      insert: follow_authors
+      insert_one: follow_author
+      delete: unfollow_authors
+    custom_column_names: {}
   object_relationships:
   - name: user
     using:
       foreign_key_constraint_on: following_id
+  insert_permissions:
+  - role: user
+    permission:
+      check:
+        following_id:
+          _ne: X-Hasura-User-Id
+      set:
+        user_id: x-hasura-User-Id
+      columns:
+      - following_id
+      backend_only: false
   select_permissions:
   - role: anonymous
     permission:
@@ -85,6 +102,12 @@
       columns:
       - following_id
       filter: {}
+  delete_permissions:
+  - role: user
+    permission:
+      filter:
+        user_id:
+          _eq: X-Hasura-User-Id
 - table:
     schema: public
     name: likes
@@ -186,11 +209,13 @@
     permission:
       columns:
       - id
+      - profile_image
       - username
       filter: {}
   - role: user
     permission:
       columns:
       - id
+      - profile_image
       - username
       filter: {}

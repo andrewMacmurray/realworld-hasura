@@ -1,18 +1,26 @@
 module Api.Users exposing
-    ( signIn
+    ( follow
+    , signIn
     , signUp
+    , unfollow
     )
 
 import Api
+import Api.Argument as Argument exposing (eq_, following_id)
 import Api.Token as Token exposing (Token)
+import Article
 import Effect exposing (Effect)
+import Graphql.OptionalArgument exposing (OptionalArgument(..))
 import Graphql.SelectionSet as SelectionSet exposing (SelectionSet(..), with)
+import Hasura.InputObject as Input
 import Hasura.Mutation exposing (LoginRequiredArguments, SignupRequiredArguments)
 import Hasura.Object
 import Hasura.Object.Follows as Follows
+import Hasura.Object.Follows_mutation_response as FollowsResponse
 import Hasura.Object.TokenResponse as TokenResponse
 import Hasura.Object.Users as Users
 import User exposing (User)
+import Utils.SelectionSet as SelectionSet
 
 
 
@@ -35,6 +43,46 @@ signIn inputs msg =
     Hasura.Mutation.login inputs userSelection
         |> Api.mutation msg
         |> Effect.signIn
+
+
+
+-- Follow
+
+
+follow : Article.Author -> (Api.Response Int -> msg) -> Effect msg
+follow author msg =
+    Hasura.Mutation.follow_author { object = { following_id = Present author.id } } Follows.following_id
+        |> SelectionSet.failOnNothing
+        |> Api.mutation msg
+        |> Effect.followAuthor
+
+
+
+-- Unfollow
+
+
+unfollow : Article.Author -> (Api.Response Int -> msg) -> Effect msg
+unfollow author msg =
+    Hasura.Mutation.unfollow_authors { where_ = equalsAuthor author } unfollowSelection
+        |> SelectionSet.failOnNothing
+        |> Api.mutation msg
+        |> Effect.unfollowAuthor
+
+
+unfollowSelection : SelectionSet Int Hasura.Object.Follows_mutation_response
+unfollowSelection =
+    FollowsResponse.returning Follows.following_id
+        |> SelectionSet.map List.head
+        |> SelectionSet.failOnNothing
+
+
+equalsAuthor : Article.Author -> Input.Follows_bool_exp
+equalsAuthor author =
+    Input.buildFollows_bool_exp
+        (Argument.combine2
+            (following_id Input.buildInt_comparison_exp)
+            (eq_ author.id)
+        )
 
 
 

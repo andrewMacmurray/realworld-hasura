@@ -88,6 +88,11 @@ id =
     Object.selectionForField "Int" "id" [] Decode.int
 
 
+profile_image : SelectionSet (Maybe String) Hasura.Object.Users
+profile_image =
+    Object.selectionForField "(Maybe String)" "profile_image" [] (Decode.string |> Decode.nullable)
+
+
 username : SelectionSet String Hasura.Object.Users
 username =
     Object.selectionForField "String" "username" [] Decode.string

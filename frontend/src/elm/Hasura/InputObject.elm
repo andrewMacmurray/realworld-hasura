@@ -357,6 +357,29 @@ encodeArticles_set_input input =
         [ ( "about", Encode.string |> Encode.optional input.about ), ( "content", Encode.string |> Encode.optional input.content ), ( "title", Encode.string |> Encode.optional input.title ) ]
 
 
+buildFollows_arr_rel_insert_input : Follows_arr_rel_insert_inputRequiredFields -> Follows_arr_rel_insert_input
+buildFollows_arr_rel_insert_input required =
+    { data = required.data }
+
+
+type alias Follows_arr_rel_insert_inputRequiredFields =
+    { data : List Follows_insert_input }
+
+
+{-| Type for the Follows\_arr\_rel\_insert\_input input object.
+-}
+type alias Follows_arr_rel_insert_input =
+    { data : List Follows_insert_input }
+
+
+{-| Encode a Follows\_arr\_rel\_insert\_input into a value that can be used as an argument.
+-}
+encodeFollows_arr_rel_insert_input : Follows_arr_rel_insert_input -> Value
+encodeFollows_arr_rel_insert_input input =
+    Encode.maybeObject
+        [ ( "data", (encodeFollows_insert_input |> Encode.list) input.data |> Just ) ]
+
+
 buildFollows_bool_exp : (Follows_bool_expOptionalFields -> Follows_bool_expOptionalFields) -> Follows_bool_exp
 buildFollows_bool_exp fillOptionals =
     let
@@ -402,6 +425,57 @@ encodeFollows_bool_exp : Follows_bool_exp -> Value
 encodeFollows_bool_exp (Follows_bool_exp input) =
     Encode.maybeObject
         [ ( "_and", (encodeFollows_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.and_ ), ( "_not", encodeFollows_bool_exp |> Encode.optional input.not_ ), ( "_or", (encodeFollows_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.or_ ), ( "following_id", encodeInt_comparison_exp |> Encode.optional input.following_id ), ( "user", encodeUsers_bool_exp |> Encode.optional input.user ) ]
+
+
+buildFollows_insert_input : (Follows_insert_inputOptionalFields -> Follows_insert_inputOptionalFields) -> Follows_insert_input
+buildFollows_insert_input fillOptionals =
+    let
+        optionals =
+            fillOptionals
+                { following_id = Absent }
+    in
+    { following_id = optionals.following_id }
+
+
+type alias Follows_insert_inputOptionalFields =
+    { following_id : OptionalArgument Int }
+
+
+{-| Type for the Follows\_insert\_input input object.
+-}
+type alias Follows_insert_input =
+    { following_id : OptionalArgument Int }
+
+
+{-| Encode a Follows\_insert\_input into a value that can be used as an argument.
+-}
+encodeFollows_insert_input : Follows_insert_input -> Value
+encodeFollows_insert_input input =
+    Encode.maybeObject
+        [ ( "following_id", Encode.int |> Encode.optional input.following_id ) ]
+
+
+buildFollows_obj_rel_insert_input : Follows_obj_rel_insert_inputRequiredFields -> Follows_obj_rel_insert_input
+buildFollows_obj_rel_insert_input required =
+    { data = required.data }
+
+
+type alias Follows_obj_rel_insert_inputRequiredFields =
+    { data : Follows_insert_input }
+
+
+{-| Type for the Follows\_obj\_rel\_insert\_input input object.
+-}
+type alias Follows_obj_rel_insert_input =
+    { data : Follows_insert_input }
+
+
+{-| Encode a Follows\_obj\_rel\_insert\_input into a value that can be used as an argument.
+-}
+encodeFollows_obj_rel_insert_input : Follows_obj_rel_insert_input -> Value
+encodeFollows_obj_rel_insert_input input =
+    Encode.maybeObject
+        [ ( "data", encodeFollows_insert_input input.data |> Just ) ]
 
 
 buildFollows_order_by : (Follows_order_byOptionalFields -> Follows_order_byOptionalFields) -> Follows_order_by
@@ -1424,9 +1498,9 @@ buildUsers_bool_exp fillOptionals =
     let
         optionals =
             fillOptionals
-                { and_ = Absent, not_ = Absent, or_ = Absent, articles = Absent, follows = Absent, id = Absent, username = Absent }
+                { and_ = Absent, not_ = Absent, or_ = Absent, articles = Absent, follows = Absent, id = Absent, profile_image = Absent, username = Absent }
     in
-    Users_bool_exp { and_ = optionals.and_, not_ = optionals.not_, or_ = optionals.or_, articles = optionals.articles, follows = optionals.follows, id = optionals.id, username = optionals.username }
+    Users_bool_exp { and_ = optionals.and_, not_ = optionals.not_, or_ = optionals.or_, articles = optionals.articles, follows = optionals.follows, id = optionals.id, profile_image = optionals.profile_image, username = optionals.username }
 
 
 type alias Users_bool_expOptionalFields =
@@ -1436,6 +1510,7 @@ type alias Users_bool_expOptionalFields =
     , articles : OptionalArgument Articles_bool_exp
     , follows : OptionalArgument Follows_bool_exp
     , id : OptionalArgument Int_comparison_exp
+    , profile_image : OptionalArgument String_comparison_exp
     , username : OptionalArgument String_comparison_exp
     }
 
@@ -1452,6 +1527,7 @@ type alias Users_bool_expRaw =
     , articles : OptionalArgument Articles_bool_exp
     , follows : OptionalArgument Follows_bool_exp
     , id : OptionalArgument Int_comparison_exp
+    , profile_image : OptionalArgument String_comparison_exp
     , username : OptionalArgument String_comparison_exp
     }
 
@@ -1467,7 +1543,7 @@ type Users_bool_exp
 encodeUsers_bool_exp : Users_bool_exp -> Value
 encodeUsers_bool_exp (Users_bool_exp input) =
     Encode.maybeObject
-        [ ( "_and", (encodeUsers_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.and_ ), ( "_not", encodeUsers_bool_exp |> Encode.optional input.not_ ), ( "_or", (encodeUsers_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.or_ ), ( "articles", encodeArticles_bool_exp |> Encode.optional input.articles ), ( "follows", encodeFollows_bool_exp |> Encode.optional input.follows ), ( "id", encodeInt_comparison_exp |> Encode.optional input.id ), ( "username", encodeString_comparison_exp |> Encode.optional input.username ) ]
+        [ ( "_and", (encodeUsers_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.and_ ), ( "_not", encodeUsers_bool_exp |> Encode.optional input.not_ ), ( "_or", (encodeUsers_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.or_ ), ( "articles", encodeArticles_bool_exp |> Encode.optional input.articles ), ( "follows", encodeFollows_bool_exp |> Encode.optional input.follows ), ( "id", encodeInt_comparison_exp |> Encode.optional input.id ), ( "profile_image", encodeString_comparison_exp |> Encode.optional input.profile_image ), ( "username", encodeString_comparison_exp |> Encode.optional input.username ) ]
 
 
 buildUsers_order_by : (Users_order_byOptionalFields -> Users_order_byOptionalFields) -> Users_order_by
@@ -1475,13 +1551,14 @@ buildUsers_order_by fillOptionals =
     let
         optionals =
             fillOptionals
-                { id = Absent, username = Absent }
+                { id = Absent, profile_image = Absent, username = Absent }
     in
-    { id = optionals.id, username = optionals.username }
+    { id = optionals.id, profile_image = optionals.profile_image, username = optionals.username }
 
 
 type alias Users_order_byOptionalFields =
     { id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , profile_image : OptionalArgument Hasura.Enum.Order_by.Order_by
     , username : OptionalArgument Hasura.Enum.Order_by.Order_by
     }
 
@@ -1490,6 +1567,7 @@ type alias Users_order_byOptionalFields =
 -}
 type alias Users_order_by =
     { id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , profile_image : OptionalArgument Hasura.Enum.Order_by.Order_by
     , username : OptionalArgument Hasura.Enum.Order_by.Order_by
     }
 
@@ -1499,7 +1577,7 @@ type alias Users_order_by =
 encodeUsers_order_by : Users_order_by -> Value
 encodeUsers_order_by input =
     Encode.maybeObject
-        [ ( "id", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.id ), ( "username", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.username ) ]
+        [ ( "id", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.id ), ( "profile_image", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.profile_image ), ( "username", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.username ) ]
 
 
 buildUsers_pk_columns_input : Users_pk_columns_inputRequiredFields -> Users_pk_columns_input

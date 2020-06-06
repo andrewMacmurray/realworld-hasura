@@ -17,6 +17,10 @@ type Follows
     = Follows
 
 
+type Follows_mutation_response
+    = Follows_mutation_response
+
+
 type Likes
     = Likes
 

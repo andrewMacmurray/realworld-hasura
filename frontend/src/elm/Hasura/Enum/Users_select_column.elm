@@ -10,17 +10,19 @@ import Json.Decode as Decode exposing (Decoder)
 {-| select columns of table "users"
 
   - Id - column name
+  - Profile\_image - column name
   - Username - column name
 
 -}
 type Users_select_column
     = Id
+    | Profile_image
     | Username
 
 
 list : List Users_select_column
 list =
-    [ Id, Username ]
+    [ Id, Profile_image, Username ]
 
 
 decoder : Decoder Users_select_column
@@ -31,6 +33,9 @@ decoder =
                 case string of
                     "id" ->
                         Decode.succeed Id
+
+                    "profile_image" ->
+                        Decode.succeed Profile_image
 
                     "username" ->
                         Decode.succeed Username
@@ -47,6 +52,9 @@ toString enum =
     case enum of
         Id ->
             "id"
+
+        Profile_image ->
+            "profile_image"
 
         Username ->
             "username"
@@ -68,6 +76,9 @@ fromString enumString =
     case enumString of
         "id" ->
             Just Id
+
+        "profile_image" ->
+            Just Profile_image
 
         "username" ->
             Just Username

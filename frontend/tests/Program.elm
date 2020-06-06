@@ -1,11 +1,11 @@
 module Program exposing
     ( BlogProgramTest
     , baseUrl
-    , clickEl
-    , expectMutationContaining
+    , defaultUser
     , fillField
     , login
     , loginWithDetails
+    , loginWithUser
     , onHomePage
     , simulateArticle
     , simulateGlobalFeed
@@ -16,17 +16,14 @@ module Program exposing
 import Api
 import Article exposing (Article)
 import Effect exposing (Effect(..))
-import Expect
-import Graphql.Document
 import Helpers
 import Json.Encode as Encode
 import Main
 import Ports
 import Program.Selector as Selector
-import ProgramTest exposing (ProgramDefinition, ProgramTest, SimulatedEffect, SimulatedTask, expectHttpRequest)
+import ProgramTest exposing (ProgramDefinition, ProgramTest, SimulatedEffect, SimulatedTask)
 import Route exposing (Route)
 import SimulatedEffect.Cmd
-import SimulatedEffect.Http
 import SimulatedEffect.Navigation
 import SimulatedEffect.Task
 import Tag exposing (Tag)
@@ -78,9 +75,19 @@ login options =
     { options | user = Just (user "amacmurray" "a@b.com") }
 
 
-loginWithDetails : String -> String -> Options -> Options
-loginWithDetails username email options =
-    { options | user = Just (user username email) }
+loginWithUser : String -> Options -> Options
+loginWithUser username options =
+    { options | user = Just (user username "b@c.com") }
+
+
+loginWithDetails : Ports.User -> Options -> Options
+loginWithDetails user_ options =
+    { options | user = Just user_ }
+
+
+defaultUser : Ports.User
+defaultUser =
+    user "default-user" "a@b.com"
 
 
 user : String -> String -> Ports.User
@@ -212,65 +219,48 @@ simulateEffects options eff =
             SimulatedEffect.Cmd.none
 
         SignUp mut ->
-            simulateMutation mut (Ok defaultProfile)
+            simulateResponse mut (Ok defaultProfile)
 
         SignIn mut ->
-            simulateMutation mut (Ok defaultProfile)
+            simulateResponse mut (Ok defaultProfile)
 
         LoadUser _ ->
             SimulatedEffect.Cmd.none
 
-        LoadGlobalFeed { msg } ->
-            simulateTask options.feed msg
+        LoadGlobalFeed query ->
+            simulateResponse query options.feed
 
-        LoadTagFeed { msg } ->
-            simulateTask options.feed msg
+        LoadTagFeed query ->
+            simulateResponse query options.feed
 
-        LoadArticle { msg } ->
-            simulateTask options.article msg
+        LoadArticle query ->
+            simulateResponse query options.article
 
-        PublishArticle mut ->
-            simulateMutation mut (Ok ())
+        PublishArticle mutation ->
+            simulateResponse mutation (Ok ())
 
-        LikeArticle mut ->
-            simulateMutation mut (Ok (Helpers.article "liked"))
+        LikeArticle mutation ->
+            simulateResponse mutation (Ok (Helpers.article "liked"))
 
-        UnLikeArticle mut ->
-            simulateMutation mut (Ok (Helpers.article "unliked"))
+        UnLikeArticle mutation ->
+            simulateResponse mutation (Ok (Helpers.article "unliked"))
 
+        AddToUserFollows _ ->
+            SimulatedEffect.Cmd.none
 
-simulateMutation : Api.Mutation a msg -> Api.Response a -> SimulatedEffect msg
-simulateMutation mut res =
-    SimulatedEffect.Cmd.batch
-        [ simulateMutationPost res mut
-        , simulateTask res mut.msg
-        ]
+        RemoveFromUserFollows _ ->
+            SimulatedEffect.Cmd.none
 
+        FollowAuthor mutation ->
+            simulateResponse mutation (Ok 1)
 
-simulateMutationPost : Api.Response a -> Api.Mutation a msg -> SimulatedEffect msg
-simulateMutationPost res mut =
-    SimulatedEffect.Http.post
-        { url = apiUrl
-        , body = SimulatedEffect.Http.stringBody "application/json" (Graphql.Document.serializeMutation mut.selection)
-        , expect = SimulatedEffect.Http.expectStringResponse mut.msg (\_ -> res)
-        }
+        UnfollowAuthor mutation ->
+            simulateResponse mutation (Ok 1)
 
 
-expectMutationContaining : List String -> ProgramTest model msg effect -> Expect.Expectation
-expectMutationContaining fragments =
-    expectHttpRequest "POST"
-        apiUrl
-        (\r ->
-            "mutation"
-                :: fragments
-                |> List.all (\x -> String.contains x r.body)
-                |> Expect.true ("does not contain expected mutation: expected to contain: " ++ String.join ", " fragments)
-        )
-
-
-apiUrl : String
-apiUrl =
-    "http://localhost:8080/v1/graphql"
+simulateResponse : { m | msg : Api.Response a -> msg } -> Api.Response a -> SimulatedEffect msg
+simulateResponse { msg } res =
+    simulateTask res msg
 
 
 defaultProfile : User.Profile
@@ -307,10 +297,3 @@ fillField label content =
 targetValue : String -> Encode.Value
 targetValue val =
     Encode.object [ ( "target", Encode.object [ ( "value", Encode.string val ) ] ) ]
-
-
-clickEl : String -> ProgramTest model msg effect -> ProgramTest model msg effect
-clickEl label =
-    ProgramTest.simulateDomEvent
-        (Test.Html.Query.find [ Selector.el label ])
-        ( "click", Encode.null )

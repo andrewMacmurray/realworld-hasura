@@ -1,4 +1,4 @@
-module Helpers exposing (article, articleLikedBy)
+module Helpers exposing (article, articleBy, articleLikedBy)
 
 import Article exposing (Article)
 import Date
@@ -10,12 +10,25 @@ articleLikedBy username { title } =
     Article.build 1
         title
         "about something"
-        "author"
         "contents"
+        (author 1 "author")
         (Date.fromCalendarDate 2020 Jan 20)
         []
         0
-        [ username ]
+        [ author 1 username ]
+
+
+articleBy : Int -> String -> Article
+articleBy authorId username =
+    Article.build 1
+        "a title"
+        "about something"
+        "contents"
+        (author authorId username)
+        (Date.fromCalendarDate 2020 Jan 20)
+        []
+        0
+        []
 
 
 article : String -> Article
@@ -23,9 +36,17 @@ article title =
     Article.build 1
         title
         "about something"
-        "author"
         "contents"
+        (author 1 "author")
         (Date.fromCalendarDate 2020 Jan 20)
         []
         0
         []
+
+
+author : Int -> String -> Article.Author
+author id username =
+    { id = id
+    , username = username
+    , profileImage = Nothing
+    }

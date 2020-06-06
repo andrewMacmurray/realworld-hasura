@@ -1,6 +1,6 @@
 module Page.SettingsTest exposing (suite)
 
-import Program
+import Program exposing (defaultUser)
 import Program.Expect as Expect
 import Program.Selector exposing (el, filledField)
 import ProgramTest exposing (clickButton, ensureViewHas, expectViewHas)
@@ -23,7 +23,7 @@ suite =
         , test "User can see their profile information" <|
             \_ ->
                 Program.withPage Route.Settings
-                    |> Program.loginWithDetails "amacmurray" "a@b.com"
+                    |> Program.loginWithDetails { defaultUser | username = "amacmurray", email = "a@b.com" }
                     |> Program.start
                     |> expectViewHas
                         [ filledField "amacmurray"

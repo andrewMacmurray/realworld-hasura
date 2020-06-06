@@ -310,7 +310,7 @@ profile article =
     row [ spacing Scale.small ]
         [ Avatar.large (Article.profileImage article)
         , column [ spacing Scale.small ]
-            [ Text.link [ Text.green ] (Article.author article)
+            [ Text.link [ Text.green ] (Article.authorUsername article)
             , Text.date [] (Article.createdAt article)
             ]
         ]

@@ -4,6 +4,7 @@ module Api.Argument exposing
     , created_at
     , eq_
     , field
+    , following_id
     , order_by
     , prop
     , tag
@@ -80,6 +81,10 @@ created_at =
 
 eq_ =
     prop (\val args -> { args | eq_ = Present val })
+
+
+following_id =
+    field (\val args -> { args | following_id = Present val })
 
 
 tag =

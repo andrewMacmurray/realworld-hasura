@@ -8,7 +8,6 @@ module Page.Settings exposing
 
 import Effect exposing (Effect)
 import Element exposing (..)
-import Element.Anchor as Anchor
 import Element.Button as Button
 import Element.Divider as Divider
 import Element.Layout as Layout
@@ -106,9 +105,17 @@ settingsFields model =
             , email model.inputs
             , bio model.inputs
             , Divider.divider
-            , el [ Anchor.description "logout" ] (Button.secondary LogoutClicked "Logout")
+            , logout
             ]
         )
+
+
+logout : Element Msg
+logout =
+    Button.button LogoutClicked "Logout"
+        |> Button.secondary
+        |> Button.description "logout"
+        |> Button.toElement
 
 
 email : Inputs -> Element Msg
