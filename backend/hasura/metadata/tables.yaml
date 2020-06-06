@@ -185,10 +185,12 @@
   - role: anonymous
     permission:
       columns:
+      - id
       - username
       filter: {}
   - role: user
     permission:
       columns:
+      - id
       - username
       filter: {}

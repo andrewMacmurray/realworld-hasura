@@ -1,13 +1,21 @@
 module User exposing
-    ( Profile
+    ( Details
+    , Profile
     , User(..)
+    , bio
     , email
+    , following
     , profile
+    , profileImage
     , token
     , username
     )
 
 import Api.Token exposing (Token)
+
+
+
+-- User
 
 
 type User
@@ -16,21 +24,29 @@ type User
 
 
 type Profile
-    = Profile_ Token Details_
+    = Profile_ Token Details
 
 
-type alias Details_ =
+type alias Details =
     { username : String
     , email : String
+    , bio : Maybe String
+    , profileImage : Maybe String
+    , following : List Int
     }
 
 
-profile : Token -> String -> String -> Profile
-profile token_ username_ email_ =
-    Profile_ token_
-        { username = username_
-        , email = email_
-        }
+
+-- Construct
+
+
+profile : Token -> Details -> Profile
+profile =
+    Profile_
+
+
+
+-- Query
 
 
 token : Profile -> Token
@@ -39,10 +55,34 @@ token (Profile_ token_ _) =
 
 
 username : Profile -> String
-username (Profile_ _ p) =
-    p.username
+username =
+    details_ >> .username
 
 
 email : Profile -> String
-email (Profile_ _ p) =
-    p.email
+email =
+    details_ >> .email
+
+
+bio : Profile -> Maybe String
+bio =
+    details_ >> .bio
+
+
+profileImage : Profile -> Maybe String
+profileImage =
+    details_ >> .profileImage
+
+
+following : Profile -> List Int
+following =
+    details_ >> .following
+
+
+
+-- Helpers
+
+
+details_ : Profile -> Details
+details_ (Profile_ _ d) =
+    d

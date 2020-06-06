@@ -1,10 +1,12 @@
 import * as bcrypt from "bcrypt";
 
 interface User {
-  id: string;
+  id: number;
   email: string;
   username: string;
   passwordHash: string;
+  bio: string | null;
+  profile_url: string | null;
 }
 
 export async function hash(password: string): Promise<string> {

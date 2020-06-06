@@ -3,9 +3,11 @@ import * as jwt from "jsonwebtoken";
 const { JWT_SECRET } = process.env;
 
 export interface UserDetails {
-  id: string;
+  id: number;
   email: string;
   username: string;
+  bio: string | null;
+  profile_image: string | null;
 }
 
 export function generate(user: UserDetails): string {

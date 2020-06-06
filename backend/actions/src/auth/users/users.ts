@@ -4,8 +4,11 @@ import * as TokenResponse from "./token";
 
 interface TokenResponse {
   token: string;
+  user_id: number;
   username: string;
   email: string;
+  bio: string | null;
+  profile_image: string | null;
 }
 
 export interface SignupDetails {
@@ -41,7 +44,10 @@ export async function login({
 function generateToken(details: TokenResponse.UserDetails): TokenResponse {
   return {
     token: TokenResponse.generate(details),
+    user_id: details.id,
     username: details.username,
     email: details.email,
+    bio: details.bio,
+    profile_image: details.profile_image,
   };
 }

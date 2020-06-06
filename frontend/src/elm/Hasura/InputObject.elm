@@ -1424,9 +1424,9 @@ buildUsers_bool_exp fillOptionals =
     let
         optionals =
             fillOptionals
-                { and_ = Absent, not_ = Absent, or_ = Absent, articles = Absent, follows = Absent, username = Absent }
+                { and_ = Absent, not_ = Absent, or_ = Absent, articles = Absent, follows = Absent, id = Absent, username = Absent }
     in
-    Users_bool_exp { and_ = optionals.and_, not_ = optionals.not_, or_ = optionals.or_, articles = optionals.articles, follows = optionals.follows, username = optionals.username }
+    Users_bool_exp { and_ = optionals.and_, not_ = optionals.not_, or_ = optionals.or_, articles = optionals.articles, follows = optionals.follows, id = optionals.id, username = optionals.username }
 
 
 type alias Users_bool_expOptionalFields =
@@ -1435,6 +1435,7 @@ type alias Users_bool_expOptionalFields =
     , or_ : OptionalArgument (List (Maybe Users_bool_exp))
     , articles : OptionalArgument Articles_bool_exp
     , follows : OptionalArgument Follows_bool_exp
+    , id : OptionalArgument Int_comparison_exp
     , username : OptionalArgument String_comparison_exp
     }
 
@@ -1450,6 +1451,7 @@ type alias Users_bool_expRaw =
     , or_ : OptionalArgument (List (Maybe Users_bool_exp))
     , articles : OptionalArgument Articles_bool_exp
     , follows : OptionalArgument Follows_bool_exp
+    , id : OptionalArgument Int_comparison_exp
     , username : OptionalArgument String_comparison_exp
     }
 
@@ -1465,7 +1467,7 @@ type Users_bool_exp
 encodeUsers_bool_exp : Users_bool_exp -> Value
 encodeUsers_bool_exp (Users_bool_exp input) =
     Encode.maybeObject
-        [ ( "_and", (encodeUsers_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.and_ ), ( "_not", encodeUsers_bool_exp |> Encode.optional input.not_ ), ( "_or", (encodeUsers_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.or_ ), ( "articles", encodeArticles_bool_exp |> Encode.optional input.articles ), ( "follows", encodeFollows_bool_exp |> Encode.optional input.follows ), ( "username", encodeString_comparison_exp |> Encode.optional input.username ) ]
+        [ ( "_and", (encodeUsers_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.and_ ), ( "_not", encodeUsers_bool_exp |> Encode.optional input.not_ ), ( "_or", (encodeUsers_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.or_ ), ( "articles", encodeArticles_bool_exp |> Encode.optional input.articles ), ( "follows", encodeFollows_bool_exp |> Encode.optional input.follows ), ( "id", encodeInt_comparison_exp |> Encode.optional input.id ), ( "username", encodeString_comparison_exp |> Encode.optional input.username ) ]
 
 
 buildUsers_order_by : (Users_order_byOptionalFields -> Users_order_byOptionalFields) -> Users_order_by
@@ -1473,19 +1475,23 @@ buildUsers_order_by fillOptionals =
     let
         optionals =
             fillOptionals
-                { username = Absent }
+                { id = Absent, username = Absent }
     in
-    { username = optionals.username }
+    { id = optionals.id, username = optionals.username }
 
 
 type alias Users_order_byOptionalFields =
-    { username : OptionalArgument Hasura.Enum.Order_by.Order_by }
+    { id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , username : OptionalArgument Hasura.Enum.Order_by.Order_by
+    }
 
 
 {-| Type for the Users\_order\_by input object.
 -}
 type alias Users_order_by =
-    { username : OptionalArgument Hasura.Enum.Order_by.Order_by }
+    { id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , username : OptionalArgument Hasura.Enum.Order_by.Order_by
+    }
 
 
 {-| Encode a Users\_order\_by into a value that can be used as an argument.
@@ -1493,7 +1499,7 @@ type alias Users_order_by =
 encodeUsers_order_by : Users_order_by -> Value
 encodeUsers_order_by input =
     Encode.maybeObject
-        [ ( "username", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.username ) ]
+        [ ( "id", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.id ), ( "username", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.username ) ]
 
 
 buildUsers_pk_columns_input : Users_pk_columns_inputRequiredFields -> Users_pk_columns_input

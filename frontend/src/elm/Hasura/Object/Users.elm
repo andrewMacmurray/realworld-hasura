@@ -83,6 +83,11 @@ follows fillInOptionals object_ =
     Object.selectionForCompositeField "follows" optionalArgs object_ (identity >> Decode.list)
 
 
+id : SelectionSet Int Hasura.Object.Users
+id =
+    Object.selectionForField "Int" "id" [] Decode.int
+
+
 username : SelectionSet String Hasura.Object.Users
 username =
     Object.selectionForField "String" "username" [] Decode.string

@@ -26,8 +26,11 @@ type Mutation {
 
 type TokenResponse {
   token : String!
+  user_id : Int!
   username : String!
   email : String!
+  bio : String
+  profile_image : String
 }
 
 type UnlikeResponse {

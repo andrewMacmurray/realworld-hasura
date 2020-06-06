@@ -35,6 +35,8 @@ type Msg
 type alias Inputs =
     { username : String
     , email : String
+    , bio : String
+    , profileImage : String
     }
 
 
@@ -56,7 +58,14 @@ initInputs : User.Profile -> Inputs
 initInputs profile =
     { username = User.username profile
     , email = User.email profile
+    , bio = defaultToEmpty (User.bio profile)
+    , profileImage = defaultToEmpty (User.profileImage profile)
     }
+
+
+defaultToEmpty : Maybe String -> String
+defaultToEmpty =
+    Maybe.withDefault ""
 
 
 
@@ -81,7 +90,7 @@ view : User.Profile -> Model -> Element Msg
 view user model =
     Layout.authenticated user
         |> Layout.toElement
-            [ column [ spacing Scale.medium, width fill, paddingXY 0 Scale.large ]
+            [ column [ spacing Scale.large, width fill ]
                 [ el [ centerX ] (Text.title [ Text.description "settings-title" ] "Your Settings")
                 , settingsFields model
                 ]
@@ -92,8 +101,10 @@ settingsFields : Model -> Element Msg
 settingsFields model =
     Layout.halfWidth
         (column [ width fill, spacing Scale.medium ]
-            [ username model.inputs
+            [ profileImage model.inputs
+            , username model.inputs
             , email model.inputs
+            , bio model.inputs
             , Divider.divider
             , el [ Anchor.description "logout" ] (Button.secondary LogoutClicked "Logout")
             ]
@@ -102,7 +113,7 @@ settingsFields model =
 
 email : Inputs -> Element Msg
 email =
-    textField
+    textField Field.small
         { value = .email
         , update = \i v -> { i | email = v }
         , label = "Email"
@@ -111,13 +122,31 @@ email =
 
 username : Inputs -> Element Msg
 username =
-    textField
+    textField Field.small
         { value = .username
         , update = \i v -> { i | username = v }
         , label = "Username"
         }
 
 
-textField : Field.Config Inputs -> Inputs -> Element Msg
+profileImage : Inputs -> Element Msg
+profileImage =
+    textField Field.small
+        { value = .profileImage
+        , update = \i v -> { i | profileImage = v }
+        , label = "Profile Image Url"
+        }
+
+
+bio : Inputs -> Element Msg
+bio =
+    textField Field.area
+        { value = .bio
+        , update = \i v -> { i | bio = v }
+        , label = "A short bio about you"
+        }
+
+
+textField : Field.Style -> Field.Config Inputs -> Inputs -> Element Msg
 textField =
-    Field.text InputsChanged Field.small
+    Field.text InputsChanged

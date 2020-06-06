@@ -4,6 +4,9 @@ interface User {
   username: string;
   email: string;
   token: string;
+  bio: string | null;
+  profileImage: string | null;
+  following: number[];
 }
 
 export function load(): User | null {

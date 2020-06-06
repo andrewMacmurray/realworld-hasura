@@ -9,7 +9,9 @@ import Effect exposing (Effect)
 import Graphql.SelectionSet as SelectionSet exposing (SelectionSet(..), with)
 import Hasura.Mutation exposing (LoginRequiredArguments, SignupRequiredArguments)
 import Hasura.Object
-import Hasura.Object.TokenResponse
+import Hasura.Object.Follows as Follows
+import Hasura.Object.TokenResponse as TokenResponse
+import Hasura.Object.Users as Users
 import User exposing (User)
 
 
@@ -43,10 +45,30 @@ userSelection : SelectionSet User.Profile Hasura.Object.TokenResponse
 userSelection =
     SelectionSet.succeed User.profile
         |> with tokenSelection
-        |> with Hasura.Object.TokenResponse.username
-        |> with Hasura.Object.TokenResponse.email
+        |> with detailsSelection
+
+
+detailsSelection : SelectionSet User.Details Hasura.Object.TokenResponse
+detailsSelection =
+    SelectionSet.succeed User.Details
+        |> with TokenResponse.username
+        |> with TokenResponse.email
+        |> with TokenResponse.bio
+        |> with TokenResponse.profile_image
+        |> with followsSelection
+
+
+followsSelection : SelectionSet (List Int) Hasura.Object.TokenResponse
+followsSelection =
+    TokenResponse.follows (Follows.user Users.id)
+        |> SelectionSet.map flattenMaybes
+
+
+flattenMaybes : Maybe (List (Maybe a)) -> List a
+flattenMaybes =
+    Maybe.withDefault [] >> List.filterMap identity
 
 
 tokenSelection : SelectionSet Token Hasura.Object.TokenResponse
 tokenSelection =
-    SelectionSet.map Token.token Hasura.Object.TokenResponse.token
+    SelectionSet.map Token.token TokenResponse.token

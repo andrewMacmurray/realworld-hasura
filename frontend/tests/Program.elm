@@ -88,6 +88,9 @@ user name email =
     { username = name
     , email = email
     , token = "token"
+    , bio = Nothing
+    , profileImage = Nothing
+    , following = []
     }
 
 

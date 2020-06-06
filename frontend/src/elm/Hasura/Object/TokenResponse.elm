@@ -19,14 +19,34 @@ import Hasura.Union
 import Json.Decode as Decode
 
 
+bio : SelectionSet (Maybe String) Hasura.Object.TokenResponse
+bio =
+    Object.selectionForField "(Maybe String)" "bio" [] (Decode.string |> Decode.nullable)
+
+
 email : SelectionSet String Hasura.Object.TokenResponse
 email =
     Object.selectionForField "String" "email" [] Decode.string
 
 
+follows : SelectionSet decodesTo Hasura.Object.Follows -> SelectionSet (Maybe (List (Maybe decodesTo))) Hasura.Object.TokenResponse
+follows object_ =
+    Object.selectionForCompositeField "follows" [] object_ (identity >> Decode.nullable >> Decode.list >> Decode.nullable)
+
+
+profile_image : SelectionSet (Maybe String) Hasura.Object.TokenResponse
+profile_image =
+    Object.selectionForField "(Maybe String)" "profile_image" [] (Decode.string |> Decode.nullable)
+
+
 token : SelectionSet String Hasura.Object.TokenResponse
 token =
     Object.selectionForField "String" "token" [] Decode.string
+
+
+user_id : SelectionSet Int Hasura.Object.TokenResponse
+user_id =
+    Object.selectionForField "Int" "user_id" [] Decode.int
 
 
 username : SelectionSet String Hasura.Object.TokenResponse

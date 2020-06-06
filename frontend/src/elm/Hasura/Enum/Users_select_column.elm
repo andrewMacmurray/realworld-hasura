@@ -9,16 +9,18 @@ import Json.Decode as Decode exposing (Decoder)
 
 {-| select columns of table "users"
 
+  - Id - column name
   - Username - column name
 
 -}
 type Users_select_column
-    = Username
+    = Id
+    | Username
 
 
 list : List Users_select_column
 list =
-    [ Username ]
+    [ Id, Username ]
 
 
 decoder : Decoder Users_select_column
@@ -27,6 +29,9 @@ decoder =
         |> Decode.andThen
             (\string ->
                 case string of
+                    "id" ->
+                        Decode.succeed Id
+
                     "username" ->
                         Decode.succeed Username
 
@@ -40,6 +45,9 @@ decoder =
 toString : Users_select_column -> String
 toString enum =
     case enum of
+        Id ->
+            "id"
+
         Username ->
             "username"
 
@@ -58,6 +66,9 @@ This can be useful for generating Strings to use for <select> menus to check whi
 fromString : String -> Maybe Users_select_column
 fromString enumString =
     case enumString of
+        "id" ->
+            Just Id
+
         "username" ->
             Just Username
 
