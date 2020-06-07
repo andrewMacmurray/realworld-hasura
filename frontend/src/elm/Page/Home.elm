@@ -17,6 +17,7 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Button as Button
 import Element.Divider as Divider
+import Element.Events exposing (onClick)
 import Element.Layout as Layout
 import Element.Palette as Palette
 import Element.Scale as Scale exposing (edges)
@@ -33,43 +34,68 @@ import WebData exposing (WebData)
 
 
 type alias Model =
-    { feed : WebData Article.Feed
-    , selectedTag : Maybe Tag
+    { feed : Feed
     }
 
 
 type Msg
     = GlobalFeedResponseReceived (Api.Response Article.Feed)
-    | TagFeedResponseReceived (Api.Response Article.Feed)
+    | TagFeedResponseReceived Tag (Api.Response Article.Feed)
+    | UserFeedResponseReceived (Api.Response Article.Feed)
     | LikeArticleClicked Article
     | UnLikeArticleClicked Article
+    | GlobalFeedClicked
+    | UserFeedClicked User.Profile
     | UpdateArticleResponseReceived (Api.Response Article)
+
+
+type Feed
+    = Global (WebData Article.Feed)
+    | UserFeed (WebData Article.Feed)
+    | TagFeed Tag (WebData Article.Feed)
 
 
 
 -- Init
 
 
-init : Maybe Tag -> ( Model, Effect Msg )
-init tag =
-    ( initialModel tag, fetchFeed tag )
+init : User -> Maybe Tag -> ( Model, Effect Msg )
+init user tag =
+    ( initialModel user tag
+    , fetchFeed user tag
+    )
 
 
-fetchFeed : Maybe Tag -> Effect Msg
-fetchFeed selectedTag =
-    case selectedTag of
-        Just tag ->
-            Api.Articles.tagFeed tag TagFeedResponseReceived
+fetchFeed : User -> Maybe Tag -> Effect Msg
+fetchFeed user tag =
+    case ( user, tag ) of
+        ( _, Just t ) ->
+            Api.Articles.tagFeed t (TagFeedResponseReceived t)
 
-        Nothing ->
-            Api.Articles.globalFeed GlobalFeedResponseReceived
+        ( User.Guest, _ ) ->
+            loadGlobalFeed
+
+        ( User.LoggedIn profile_, _ ) ->
+            loadUserFeed profile_
 
 
-initialModel : Maybe Tag -> Model
-initialModel tag =
-    { feed = WebData.Loading
-    , selectedTag = tag
+initialModel : User -> Maybe Tag -> Model
+initialModel user tag =
+    { feed = toInitialFeed user tag
     }
+
+
+toInitialFeed : User -> Maybe Tag -> Feed
+toInitialFeed user tag =
+    case ( user, tag ) of
+        ( _, Just t ) ->
+            TagFeed t WebData.Loading
+
+        ( User.LoggedIn _, _ ) ->
+            UserFeed WebData.Loading
+
+        ( User.Guest, _ ) ->
+            Global WebData.Loading
 
 
 
@@ -80,10 +106,13 @@ update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
         GlobalFeedResponseReceived response ->
-            ( { model | feed = WebData.fromResult response }, Effect.none )
+            ( { model | feed = Global (WebData.fromResult response) }, Effect.none )
 
-        TagFeedResponseReceived response ->
-            ( { model | feed = WebData.fromResult response }, Effect.none )
+        TagFeedResponseReceived tag response ->
+            ( { model | feed = TagFeed tag (WebData.fromResult response) }, Effect.none )
+
+        UserFeedResponseReceived response ->
+            ( { model | feed = UserFeed (WebData.fromResult response) }, Effect.none )
 
         LikeArticleClicked article ->
             ( model, likeArticle article )
@@ -92,10 +121,26 @@ update msg model =
             ( model, unlikeArticle article )
 
         UpdateArticleResponseReceived (Ok article) ->
-            ( { model | feed = WebData.map (Article.replace article) model.feed }, Effect.none )
+            ( { model | feed = updateArticle (Article.replace article) model.feed }, Effect.none )
 
         UpdateArticleResponseReceived (Err _) ->
             ( model, Effect.none )
+
+        GlobalFeedClicked ->
+            ( { model | feed = Global WebData.Loading }, loadGlobalFeed )
+
+        UserFeedClicked profile_ ->
+            ( { model | feed = UserFeed WebData.Loading }, loadUserFeed profile_ )
+
+
+loadGlobalFeed : Effect Msg
+loadGlobalFeed =
+    Api.Articles.globalFeed GlobalFeedResponseReceived
+
+
+loadUserFeed : User.Profile -> Effect Msg
+loadUserFeed profile_ =
+    Api.Articles.userFeed profile_ UserFeedResponseReceived
 
 
 likeArticle : Article -> Effect Msg
@@ -106,6 +151,23 @@ likeArticle article =
 unlikeArticle : Article -> Effect Msg
 unlikeArticle article =
     Api.Articles.unlike article UpdateArticleResponseReceived
+
+
+
+-- Feed
+
+
+updateArticle : (Article.Feed -> Article.Feed) -> Feed -> Feed
+updateArticle f feed =
+    case feed of
+        Global feed_ ->
+            Global (WebData.map f feed_)
+
+        UserFeed feed_ ->
+            UserFeed (WebData.map f feed_)
+
+        TagFeed tag feed_ ->
+            TagFeed tag (WebData.map f feed_)
 
 
 
@@ -139,31 +201,134 @@ whiteHeadline =
 
 pageContents : User -> Model -> Element Msg
 pageContents user model =
-    case model.feed of
-        WebData.Loading ->
-            Text.text [] "Loading"
+    pageWrapper user model (feedLinks user model.feed)
 
-        WebData.Success feed_ ->
-            row [ width fill, spacing Scale.large ]
-                [ feedArticles user model.selectedTag feed_.articles
-                , popularTags feed_.popularTags
-                ]
+
+pageWrapper : User -> Model -> List (Element Msg) -> Element Msg
+pageWrapper user model =
+    case model.feed of
+        Global feed_ ->
+            feedWrapper user feed_ "global-feed"
+
+        TagFeed tag_ feed_ ->
+            feedWrapper user feed_ ("tag-feed-for-" ++ Tag.value tag_)
+
+        UserFeed feed_ ->
+            feedWrapper user feed_ "your-feed"
+
+
+
+-- Links
+
+
+feedLinks : User -> Feed -> List (Element Msg)
+feedLinks user feed =
+    case user of
+        User.Guest ->
+            guestLinks feed
+
+        User.LoggedIn profile_ ->
+            userLinks profile_ feed
+
+
+userLinks : User.Profile -> Feed -> List (Element Msg)
+userLinks profile_ feed =
+    case feed of
+        Global _ ->
+            [ greenSubtitle "Global Feed"
+            , userFeedLink profile_ (subtitleLink "Your Feed")
+            ]
+
+        UserFeed _ ->
+            [ globalFeedLink (subtitleLink "Global Feed")
+            , el [] (greenSubtitle "Your Feed")
+            ]
+
+        TagFeed tag_ _ ->
+            [ globalFeedLink (subtitleLink "Global Feed")
+            , userFeedLink profile_ (subtitleLink "Your Feed")
+            , greenSubtitle ("#" ++ String.capitalize (Tag.value tag_))
+            ]
+
+
+guestLinks : Feed -> List (Element Msg)
+guestLinks feed =
+    case feed of
+        Global _ ->
+            [ greenSubtitle "Global Feed"
+            ]
+
+        TagFeed tag_ _ ->
+            [ globalFeedLink (subtitleLink "Global Feed")
+            , greenSubtitle ("#" ++ String.capitalize (Tag.value tag_))
+            ]
+
+        UserFeed _ ->
+            []
+
+
+globalFeedLink : Element Msg -> Element Msg
+globalFeedLink =
+    el [ onClick GlobalFeedClicked ]
+
+
+userFeedLink : User.Profile -> Element Msg -> Element Msg
+userFeedLink profile_ =
+    el [ onClick (UserFeedClicked profile_) ]
+
+
+
+-- Page
+
+
+feedWrapper : User -> WebData Article.Feed -> String -> List (Element Msg) -> Element Msg
+feedWrapper user feed description links =
+    row [ width fill, spacing Scale.large ]
+        [ column
+            [ Anchor.description description
+            , width fill
+            , spacing Scale.large
+            ]
+            [ row [ spacing Scale.large ] links
+            , Divider.divider
+            , viewFeed user feed
+            ]
+        , column
+            [ Anchor.description "popular-tags"
+            , alignTop
+            , spacing Scale.large
+            , width (fill |> maximum 300)
+            ]
+            [ Text.title [] "Popular Tags"
+            , viewPopularTags feed
+            ]
+        ]
+
+
+viewFeed : User -> WebData Article.Feed -> Element Msg
+viewFeed user feed =
+    case feed of
+        WebData.Loading ->
+            Text.text [] "Loading Feed"
+
+        WebData.Success data ->
+            viewArticles user data.articles
 
         WebData.Failure ->
-            Text.error [] "Something Went wrong"
+            Text.error [] "Something went wrong"
 
 
-popularTags : List Tag.Popular -> Element msg
-popularTags tags_ =
-    column
-        [ Anchor.description "popular-tags"
-        , alignTop
-        , spacing Scale.large
-        , width (fill |> maximum 300)
-        ]
-        [ Text.title [] "Popular Tags"
-        , wrappedRow [ spacing Scale.small ] (List.map viewPopularTag tags_)
-        ]
+viewPopularTags : WebData Article.Feed -> Element msg
+viewPopularTags feed =
+    case feed of
+        WebData.Loading ->
+            none
+
+        WebData.Success data ->
+            wrappedRow [ spacing Scale.small ] (List.map viewPopularTag data.popularTags)
+
+        WebData.Failure ->
+            none
 
 
 viewPopularTag : Tag.Popular -> Element msg
@@ -192,33 +357,6 @@ whiteLabel =
     Text.label [ Text.white ]
 
 
-feedArticles : User -> Maybe Tag -> List Article -> Element Msg
-feedArticles user selectedTag articles =
-    case selectedTag of
-        Just tag ->
-            column
-                [ Anchor.description ("tag-feed-for-" ++ Tag.value tag)
-                , width fill
-                , spacing Scale.large
-                ]
-                [ row [ spacing Scale.large ]
-                    [ Route.el Route.home (subtitleLink "Global Feed")
-                    , greenSubtitle ("#" ++ String.capitalize (Tag.value tag))
-                    ]
-                , viewArticles user articles
-                ]
-
-        Nothing ->
-            column
-                [ Anchor.description "global-feed"
-                , width fill
-                , spacing Scale.large
-                ]
-                [ greenSubtitle "Global Feed"
-                , viewArticles user articles
-                ]
-
-
 subtitleLink : String -> Element msg
 subtitleLink =
     Text.subtitle [ Text.asLink ]
@@ -245,14 +383,14 @@ viewArticle user article =
         , spacing Scale.medium
         , width fill
         ]
-        [ Divider.divider
-        , row [ width fill ]
+        [ row [ width fill ]
             [ column [ spacing Scale.medium, width fill ]
                 [ row [ width fill ] [ profile article, likes user article ]
                 , articleSummary article
                 , row [ width fill ] [ readMore article, tags article ]
                 ]
             ]
+        , Divider.divider
         ]
 
 

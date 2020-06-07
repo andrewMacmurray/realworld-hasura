@@ -8,7 +8,6 @@ import ProgramTest exposing (expectViewHas)
 import Route
 import Tag
 import Test exposing (..)
-import Test.Html.Selector exposing (text)
 
 
 suite : Test
@@ -17,23 +16,20 @@ suite =
         [ test "Guest User sees global feed on load" <|
             \_ ->
                 Program.onHomePage
-                    |> Program.simulateGlobalFeed [ article "foo", article "bar" ] []
+                    |> Program.simulateArticleFeed [ article "foo", article "bar" ] []
                     |> Program.start
                     |> expectViewHas
                         [ el "global-feed"
                         , el "article-foo"
                         , el "article-bar"
-                        , text "MON JAN 20 2020"
                         ]
-        , test "Shows collection of popular tags" <|
+        , test "Logged in user sees personal feed on load" <|
             \_ ->
                 Program.onHomePage
-                    |> Program.simulateGlobalFeed [ article "foo", article "bar" ] (Tag.parse "tag1, tag2")
+                    |> Program.withLoggedInUser
                     |> Program.start
                     |> expectViewHas
-                        [ el "popular-tags"
-                        , el "popular-tag1"
-                        , el "popular-tag2"
+                        [ el "your-feed"
                         ]
         , test "Shows feed for a particular tag" <|
             \_ ->
@@ -42,18 +38,28 @@ suite =
                     |> expectViewHas
                         [ el "tag-feed-for-bread"
                         ]
+        , test "Shows collection of popular tags" <|
+            \_ ->
+                Program.onHomePage
+                    |> Program.simulateArticleFeed [ article "foo", article "bar" ] (Tag.parse "tag1, tag2")
+                    |> Program.start
+                    |> expectViewHas
+                        [ el "popular-tags"
+                        , el "popular-tag1"
+                        , el "popular-tag2"
+                        ]
         , test "Logged in User can like an article" <|
             \_ ->
                 Program.withPage Route.home
-                    |> Program.login
-                    |> Program.simulateGlobalFeed [ article "foo" ] []
+                    |> Program.withLoggedInUser
+                    |> Program.simulateArticleFeed [ article "foo" ] []
                     |> Program.start
                     |> expectViewHas [ el "like-foo" ]
         , test "Logged in User can unlike an article previously liked by them" <|
             \_ ->
                 Program.withPage Route.home
-                    |> Program.loginWithUser "amacmurray"
-                    |> Program.simulateGlobalFeed [ Helpers.articleLikedBy "amacmurray" { title = "foo" } ] []
+                    |> Program.loggedInWithUser "amacmurray"
+                    |> Program.simulateArticleFeed [ Helpers.articleLikedBy "amacmurray" { title = "foo" } ] []
                     |> Program.start
                     |> expectViewHas [ el "unlike-foo" ]
         ]

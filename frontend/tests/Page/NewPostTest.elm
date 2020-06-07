@@ -16,7 +16,7 @@ suite =
         [ test "User can fill fields for new article" <|
             \_ ->
                 Program.withPage Route.NewPost
-                    |> Program.login
+                    |> Program.withLoggedInUser
                     |> Program.start
                     |> Program.fillField "article-title" "Title"
                     |> Program.fillField "what's-this-article-about?" "something about the article"
@@ -29,14 +29,14 @@ suite =
         , test "User can enter tags" <|
             \_ ->
                 Program.withPage Route.NewPost
-                    |> Program.login
+                    |> Program.withLoggedInUser
                     |> Program.start
                     |> Program.fillField "enter-tags" "tag1, tag2,tag3"
                     |> expectView hasThreeTags
         , test "User is redirected home after publishing article" <|
             \_ ->
                 Program.withPage Route.NewPost
-                    |> Program.login
+                    |> Program.withLoggedInUser
                     |> Program.start
                     |> Program.fillField "article-title" "Title"
                     |> Program.fillField "what's-this-article-about?" "something about the article"
