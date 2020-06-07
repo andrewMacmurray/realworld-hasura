@@ -3,6 +3,7 @@ module Api.Articles exposing
     , globalFeed
     , like
     , loadArticle
+    , newestFirst
     , publish
     , tagFeed
     , unlike
@@ -13,6 +14,7 @@ import Api
 import Api.Argument as Argument exposing (author, created_at, eq_, id, in_, order_by, tag, tags, where_)
 import Api.Date as Date
 import Article exposing (Article)
+import Article.Author as Author exposing (Author)
 import Effect exposing (Effect)
 import Graphql.Operation exposing (RootQuery)
 import Graphql.OptionalArgument exposing (OptionalArgument(..))
@@ -173,22 +175,20 @@ articleSelection =
         |> with (Articles.likes identity likedBySelection)
 
 
-authorSelection : SelectionSet Article.Author Articles
+authorSelection : SelectionSet Author Articles
 authorSelection =
-    SelectionSet.succeed Article.Author
+    SelectionSet.succeed Author.build
         |> with (Articles.author Users.id)
         |> with (Articles.author Users.username)
         |> with (Articles.author Users.profile_image)
-        |> with (SelectionSet.succeed [])
 
 
-likedBySelection : SelectionSet Article.Author Hasura.Object.Likes
+likedBySelection : SelectionSet Author Hasura.Object.Likes
 likedBySelection =
-    SelectionSet.succeed Article.Author
+    SelectionSet.succeed Author.build
         |> with (Likes.user Users.id)
         |> with (Likes.user Users.username)
         |> with (Likes.user Users.profile_image)
-        |> with (SelectionSet.succeed [])
 
 
 likesCountSelection : SelectionSet Int Hasura.Object.Likes_aggregate

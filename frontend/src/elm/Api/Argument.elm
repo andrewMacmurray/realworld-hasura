@@ -8,10 +8,12 @@ module Api.Argument exposing
     , following_id
     , id
     , in_
+    , likes
     , order_by
     , prop
     , tag
     , tags
+    , user_id
     , where_
     )
 
@@ -108,6 +110,14 @@ id =
 
 in_ =
     prop (\val args -> { args | in_ = Present val })
+
+
+likes =
+    field (\val args -> { args | likes = Present val })
+
+
+user_id =
+    field (\val args -> { args | user_id = Present val })
 
 
 where_ =

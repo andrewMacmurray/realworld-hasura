@@ -1,28 +1,26 @@
 module Article exposing
     ( Article
-    , Author
     , Feed
     , Id
     , ToCreate
     , about
     , author
-    , authorId
     , authorUsername
     , build
     , content
     , createdAt
     , id
-    , isAuthoredBy
     , likedByMe
     , likes
     , profileImage
-    , replaceInAuthor
+    , replace
     , replaceInFeed
     , tags
     , title
     , toCreate
     )
 
+import Article.Author as Author exposing (Author)
 import Date exposing (Date)
 import Tag exposing (Tag)
 import User exposing (User)
@@ -46,14 +44,6 @@ type alias Article_ =
     , tags : List Tag
     , likes : Int
     , likedBy : List Author
-    }
-
-
-type alias Author =
-    { id : Id
-    , username : String
-    , profileImage : Maybe String
-    , articles : List Article
     }
 
 
@@ -140,14 +130,9 @@ author =
     article_ >> .author
 
 
-authorId : Article -> Id
-authorId =
-    author >> .id
-
-
 authorUsername : Article -> String
 authorUsername =
-    author >> .username
+    author >> Author.username
 
 
 createdAt : Article -> Date
@@ -165,15 +150,10 @@ likes =
     article_ >> .likes
 
 
-isAuthoredBy : User.Profile -> Article -> Bool
-isAuthoredBy profile article =
-    authorUsername article == User.username profile
-
-
 likedByMe : User.Profile -> Article -> Bool
 likedByMe profile article =
     likedBy article
-        |> List.map .username
+        |> List.map Author.username
         |> List.member (User.username profile)
 
 
@@ -184,7 +164,7 @@ likedBy =
 
 profileImage : Article -> Maybe String
 profileImage =
-    author >> .profileImage
+    author >> Author.profileImage
 
 
 equals : Article -> Article -> Bool
@@ -198,12 +178,12 @@ equals a b =
 
 replaceInFeed : Article -> Feed -> Feed
 replaceInFeed article feed =
-    { feed | articles = List.map (replace_ article) feed.articles }
+    { feed | articles = replace article feed.articles }
 
 
-replaceInAuthor : Article -> Author -> Author
-replaceInAuthor article author_ =
-    { author_ | articles = List.map (replace_ article) author_.articles }
+replace : Article -> List Article -> List Article
+replace article =
+    List.map (replace_ article)
 
 
 replace_ : Article -> Article -> Article

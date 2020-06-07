@@ -10,6 +10,7 @@ module Route exposing
     )
 
 import Article
+import Article.Author as Author exposing (Author)
 import Element exposing (Element)
 import Element.Text as Text
 import Tag exposing (Tag)
@@ -57,9 +58,9 @@ home =
     Home Nothing
 
 
-author : Article.Author -> Route
+author : Author -> Route
 author =
-    .id >> Author
+    Author.id >> Author
 
 
 tagQuery : Query.Parser (Maybe Tag)

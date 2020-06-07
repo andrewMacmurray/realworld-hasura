@@ -10,11 +10,12 @@ import Api
 import Api.Articles
 import Api.Users
 import Article exposing (Article)
+import Article.Author exposing (Author)
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Avatar as Avatar
 import Element.Background as Background
-import Element.Button as Button
+import Element.Button.Follow as Follow
 import Element.Layout as Layout exposing (Layout)
 import Element.Palette as Palette
 import Element.Scale as Scale
@@ -35,9 +36,9 @@ type alias Model =
 
 type Msg
     = ArticleReceived (Api.Response (Maybe Article))
-    | FollowAuthorClicked Article
+    | FollowAuthorClicked Author
     | FollowResponseReceived (Api.Response Int)
-    | UnfollowAuthorClicked Article
+    | UnfollowAuthorClicked Author
     | UnfollowResponseReceived (Api.Response Int)
 
 
@@ -84,8 +85,8 @@ update msg model =
         ArticleReceived (Err _) ->
             ( { model | article = FailedToLoad }, Effect.none )
 
-        FollowAuthorClicked article ->
-            ( model, followAuthor article )
+        FollowAuthorClicked author_ ->
+            ( model, followAuthor author_ )
 
         FollowResponseReceived (Ok following_id) ->
             ( model, Effect.addToUserFollows following_id )
@@ -93,8 +94,8 @@ update msg model =
         FollowResponseReceived (Err _) ->
             ( model, Effect.none )
 
-        UnfollowAuthorClicked article ->
-            ( model, unfollowAuthor article )
+        UnfollowAuthorClicked author_ ->
+            ( model, unfollowAuthor author_ )
 
         UnfollowResponseReceived (Ok following_id) ->
             ( model, Effect.removeFromUserFollows following_id )
@@ -103,14 +104,14 @@ update msg model =
             ( model, Effect.none )
 
 
-followAuthor : Article -> Effect Msg
-followAuthor article =
-    Api.Users.follow (Article.author article) FollowResponseReceived
+followAuthor : Author -> Effect Msg
+followAuthor author_ =
+    Api.Users.follow author_ FollowResponseReceived
 
 
-unfollowAuthor : Article -> Effect Msg
-unfollowAuthor article =
-    Api.Users.unfollow (Article.author article) UnfollowResponseReceived
+unfollowAuthor : Author -> Effect Msg
+unfollowAuthor author_ =
+    Api.Users.unfollow author_ UnfollowResponseReceived
 
 
 
@@ -152,25 +153,12 @@ loadedBanner user article =
 
 followButton : User -> Article -> Element Msg
 followButton user article =
-    case user of
-        User.Guest ->
-            none
-
-        User.LoggedIn profile ->
-            if Article.isAuthoredBy profile article then
-                none
-
-            else if User.follows (Article.authorId article) profile then
-                Button.button (UnfollowAuthorClicked article) "Unfollow"
-                    |> Button.description ("unfollow-" ++ Article.authorUsername article)
-                    |> Button.follow
-                    |> Button.toElement
-
-            else
-                Button.button (FollowAuthorClicked article) "Follow"
-                    |> Button.description ("follow-" ++ Article.authorUsername article)
-                    |> Button.follow
-                    |> Button.toElement
+    Follow.button
+        { user = user
+        , author = Article.author article
+        , onFollow = FollowAuthorClicked
+        , onUnfollow = UnfollowAuthorClicked
+        }
 
 
 tags : Article -> Element msg

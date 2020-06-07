@@ -9,12 +9,15 @@ module Page.Author exposing
 import Api
 import Api.Articles
 import Api.Authors
-import Article exposing (Article, Author)
+import Api.Users
+import Article exposing (Article)
+import Article.Author as Author exposing (Author)
+import Article.Author.Feed as Feed exposing (Feed)
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Avatar as Avatar
 import Element.Background as Background
-import Element.Button as Button
+import Element.Button.Follow as Follow
 import Element.Feed as Feed
 import Element.Layout as Layout exposing (Layout)
 import Element.Palette as Palette
@@ -28,14 +31,19 @@ import User exposing (User)
 
 
 type alias Model =
-    { author : LoadStatus Author }
+    { feed : LoadStatus Feed
+    }
 
 
 type Msg
-    = AuthorResponseReceived (Api.Response (Maybe Author))
+    = FeedResponseReceived (Api.Response (Maybe Feed))
     | LikeArticleClicked Article
     | UnlikeArticleClicked Article
+    | FollowAuthorClicked Author
+    | UnfollowAuthorClicked Author
     | UpdateArticleResponseReceived (Api.Response Article)
+    | FollowResponseReceived (Api.Response User.Id)
+    | UnfollowResponseReceived (Api.Response User.Id)
 
 
 type LoadStatus a
@@ -51,17 +59,18 @@ type LoadStatus a
 
 init : User.Id -> ( Model, Effect Msg )
 init id_ =
-    ( initialModel, getAuthor id_ )
+    ( initialModel, fetchAuthorFeed id_ )
 
 
 initialModel : Model
 initialModel =
-    { author = Loading }
+    { feed = Loading
+    }
 
 
-getAuthor : User.Id -> Effect Msg
-getAuthor id_ =
-    Api.Authors.get id_ AuthorResponseReceived
+fetchAuthorFeed : User.Id -> Effect Msg
+fetchAuthorFeed id_ =
+    Api.Authors.feed id_ FeedResponseReceived
 
 
 
@@ -71,14 +80,14 @@ getAuthor id_ =
 update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
-        AuthorResponseReceived (Ok (Just author_)) ->
-            ( { model | author = Loaded author_ }, Effect.none )
+        FeedResponseReceived (Ok (Just author_)) ->
+            ( { model | feed = Loaded author_ }, Effect.none )
 
-        AuthorResponseReceived (Ok Nothing) ->
-            ( { model | author = NotFound }, Effect.none )
+        FeedResponseReceived (Ok Nothing) ->
+            ( { model | feed = NotFound }, Effect.none )
 
-        AuthorResponseReceived (Err _) ->
-            ( { model | author = Failed }, Effect.none )
+        FeedResponseReceived (Err _) ->
+            ( { model | feed = Failed }, Effect.none )
 
         LikeArticleClicked article ->
             ( model, likeArticle article )
@@ -86,18 +95,36 @@ update msg model =
         UnlikeArticleClicked article ->
             ( model, unlikeArticle article )
 
+        FollowAuthorClicked author_ ->
+            ( model, followAuthor author_ )
+
+        UnfollowAuthorClicked author_ ->
+            ( model, unfollowAuthor author_ )
+
+        FollowResponseReceived (Ok id) ->
+            ( model, Effect.addToUserFollows id )
+
+        FollowResponseReceived (Err _) ->
+            ( model, Effect.none )
+
+        UnfollowResponseReceived (Ok id) ->
+            ( model, Effect.removeFromUserFollows id )
+
+        UnfollowResponseReceived (Err _) ->
+            ( model, Effect.none )
+
         UpdateArticleResponseReceived (Ok article) ->
-            ( { model | author = updateArticle article model.author }, Effect.none )
+            ( { model | feed = updateArticle article model.feed }, Effect.none )
 
         UpdateArticleResponseReceived (Err _) ->
             ( model, Effect.none )
 
 
-updateArticle : Article -> LoadStatus Author -> LoadStatus Author
+updateArticle : Article -> LoadStatus Feed -> LoadStatus Feed
 updateArticle article author =
     case author of
         Loaded a ->
-            Loaded (Article.replaceInAuthor article a)
+            Loaded (Feed.replaceArticle article a)
 
         _ ->
             author
@@ -113,6 +140,16 @@ unlikeArticle article =
     Api.Articles.unlike article UpdateArticleResponseReceived
 
 
+followAuthor : Author -> Effect Msg
+followAuthor author_ =
+    Api.Users.follow author_ FollowResponseReceived
+
+
+unfollowAuthor : Author -> Effect Msg
+unfollowAuthor author_ =
+    Api.Users.unfollow author_ UnfollowResponseReceived
+
+
 
 -- View
 
@@ -120,7 +157,7 @@ unlikeArticle article =
 view : User -> Model -> Element Msg
 view user model =
     Layout.user user
-        |> withBanner model
+        |> withBanner user model
         |> Layout.toElement [ pageContents user model ]
 
 
@@ -128,27 +165,35 @@ view user model =
 -- Banner
 
 
-withBanner : Model -> Layout msg -> Layout msg
-withBanner model =
-    Layout.withBanner [ Background.color Palette.black ] (bannerContent model.author)
+withBanner : User -> Model -> Layout Msg -> Layout Msg
+withBanner user model =
+    Layout.withBanner [ Background.color Palette.black ] (bannerContent user model.feed)
 
 
-bannerContent : LoadStatus Author -> Element msg
-bannerContent a =
-    case a of
-        Loaded a_ ->
+bannerContent : User -> LoadStatus Feed -> Element Msg
+bannerContent user feed =
+    case feed of
+        Loaded feed_ ->
             column [ spacing Scale.small, centerY ]
                 [ row [ spacing Scale.small ]
-                    [ Avatar.large a_.profileImage
-                    , Text.headline [ Text.white ] a_.username
+                    [ Avatar.large (Author.profileImage feed_.author)
+                    , Text.headline [ Text.white ] (Author.username feed_.author)
                     ]
-                , Button.decorative "Follow Author"
-                    |> Button.follow
-                    |> Button.toElement
+                , followButton user feed_.author
                 ]
 
         _ ->
             none
+
+
+followButton : User -> Author -> Element Msg
+followButton user author =
+    Follow.button
+        { user = user
+        , author = author
+        , onFollow = FollowAuthorClicked
+        , onUnfollow = UnfollowAuthorClicked
+        }
 
 
 
@@ -157,7 +202,7 @@ bannerContent a =
 
 pageContents : User -> Model -> Element Msg
 pageContents user model =
-    case model.author of
+    case model.feed of
         Loading ->
             Text.text [] "Loading Author"
 
@@ -172,5 +217,5 @@ pageContents user model =
                 { onUnlike = UnlikeArticleClicked
                 , onLike = LikeArticleClicked
                 , user = user
-                , articles = a.articles
+                , articles = a.authoredArticles
                 }

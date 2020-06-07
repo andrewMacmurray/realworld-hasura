@@ -6,6 +6,7 @@ module User exposing
     , addFollowingId
     , bio
     , email
+    , equals
     , following
     , follows
     , getProfile
@@ -18,6 +19,7 @@ module User exposing
     )
 
 import Api.Token exposing (Token)
+import Article.Author as Author exposing (Author)
 import Utils.List as List
 
 
@@ -110,6 +112,11 @@ following =
 follows : Int -> Profile -> Bool
 follows id_ profile_ =
     List.member id_ (following profile_)
+
+
+equals : Profile -> Author -> Bool
+equals p a =
+    id p == Author.id a
 
 
 
