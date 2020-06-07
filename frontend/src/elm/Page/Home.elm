@@ -12,15 +12,14 @@ import Article exposing (Article)
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Anchor as Anchor
-import Element.Avatar as Avatar
 import Element.Background as Background
 import Element.Border as Border
-import Element.Button as Button
 import Element.Divider as Divider
 import Element.Events exposing (onClick)
+import Element.Feed as Feed
 import Element.Layout as Layout
 import Element.Palette as Palette
-import Element.Scale as Scale exposing (edges)
+import Element.Scale as Scale
 import Element.Text as Text
 import Route
 import Tag exposing (Tag)
@@ -121,7 +120,7 @@ update msg model =
             ( model, unlikeArticle article )
 
         UpdateArticleResponseReceived (Ok article) ->
-            ( { model | feed = updateArticle (Article.replace article) model.feed }, Effect.none )
+            ( { model | feed = updateArticle (Article.replaceInFeed article) model.feed }, Effect.none )
 
         UpdateArticleResponseReceived (Err _) ->
             ( model, Effect.none )
@@ -312,7 +311,12 @@ viewFeed user feed =
             Text.text [] "Loading Feed"
 
         WebData.Success data ->
-            viewArticles user data.articles
+            Feed.articles
+                { onLike = LikeArticleClicked
+                , onUnlike = UnLikeArticleClicked
+                , user = user
+                , articles = data.articles
+                }
 
         WebData.Failure ->
             Text.error [] "Something went wrong"
@@ -365,119 +369,3 @@ subtitleLink =
 greenSubtitle : String -> Element msg
 greenSubtitle =
     Text.subtitle [ Text.green ]
-
-
-viewArticles : User -> List Article -> Element Msg
-viewArticles user articles =
-    column
-        [ spacing Scale.large
-        , width fill
-        ]
-        (List.map (viewArticle user) articles)
-
-
-viewArticle : User -> Article -> Element Msg
-viewArticle user article =
-    column
-        [ anchor article
-        , spacing Scale.medium
-        , width fill
-        ]
-        [ row [ width fill ]
-            [ column [ spacing Scale.medium, width fill ]
-                [ row [ width fill ] [ profile article, likes user article ]
-                , articleSummary article
-                , row [ width fill ] [ readMore article, tags article ]
-                ]
-            ]
-        , Divider.divider
-        ]
-
-
-likes : User -> Article -> Element Msg
-likes user article =
-    let
-        likeCount =
-            Article.likes article |> String.fromInt
-    in
-    el [ alignRight, alignTop ]
-        (case user of
-            Guest ->
-                Button.decorative likeCount
-                    |> Button.like
-                    |> Button.toElement
-
-            LoggedIn profile_ ->
-                if Article.likedByMe profile_ article then
-                    Button.button (UnLikeArticleClicked article) likeCount
-                        |> Button.description ("unlike-" ++ Article.title article)
-                        |> Button.like
-                        |> Button.solid
-                        |> Button.toElement
-
-                else
-                    Button.button (LikeArticleClicked article) likeCount
-                        |> Button.description ("like-" ++ Article.title article)
-                        |> Button.like
-                        |> Button.toElement
-        )
-
-
-readMore : Article -> Element msg
-readMore article =
-    linkToArticle article (Text.label [] "READ MORE...")
-
-
-articleSummary : Article -> Element msg
-articleSummary article =
-    linkToArticle article
-        (column [ spacing Scale.small ]
-            [ paragraph [] [ Text.subtitle [] (Article.title article) ]
-            , Text.text [] (Article.about article)
-            ]
-        )
-
-
-anchor : Article -> Attribute msg
-anchor article =
-    Anchor.description ("article-" ++ Article.title article)
-
-
-profile : Article -> Element msg
-profile article =
-    authorLink article
-        (row [ spacing Scale.small ]
-            [ Avatar.large (Article.profileImage article)
-            , column [ spacing Scale.small ]
-                [ Text.link [ Text.green ] (Article.authorUsername article)
-                , Text.date [] (Article.createdAt article)
-                ]
-            ]
-        )
-
-
-authorLink : Article -> Element msg -> Element msg
-authorLink =
-    Article.author >> Route.author >> Route.el
-
-
-tags : Article -> Element msg
-tags article =
-    el [ width fill, alignBottom ]
-        (wrappedRow
-            [ spacing Scale.small
-            , alignRight
-            , paddingEach { edges | left = Scale.medium }
-            ]
-            (List.map viewTag (Article.tags article))
-        )
-
-
-viewTag : Tag.Tag -> Element msg
-viewTag t =
-    Route.link (Route.tagFeed t) ("#" ++ Tag.value t)
-
-
-linkToArticle : Article -> Element msg -> Element msg
-linkToArticle =
-    Article.id >> Route.Article >> Route.el

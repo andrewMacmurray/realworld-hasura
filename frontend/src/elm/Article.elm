@@ -16,7 +16,8 @@ module Article exposing
     , likedByMe
     , likes
     , profileImage
-    , replace
+    , replaceInAuthor
+    , replaceInFeed
     , tags
     , title
     , toCreate
@@ -195,9 +196,14 @@ equals a b =
 -- Update
 
 
-replace : Article -> Feed -> Feed
-replace article feed =
+replaceInFeed : Article -> Feed -> Feed
+replaceInFeed article feed =
     { feed | articles = List.map (replace_ article) feed.articles }
+
+
+replaceInAuthor : Article -> Author -> Author
+replaceInAuthor article author_ =
+    { author_ | articles = List.map (replace_ article) author_.articles }
 
 
 replace_ : Article -> Article -> Article
