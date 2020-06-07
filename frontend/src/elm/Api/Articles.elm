@@ -5,10 +5,11 @@ module Api.Articles exposing
     , publish
     , tagFeed
     , unlike
+    , userFeed
     )
 
 import Api
-import Api.Argument as Argument exposing (created_at, eq_, order_by, tag, tags, where_)
+import Api.Argument as Argument exposing (author, created_at, eq_, id, in_, order_by, tag, tags, where_)
 import Api.Date as Date
 import Article exposing (Article)
 import Effect exposing (Effect)
@@ -29,6 +30,7 @@ import Hasura.Object.UnlikeResponse as UnlikeResponse
 import Hasura.Object.Users as Users
 import Hasura.Query exposing (ArticlesOptionalArguments, TagsOptionalArguments)
 import Tag exposing (Tag)
+import User
 import Utils.SelectionSet as SelectionSet
 
 
@@ -91,6 +93,38 @@ containsTag tag_ =
         (tags Input.buildTags_bool_exp)
         (tag Input.buildString_comparison_exp)
         (eq_ (Tag.value tag_))
+
+
+
+-- Your Feed
+
+
+userFeed : User.Profile -> (Api.Response Article.Feed -> msg) -> Effect msg
+userFeed profile msg =
+    userFeedSelection profile
+        |> Api.query msg
+        |> Effect.loadUserFeed
+
+
+userFeedSelection : User.Profile -> SelectionSet Article.Feed RootQuery
+userFeedSelection profile =
+    SelectionSet.succeed Article.Feed
+        |> with (followedAuthorArticles profile)
+        |> with popularTagsSelection
+
+
+followedAuthorArticles : User.Profile -> SelectionSet (List Article) RootQuery
+followedAuthorArticles profile =
+    Hasura.Query.articles (newestFirst >> followedBy profile) articleSelection
+
+
+followedBy : User.Profile -> ArticlesOptionalArguments -> ArticlesOptionalArguments
+followedBy profile =
+    Argument.combine4
+        (where_ Input.buildArticles_bool_exp)
+        (author Input.buildUsers_bool_exp)
+        (id Input.buildInt_comparison_exp)
+        (in_ (User.following profile))
 
 
 

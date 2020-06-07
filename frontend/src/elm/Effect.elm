@@ -9,6 +9,7 @@ module Effect exposing
     , loadTagFeed
     , loadUrl
     , loadUser
+    , loadUserFeed
     , logout
     , map
     , none
@@ -50,6 +51,7 @@ type Effect msg
     | SignIn (Api.Mutation User.Profile msg)
     | LoadGlobalFeed (Api.Query Article.Feed msg)
     | LoadTagFeed (Api.Query Article.Feed msg)
+    | LoadUserFeed (Api.Query Article.Feed msg)
     | LoadArticle (Api.Query (Maybe Article) msg)
     | PublishArticle (Api.Mutation () msg)
     | LikeArticle (Api.Mutation Article msg)
@@ -121,6 +123,11 @@ loadGlobalFeed =
 loadTagFeed : Api.Query Article.Feed msg -> Effect msg
 loadTagFeed =
     LoadTagFeed
+
+
+loadUserFeed : Api.Query Article.Feed msg -> Effect msg
+loadUserFeed =
+    LoadUserFeed
 
 
 loadArticle : Api.Query (Maybe Article) msg -> Effect msg
@@ -199,6 +206,9 @@ map toMsg effect =
         LoadTagFeed query ->
             LoadTagFeed (Api.map toMsg query)
 
+        LoadUserFeed query ->
+            LoadUserFeed (Api.map toMsg query)
+
         LoadArticle query ->
             LoadArticle (Api.map toMsg query)
 
@@ -274,6 +284,9 @@ perform pushUrl_ ( model, effect ) =
             ( model, Api.doMutation model.user mutation )
 
         LoadGlobalFeed query ->
+            ( model, Api.doQuery model.user query )
+
+        LoadUserFeed query ->
             ( model, Api.doQuery model.user query )
 
         LoadTagFeed query ->

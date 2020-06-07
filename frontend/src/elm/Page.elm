@@ -52,7 +52,7 @@ init : User -> Url -> ( Page, Effect Msg )
 init user url =
     case Route.fromUrl url of
         Just (Route.Home tag) ->
-            updateWith Home HomeMsg (Home.init tag)
+            updateWith Home HomeMsg (Home.init user tag)
 
         Just Route.SignUp ->
             updateWith SignUp SignUpMsg SignUp.init

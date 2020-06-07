@@ -14,7 +14,7 @@ suite =
         [ test "User can logout" <|
             \_ ->
                 Program.withPage Route.Settings
-                    |> Program.login
+                    |> Program.withLoggedInUser
                     |> Program.start
                     |> ensureViewHas [ el "settings-title", el "logout" ]
                     |> clickButton "Logout"
@@ -23,7 +23,7 @@ suite =
         , test "User can see their profile information" <|
             \_ ->
                 Program.withPage Route.Settings
-                    |> Program.loginWithDetails { defaultUser | username = "amacmurray", email = "a@b.com" }
+                    |> Program.loggedInWithDetails { defaultUser | username = "amacmurray", email = "a@b.com" }
                     |> Program.start
                     |> expectViewHas
                         [ filledField "amacmurray"

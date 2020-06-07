@@ -35,14 +35,14 @@ suite =
             \_ ->
                 Program.withPage articlePage
                     |> Program.simulateArticle (Ok (Just (articleBy 2 "someone")))
-                    |> Program.loginWithUser "amacmurray"
+                    |> Program.loggedInWithUser "amacmurray"
                     |> Program.start
                     |> expectViewHas [ el "follow-someone" ]
         , test "Logged in user can unfollow a previously followed author" <|
             \_ ->
                 Program.withPage articlePage
                     |> Program.simulateArticle (Ok (Just (articleBy 2 "someone")))
-                    |> Program.loginWithDetails { defaultUser | following = [ 2 ] }
+                    |> Program.loggedInWithDetails { defaultUser | following = [ 2 ] }
                     |> Program.start
                     |> expectViewHas [ el "unfollow-someone" ]
         ]

@@ -3,13 +3,13 @@ module Program exposing
     , baseUrl
     , defaultUser
     , fillField
-    , login
-    , loginWithDetails
-    , loginWithUser
+    , loggedInWithDetails
+    , loggedInWithUser
     , onHomePage
     , simulateArticle
-    , simulateGlobalFeed
+    , simulateArticleFeed
     , start
+    , withLoggedInUser
     , withPage
     )
 
@@ -70,18 +70,18 @@ onHomePage =
     withPage (Route.Home Nothing)
 
 
-login : Options -> Options
-login options =
+withLoggedInUser : Options -> Options
+withLoggedInUser options =
     { options | user = Just (user "amacmurray" "a@b.com") }
 
 
-loginWithUser : String -> Options -> Options
-loginWithUser username options =
+loggedInWithUser : String -> Options -> Options
+loggedInWithUser username options =
     { options | user = Just (user username "b@c.com") }
 
 
-loginWithDetails : Ports.User -> Options -> Options
-loginWithDetails user_ options =
+loggedInWithDetails : Ports.User -> Options -> Options
+loggedInWithDetails user_ options =
     { options | user = Just user_ }
 
 
@@ -106,8 +106,8 @@ simulateArticle article options =
     { options | article = article }
 
 
-simulateGlobalFeed : List Article -> List Tag -> Options -> Options
-simulateGlobalFeed articles tags options =
+simulateArticleFeed : List Article -> List Tag -> Options -> Options
+simulateArticleFeed articles tags options =
     { options | feed = Ok (toGlobalFeed articles tags) }
 
 
@@ -231,6 +231,9 @@ simulateEffects options eff =
             simulateResponse query options.feed
 
         LoadTagFeed query ->
+            simulateResponse query options.feed
+
+        LoadUserFeed query ->
             simulateResponse query options.feed
 
         LoadArticle query ->

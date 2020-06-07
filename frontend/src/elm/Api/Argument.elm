@@ -1,10 +1,13 @@
 module Api.Argument exposing
-    ( combine2
+    ( author
+    , combine2
     , combine4
     , created_at
     , eq_
     , field
     , following_id
+    , id
+    , in_
     , order_by
     , prop
     , tag
@@ -93,6 +96,18 @@ tag =
 
 tags =
     field (\val args -> { args | tags = Present val })
+
+
+author =
+    field (\val args -> { args | author = Present val })
+
+
+id =
+    field (\val args -> { args | id = Present val })
+
+
+in_ =
+    prop (\val args -> { args | in_ = Present val })
 
 
 where_ =
