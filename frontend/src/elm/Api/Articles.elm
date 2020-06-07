@@ -1,5 +1,6 @@
 module Api.Articles exposing
-    ( globalFeed
+    ( articleSelection
+    , globalFeed
     , like
     , loadArticle
     , publish
@@ -124,7 +125,7 @@ followedBy profile =
         (where_ Input.buildArticles_bool_exp)
         (author Input.buildUsers_bool_exp)
         (id Input.buildInt_comparison_exp)
-        (in_ (User.following profile))
+        (in_ (User.id profile :: User.following profile))
 
 
 
@@ -178,6 +179,7 @@ authorSelection =
         |> with (Articles.author Users.id)
         |> with (Articles.author Users.username)
         |> with (Articles.author Users.profile_image)
+        |> with (SelectionSet.succeed [])
 
 
 likedBySelection : SelectionSet Article.Author Hasura.Object.Likes
@@ -186,6 +188,7 @@ likedBySelection =
         |> with (Likes.user Users.id)
         |> with (Likes.user Users.username)
         |> with (Likes.user Users.profile_image)
+        |> with (SelectionSet.succeed [])
 
 
 likesCountSelection : SelectionSet Int Hasura.Object.Likes_aggregate

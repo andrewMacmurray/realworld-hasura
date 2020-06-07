@@ -12,6 +12,7 @@ module Element.Layout exposing
     )
 
 import Element exposing (..)
+import Element.Avatar as Avatar
 import Element.Scale as Scale
 import Element.Text as Text
 import Html exposing (Html)
@@ -135,7 +136,14 @@ toBanner options =
 
 banner_ : Banner msg -> Element msg
 banner_ ( attrs, content ) =
-    el ([ width fill ] ++ attrs)
+    el
+        (List.concat
+            [ [ width fill
+              , height (fill |> minimum 255)
+              ]
+            , attrs
+            ]
+        )
         (el
             [ centerX
             , constrainWidth
@@ -148,10 +156,11 @@ banner_ ( attrs, content ) =
 toNavBar : Options msg -> Element msg
 toNavBar options =
     case options.profile of
-        Just _ ->
+        Just profile_ ->
             navBar
                 [ Route.link (Route.Home Nothing) "Home"
                 , Route.link Route.NewPost "New Post"
+                , Route.el (Route.Author (User.id profile_)) (profileLink profile_)
                 , Route.link Route.Settings "Settings"
                 ]
 
@@ -161,6 +170,13 @@ toNavBar options =
                 , Route.link Route.SignIn "Sign In"
                 , Route.link Route.SignUp "Sign Up"
                 ]
+
+
+profileLink profile =
+    row [ spacing Scale.extraSmall ]
+        [ Avatar.small (User.profileImage profile)
+        , Text.link [] (User.username profile)
+        ]
 
 
 navBar : List (Element msg) -> Element msg

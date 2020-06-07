@@ -445,13 +445,20 @@ anchor article =
 
 profile : Article -> Element msg
 profile article =
-    row [ spacing Scale.small ]
-        [ Avatar.large (Article.profileImage article)
-        , column [ spacing Scale.small ]
-            [ Text.link [ Text.green ] (Article.authorUsername article)
-            , Text.date [] (Article.createdAt article)
+    authorLink article
+        (row [ spacing Scale.small ]
+            [ Avatar.large (Article.profileImage article)
+            , column [ spacing Scale.small ]
+                [ Text.link [ Text.green ] (Article.authorUsername article)
+                , Text.date [] (Article.createdAt article)
+                ]
             ]
-        ]
+        )
+
+
+authorLink : Article -> Element msg -> Element msg
+authorLink =
+    Article.author >> Route.author >> Route.el
 
 
 tags : Article -> Element msg

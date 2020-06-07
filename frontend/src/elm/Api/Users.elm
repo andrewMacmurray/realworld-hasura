@@ -99,6 +99,7 @@ userSelection =
 detailsSelection : SelectionSet User.Details Hasura.Object.TokenResponse
 detailsSelection =
     SelectionSet.succeed User.Details
+        |> with TokenResponse.user_id
         |> with TokenResponse.username
         |> with TokenResponse.email
         |> with TokenResponse.bio

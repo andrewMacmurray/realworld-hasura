@@ -223,6 +223,17 @@ tags fillInOptionals object_ =
     Object.selectionForCompositeField "tags" optionalArgs object_ (identity >> Decode.list)
 
 
+type alias UserRequiredArguments =
+    { id : Int }
+
+
+{-| fetch data from the table: "users" using primary key columns
+-}
+user : UserRequiredArguments -> SelectionSet decodesTo Hasura.Object.Users -> SelectionSet (Maybe decodesTo) RootQuery
+user requiredArgs object_ =
+    Object.selectionForCompositeField "user" [ Argument.required "id" requiredArgs.id Encode.int ] object_ (identity >> Decode.nullable)
+
+
 type alias UsersOptionalArguments =
     { distinct_on : OptionalArgument (List Hasura.Enum.Users_select_column.Users_select_column)
     , limit : OptionalArgument Int
@@ -252,14 +263,3 @@ users fillInOptionals object_ =
                 |> List.filterMap identity
     in
     Object.selectionForCompositeField "users" optionalArgs object_ (identity >> Decode.list)
-
-
-type alias UsersByPkRequiredArguments =
-    { id : Int }
-
-
-{-| fetch data from the table: "users" using primary key columns
--}
-users_by_pk : UsersByPkRequiredArguments -> SelectionSet decodesTo Hasura.Object.Users -> SelectionSet (Maybe decodesTo) RootQuery
-users_by_pk requiredArgs object_ =
-    Object.selectionForCompositeField "users_by_pk" [ Argument.required "id" requiredArgs.id Encode.int ] object_ (identity >> Decode.nullable)

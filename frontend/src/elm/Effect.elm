@@ -3,6 +3,7 @@ module Effect exposing
     , addToUserFollows
     , batch
     , followAuthor
+    , getAuthor
     , likeArticle
     , loadArticle
     , loadGlobalFeed
@@ -58,6 +59,7 @@ type Effect msg
     | UnLikeArticle (Api.Mutation Article msg)
     | FollowAuthor (Api.Mutation Int msg)
     | UnfollowAuthor (Api.Mutation Int msg)
+    | GetAuthor (Api.Query (Maybe Article.Author) msg)
 
 
 none : Effect msg
@@ -160,6 +162,11 @@ unfollowAuthor =
     UnfollowAuthor
 
 
+getAuthor : Api.Query (Maybe Article.Author) msg -> Effect msg
+getAuthor =
+    GetAuthor
+
+
 
 -- Transform
 
@@ -226,6 +233,9 @@ map toMsg effect =
 
         UnfollowAuthor mut ->
             UnfollowAuthor (Api.map toMsg mut)
+
+        GetAuthor query ->
+            GetAuthor (Api.map toMsg query)
 
 
 
@@ -309,6 +319,9 @@ perform pushUrl_ ( model, effect ) =
 
         UnfollowAuthor mutation ->
             ( model, Api.doMutation model.user mutation )
+
+        GetAuthor query ->
+            ( model, Api.doQuery model.user query )
 
 
 andThenCacheUser : Model model key -> ( Model model key, Cmd msg )

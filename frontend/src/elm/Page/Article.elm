@@ -128,24 +128,26 @@ withBanner : User -> Model -> Layout Msg -> Layout Msg
 withBanner user model layout =
     case model.article of
         Loaded article ->
-            banner user article layout
+            bannerConfig (loadedBanner user article) layout
 
         _ ->
-            layout
+            bannerConfig none layout
 
 
-banner : User -> Article -> Layout Msg -> Layout Msg
-banner user article =
-    Layout.withBanner
-        [ Background.color Palette.black ]
-        (column [ spacing Scale.large ]
-            [ headline article
-            , row [ spacing Scale.medium ]
-                [ author article
-                , followButton user article
-                ]
+bannerConfig : Element msg -> Layout msg -> Layout msg
+bannerConfig =
+    Layout.withBanner [ Background.color Palette.black ]
+
+
+loadedBanner : User -> Article -> Element Msg
+loadedBanner user article =
+    column [ spacing Scale.large ]
+        [ headline article
+        , row [ spacing Scale.medium ]
+            [ author article
+            , followButton user article
             ]
-        )
+        ]
 
 
 followButton : User -> Article -> Element Msg
@@ -194,13 +196,20 @@ headline article =
 
 author : Article -> Element msg
 author article =
-    row [ spacing Scale.small ]
-        [ Avatar.medium (Article.profileImage article)
-        , column [ spacing Scale.extraSmall ]
-            [ Text.link [ Text.white ] (Article.authorUsername article)
-            , Text.date [] (Article.createdAt article)
+    authorLink article
+        (row [ spacing Scale.small ]
+            [ Avatar.medium (Article.profileImage article)
+            , column [ spacing Scale.extraSmall ]
+                [ Text.link [ Text.white ] (Article.authorUsername article)
+                , Text.date [] (Article.createdAt article)
+                ]
             ]
-        ]
+        )
+
+
+authorLink : Article -> Element msg -> Element msg
+authorLink =
+    Article.author >> Route.author >> Route.el
 
 
 articleBody : LoadStatus Article -> Element msg

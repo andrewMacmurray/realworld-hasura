@@ -1,6 +1,7 @@
 import * as Utils from "./utils";
 
 interface User {
+  id: number;
   username: string;
   email: string;
   token: string;

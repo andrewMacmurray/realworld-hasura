@@ -1,5 +1,6 @@
 module User exposing
     ( Details
+    , Id
     , Profile
     , User(..)
     , addFollowingId
@@ -8,6 +9,7 @@ module User exposing
     , following
     , follows
     , getProfile
+    , id
     , profile
     , profileImage
     , removeFollowingId
@@ -33,12 +35,17 @@ type Profile
 
 
 type alias Details =
-    { username : String
+    { id : Id
+    , username : String
     , email : String
     , bio : Maybe String
     , profileImage : Maybe String
-    , following : List Int
+    , following : List Id
     }
+
+
+type alias Id =
+    Int
 
 
 
@@ -69,6 +76,11 @@ token (Profile_ token_ _) =
     token_
 
 
+id : Profile -> Id
+id =
+    details_ >> .id
+
+
 username : Profile -> String
 username =
     details_ >> .username
@@ -86,31 +98,32 @@ bio =
 
 profileImage : Profile -> Maybe String
 profileImage =
-    details_ >> .profileImage
+    details_
+        >> .profileImage
 
 
-following : Profile -> List Int
+following : Profile -> List Id
 following =
     details_ >> .following
 
 
 follows : Int -> Profile -> Bool
-follows id profile_ =
-    List.member id (following profile_)
+follows id_ profile_ =
+    List.member id_ (following profile_)
 
 
 
 -- Update
 
 
-addFollowingId : Int -> User -> User
-addFollowingId id =
-    updateProfile (\p -> { p | following = id :: p.following })
+addFollowingId : Id -> User -> User
+addFollowingId id_ =
+    updateProfile (\p -> { p | following = id_ :: p.following })
 
 
-removeFollowingId : Int -> User -> User
-removeFollowingId id =
-    updateProfile (\p -> { p | following = List.remove id p.following })
+removeFollowingId : Id -> User -> User
+removeFollowingId id_ =
+    updateProfile (\p -> { p | following = List.remove id_ p.following })
 
 
 updateProfile : (Details -> Details) -> User -> User

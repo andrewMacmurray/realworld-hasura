@@ -52,6 +52,7 @@ type alias Author =
     { id : Id
     , username : String
     , profileImage : Maybe String
+    , articles : List Article
     }
 
 
@@ -180,11 +181,9 @@ likedBy =
     article_ >> .likedBy
 
 
-profileImage : Article -> String
+profileImage : Article -> Maybe String
 profileImage =
-    author
-        >> .profileImage
-        >> Maybe.withDefault "https://static.productionready.io/images/smiley-cyrus.jpg"
+    author >> .profileImage
 
 
 equals : Article -> Article -> Bool
