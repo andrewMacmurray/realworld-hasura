@@ -159,20 +159,22 @@ toNavBar options =
     case options.profile of
         Just profile_ ->
             navBar
-                [ Route.link (Route.Home Nothing) "Home"
-                , Route.link Route.NewPost "New Post"
+                [ Route.link (Route.Home Nothing) [] "Home"
+                , Route.link Route.NewPost [] "New Post"
                 , Route.el (Route.Author (User.id profile_)) (profileLink profile_)
-                , Route.link Route.Settings "Settings"
+                , Route.link Route.Settings [] "Settings"
+                , Route.link Route.Logout [] "Logout"
                 ]
 
         Nothing ->
             navBar
-                [ Route.link (Route.Home Nothing) "Home"
-                , Route.link Route.SignIn "Sign In"
-                , Route.link Route.SignUp "Sign Up"
+                [ Route.link (Route.Home Nothing) [] "Home"
+                , Route.link Route.SignIn [] "Sign In"
+                , Route.link Route.SignUp [] "Sign Up"
                 ]
 
 
+profileLink : User.Profile -> Element msg
 profileLink profile =
     row [ spacing Scale.extraSmall ]
         [ Avatar.small (User.profileImage profile)

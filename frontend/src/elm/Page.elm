@@ -1,6 +1,7 @@
 module Page exposing
     ( Msg
     , Page
+    , changeTo
     , init
     , update
     , view
@@ -51,8 +52,13 @@ type Msg
 -- Init
 
 
-init : User -> Url -> ( Page, Effect Msg )
-init user url =
+init : Page
+init =
+    NotFound
+
+
+changeTo : Url -> User -> Page -> ( Page, Effect Msg )
+changeTo url user page =
     case Route.fromUrl url of
         Just (Route.Home tag) ->
             updateWith Home HomeMsg (Home.init user tag)
@@ -74,6 +80,9 @@ init user url =
 
         Just (Route.Author id_) ->
             updateWith Author AuthorMsg (Author.init id_)
+
+        Just Route.Logout ->
+            ( page, Effect.logout )
 
         Nothing ->
             ( NotFound, Effect.none )

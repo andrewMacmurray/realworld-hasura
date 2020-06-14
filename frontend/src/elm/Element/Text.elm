@@ -1,5 +1,6 @@
 module Element.Text exposing
-    ( asLink
+    ( Option
+    , asLink
     , bold
     , date
     , description

@@ -69,7 +69,7 @@ performInit flags url key =
 
 init : Flags -> Url -> key -> ( Model key, Effect Msg )
 init flags url key =
-    updatePageWith (initialModel flags key) (Page.init (handleUser flags.user) url)
+    updatePageWith (initialModel flags key) (Page.changeTo url (handleUser flags.user) Page.init)
 
 
 initialModel : Flags -> key -> Page -> Model key
@@ -101,7 +101,7 @@ update msg model =
             handleUrl model urlRequest
 
         UrlChange url ->
-            updatePage model (Page.init model.user url)
+            updatePage model (Page.changeTo url model.user model.page)
 
         PageMsg msg_ ->
             updatePage model (Page.update msg_ model.page)
@@ -117,10 +117,12 @@ handleUrl model request =
             ( model, Effect.loadUrl url )
 
 
+updatePage : Model m -> ( Page, Effect Page.Msg ) -> ( Model m, Effect Msg )
 updatePage model =
     updatePageWith (\page -> { model | page = page })
 
 
+updatePageWith : (subModel -> model) -> ( subModel, Effect Page.Msg ) -> ( model, Effect Msg )
 updatePageWith f =
     updateWith f PageMsg
 

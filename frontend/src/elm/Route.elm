@@ -33,6 +33,7 @@ type Route
     | Settings
     | Article Article.Id
     | Author User.Id
+    | Logout
 
 
 parser : Parser.Parser (Route -> c) c
@@ -45,6 +46,7 @@ parser =
         , Parser.map Settings (s "settings")
         , Parser.map Article (s "article" </> int)
         , Parser.map Author (s "author" </> int)
+        , Parser.map Logout (s "logout")
         ]
 
 
@@ -68,9 +70,9 @@ tagQuery =
     Query.string "tag" |> Query.map (Maybe.map Tag.one)
 
 
-link : Route -> String -> Element msg
-link route label =
-    el route (Text.link [ Text.description (label ++ "-link") ] label)
+link : Route -> List Text.Option -> String -> Element msg
+link route options label =
+    el route (Text.link (options ++ [ Text.description (label ++ "-link") ]) label)
 
 
 el : Route -> Element msg -> Element msg
@@ -104,6 +106,9 @@ routeToString route =
 
         Author id ->
             absolute [ "author", String.fromInt id ] []
+
+        Logout ->
+            absolute [ "logout" ] []
 
 
 toTagQuery_ : Maybe Tag -> List Url.QueryParameter

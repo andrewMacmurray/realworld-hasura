@@ -133,7 +133,7 @@ tags article =
 
 viewTag : Tag.Tag -> Element msg
 viewTag t =
-    Route.link (Route.tagFeed t) ("#" ++ Tag.value t)
+    Route.link (Route.tagFeed t) [] ("#" ++ Tag.value t)
 
 
 linkToArticle : Article -> Element msg -> Element msg
