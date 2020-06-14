@@ -7,7 +7,7 @@ export namespace Elm {
     export interface App {
       ports: {
         saveUser: {
-          subscribe(callback: (data: { username: string; email: string; token: string; bio: string | null; profileImage: string | null; following: number[] }) => void): void
+          subscribe(callback: (data: { id: number; username: string; email: string; token: string; bio: string | null; profileImage: string | null; following: number[] }) => void): void
         }
         logout_: {
           subscribe(callback: (data: null) => void): void
@@ -16,7 +16,7 @@ export namespace Elm {
     }
     export function init(options: {
       node?: HTMLElement | null;
-      flags: { user: { username: string; email: string; token: string; bio: string | null; profileImage: string | null; following: number[] } | null };
+      flags: { user: { id: number; username: string; email: string; token: string; bio: string | null; profileImage: string | null; following: number[] } | null };
     }): Elm.Main.App;
   }
 }

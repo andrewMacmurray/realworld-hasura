@@ -16,7 +16,8 @@ import User
 
 
 type alias User =
-    { username : String
+    { id : User.Id
+    , username : String
     , email : String
     , token : String
     , bio : Maybe String
@@ -30,7 +31,8 @@ port saveUser : User -> Cmd msg
 
 toUser : User.Profile -> User
 toUser user =
-    { username = User.username user
+    { id = User.id user
+    , username = User.username user
     , email = User.email user
     , token = Token.value (User.token user)
     , bio = User.bio user
@@ -47,7 +49,8 @@ toLoggedIn =
 toProfile : User -> User.Profile
 toProfile u =
     User.profile (Token.token u.token)
-        { username = u.username
+        { id = u.id
+        , username = u.username
         , email = u.email
         , bio = u.bio
         , profileImage = u.profileImage

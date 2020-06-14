@@ -8,13 +8,12 @@ module Page.Article exposing
 
 import Api
 import Api.Articles
-import Api.Users
 import Article exposing (Article)
+import Article.Author.Follow as Follow
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Avatar as Avatar
 import Element.Background as Background
-import Element.Button as Button
 import Element.Layout as Layout exposing (Layout)
 import Element.Palette as Palette
 import Element.Scale as Scale
@@ -35,10 +34,7 @@ type alias Model =
 
 type Msg
     = ArticleReceived (Api.Response (Maybe Article))
-    | FollowAuthorClicked Article
-    | FollowResponseReceived (Api.Response Int)
-    | UnfollowAuthorClicked Article
-    | UnfollowResponseReceived (Api.Response Int)
+    | FollowMsg Follow.Msg
 
 
 type LoadStatus a
@@ -84,33 +80,13 @@ update msg model =
         ArticleReceived (Err _) ->
             ( { model | article = FailedToLoad }, Effect.none )
 
-        FollowAuthorClicked article ->
-            ( model, followAuthor article )
-
-        FollowResponseReceived (Ok following_id) ->
-            ( model, Effect.addToUserFollows following_id )
-
-        FollowResponseReceived (Err _) ->
-            ( model, Effect.none )
-
-        UnfollowAuthorClicked article ->
-            ( model, unfollowAuthor article )
-
-        UnfollowResponseReceived (Ok following_id) ->
-            ( model, Effect.removeFromUserFollows following_id )
-
-        UnfollowResponseReceived (Err _) ->
-            ( model, Effect.none )
+        FollowMsg msg_ ->
+            ( model, handleFollowEffect msg_ )
 
 
-followAuthor : Article -> Effect Msg
-followAuthor article =
-    Api.Users.follow (Article.author article) FollowResponseReceived
-
-
-unfollowAuthor : Article -> Effect Msg
-unfollowAuthor article =
-    Api.Users.unfollow (Article.author article) UnfollowResponseReceived
+handleFollowEffect : Follow.Msg -> Effect Msg
+handleFollowEffect =
+    Follow.effect >> Effect.map FollowMsg
 
 
 
@@ -128,47 +104,35 @@ withBanner : User -> Model -> Layout Msg -> Layout Msg
 withBanner user model layout =
     case model.article of
         Loaded article ->
-            banner user article layout
+            bannerConfig (loadedBanner user article) layout
 
         _ ->
-            layout
+            bannerConfig none layout
 
 
-banner : User -> Article -> Layout Msg -> Layout Msg
-banner user article =
-    Layout.withBanner
-        [ Background.color Palette.black ]
-        (column [ spacing Scale.large ]
-            [ headline article
-            , row [ spacing Scale.medium ]
-                [ author article
-                , followButton user article
-                ]
+bannerConfig : Element msg -> Layout msg -> Layout msg
+bannerConfig =
+    Layout.withBanner [ Background.color Palette.black ]
+
+
+loadedBanner : User -> Article -> Element Msg
+loadedBanner user article =
+    column [ spacing Scale.large ]
+        [ headline article
+        , row [ spacing Scale.medium ]
+            [ author article
+            , followButton user article
             ]
-        )
+        ]
 
 
 followButton : User -> Article -> Element Msg
 followButton user article =
-    case user of
-        User.Guest ->
-            none
-
-        User.LoggedIn profile ->
-            if Article.isAuthoredBy profile article then
-                none
-
-            else if User.follows (Article.authorId article) profile then
-                Button.button (UnfollowAuthorClicked article) "Unfollow"
-                    |> Button.description ("unfollow-" ++ Article.authorUsername article)
-                    |> Button.follow
-                    |> Button.toElement
-
-            else
-                Button.button (FollowAuthorClicked article) "Follow"
-                    |> Button.description ("follow-" ++ Article.authorUsername article)
-                    |> Button.follow
-                    |> Button.toElement
+    Follow.button
+        { user = user
+        , author = Article.author article
+        , msg = FollowMsg
+        }
 
 
 tags : Article -> Element msg
@@ -194,13 +158,20 @@ headline article =
 
 author : Article -> Element msg
 author article =
-    row [ spacing Scale.small ]
-        [ Avatar.medium (Article.profileImage article)
-        , column [ spacing Scale.extraSmall ]
-            [ Text.link [ Text.white ] (Article.authorUsername article)
-            , Text.date [] (Article.createdAt article)
+    authorLink article
+        (row [ spacing Scale.small ]
+            [ Avatar.medium (Article.profileImage article)
+            , column [ spacing Scale.extraSmall ]
+                [ Text.link [ Text.white ] (Article.authorUsername article)
+                , Text.date [] (Article.createdAt article)
+                ]
             ]
-        ]
+        )
+
+
+authorLink : Article -> Element msg -> Element msg
+authorLink =
+    Article.author >> Route.author >> Route.el
 
 
 articleBody : LoadStatus Article -> Element msg

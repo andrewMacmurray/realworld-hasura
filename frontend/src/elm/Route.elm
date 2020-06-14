@@ -1,5 +1,6 @@
 module Route exposing
     ( Route(..)
+    , author
     , el
     , fromUrl
     , home
@@ -9,6 +10,7 @@ module Route exposing
     )
 
 import Article
+import Article.Author as Author exposing (Author)
 import Element exposing (Element)
 import Element.Text as Text
 import Tag exposing (Tag)
@@ -16,6 +18,7 @@ import Url exposing (Url)
 import Url.Builder as Url exposing (absolute)
 import Url.Parser as Parser exposing ((</>), (<?>), int, oneOf, s, top)
 import Url.Parser.Query as Query
+import User
 
 
 
@@ -29,6 +32,7 @@ type Route
     | NewPost
     | Settings
     | Article Article.Id
+    | Author User.Id
 
 
 parser : Parser.Parser (Route -> c) c
@@ -40,6 +44,7 @@ parser =
         , Parser.map NewPost (s "new-post")
         , Parser.map Settings (s "settings")
         , Parser.map Article (s "article" </> int)
+        , Parser.map Author (s "author" </> int)
         ]
 
 
@@ -51,6 +56,11 @@ tagFeed tag =
 home : Route
 home =
     Home Nothing
+
+
+author : Author -> Route
+author =
+    Author.id >> Author
 
 
 tagQuery : Query.Parser (Maybe Tag)
@@ -91,6 +101,9 @@ routeToString route =
 
         Article id ->
             absolute [ "article", String.fromInt id ] []
+
+        Author id ->
+            absolute [ "author", String.fromInt id ] []
 
 
 toTagQuery_ : Maybe Tag -> List Url.QueryParameter

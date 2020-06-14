@@ -8,7 +8,7 @@ module Api.Users exposing
 import Api
 import Api.Argument as Argument exposing (eq_, following_id)
 import Api.Token as Token exposing (Token)
-import Article
+import Article.Author as Author exposing (Author)
 import Effect exposing (Effect)
 import Graphql.OptionalArgument exposing (OptionalArgument(..))
 import Graphql.SelectionSet as SelectionSet exposing (SelectionSet(..), with)
@@ -49,9 +49,9 @@ signIn inputs msg =
 -- Follow
 
 
-follow : Article.Author -> (Api.Response Int -> msg) -> Effect msg
+follow : Author -> (Api.Response Int -> msg) -> Effect msg
 follow author msg =
-    Hasura.Mutation.follow_author { object = { following_id = Present author.id } } Follows.following_id
+    Hasura.Mutation.follow_author { object = { following_id = Present (Author.id author) } } Follows.following_id
         |> SelectionSet.failOnNothing
         |> Api.mutation msg
         |> Effect.followAuthor
@@ -61,7 +61,7 @@ follow author msg =
 -- Unfollow
 
 
-unfollow : Article.Author -> (Api.Response Int -> msg) -> Effect msg
+unfollow : Author -> (Api.Response Int -> msg) -> Effect msg
 unfollow author msg =
     Hasura.Mutation.unfollow_authors { where_ = equalsAuthor author } unfollowSelection
         |> SelectionSet.failOnNothing
@@ -76,12 +76,12 @@ unfollowSelection =
         |> SelectionSet.failOnNothing
 
 
-equalsAuthor : Article.Author -> Input.Follows_bool_exp
+equalsAuthor : Author -> Input.Follows_bool_exp
 equalsAuthor author =
     Input.buildFollows_bool_exp
         (Argument.combine2
             (following_id Input.buildInt_comparison_exp)
-            (eq_ author.id)
+            (eq_ (Author.id author))
         )
 
 
@@ -99,6 +99,7 @@ userSelection =
 detailsSelection : SelectionSet User.Details Hasura.Object.TokenResponse
 detailsSelection =
     SelectionSet.succeed User.Details
+        |> with TokenResponse.user_id
         |> with TokenResponse.username
         |> with TokenResponse.email
         |> with TokenResponse.bio

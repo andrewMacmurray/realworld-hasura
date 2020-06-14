@@ -9,6 +9,7 @@ module Page exposing
 import Effect exposing (Effect)
 import Element exposing (..)
 import Page.Article as Article
+import Page.Author as Author
 import Page.Home as Home
 import Page.NewPost as NewPost
 import Page.NotFound as NotFound
@@ -32,6 +33,7 @@ type Page
     | NewPost NewPost.Model
     | Settings Settings.Model
     | Article Article.Model
+    | Author Author.Model
     | NotFound
 
 
@@ -42,6 +44,7 @@ type Msg
     | NewPostMsg NewPost.Msg
     | SettingsMsg Settings.Msg
     | ArticleMsg Article.Msg
+    | AuthorMsg Author.Msg
 
 
 
@@ -68,6 +71,9 @@ init user url =
 
         Just (Route.Article id_) ->
             updateWith Article ArticleMsg (Article.init id_)
+
+        Just (Route.Author id_) ->
+            updateWith Author AuthorMsg (Author.init id_)
 
         Nothing ->
             ( NotFound, Effect.none )
@@ -113,6 +119,10 @@ update msg page =
             Article.update msg_ model_
                 |> updateWith Article ArticleMsg
 
+        ( AuthorMsg msg_, Author model_ ) ->
+            Author.update msg_ model_
+                |> updateWith Author AuthorMsg
+
         ( _, _ ) ->
             ( page, Effect.none )
 
@@ -141,6 +151,9 @@ view user model =
 
         Article model_ ->
             Element.map ArticleMsg (Article.view user model_)
+
+        Author model_ ->
+            Element.map AuthorMsg (Author.view user model_)
 
         NotFound ->
             NotFound.view

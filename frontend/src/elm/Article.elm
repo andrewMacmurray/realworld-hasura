@@ -1,27 +1,26 @@
 module Article exposing
     ( Article
-    , Author
     , Feed
     , Id
     , ToCreate
     , about
     , author
-    , authorId
     , authorUsername
     , build
     , content
     , createdAt
     , id
-    , isAuthoredBy
     , likedByMe
     , likes
     , profileImage
     , replace
+    , replaceInFeed
     , tags
     , title
     , toCreate
     )
 
+import Article.Author as Author exposing (Author)
 import Date exposing (Date)
 import Tag exposing (Tag)
 import User exposing (User)
@@ -45,13 +44,6 @@ type alias Article_ =
     , tags : List Tag
     , likes : Int
     , likedBy : List Author
-    }
-
-
-type alias Author =
-    { id : Id
-    , username : String
-    , profileImage : Maybe String
     }
 
 
@@ -138,14 +130,9 @@ author =
     article_ >> .author
 
 
-authorId : Article -> Id
-authorId =
-    author >> .id
-
-
 authorUsername : Article -> String
 authorUsername =
-    author >> .username
+    author >> Author.username
 
 
 createdAt : Article -> Date
@@ -163,15 +150,10 @@ likes =
     article_ >> .likes
 
 
-isAuthoredBy : User.Profile -> Article -> Bool
-isAuthoredBy profile article =
-    authorUsername article == User.username profile
-
-
 likedByMe : User.Profile -> Article -> Bool
 likedByMe profile article =
     likedBy article
-        |> List.map .username
+        |> List.map Author.username
         |> List.member (User.username profile)
 
 
@@ -180,11 +162,9 @@ likedBy =
     article_ >> .likedBy
 
 
-profileImage : Article -> String
+profileImage : Article -> Maybe String
 profileImage =
-    author
-        >> .profileImage
-        >> Maybe.withDefault "https://static.productionready.io/images/smiley-cyrus.jpg"
+    author >> Author.profileImage
 
 
 equals : Article -> Article -> Bool
@@ -196,9 +176,14 @@ equals a b =
 -- Update
 
 
-replace : Article -> Feed -> Feed
-replace article feed =
-    { feed | articles = List.map (replace_ article) feed.articles }
+replaceInFeed : Article -> Feed -> Feed
+replaceInFeed article feed =
+    { feed | articles = replace article feed.articles }
+
+
+replace : Article -> List Article -> List Article
+replace article =
+    List.map (replace_ article)
 
 
 replace_ : Article -> Article -> Article

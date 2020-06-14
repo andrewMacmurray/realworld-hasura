@@ -8,6 +8,7 @@ module Program exposing
     , onHomePage
     , simulateArticle
     , simulateArticleFeed
+    , simulateAuthorFeed
     , start
     , withLoggedInUser
     , withPage
@@ -15,6 +16,7 @@ module Program exposing
 
 import Api
 import Article exposing (Article)
+import Article.Author.Feed as Author
 import Effect exposing (Effect(..))
 import Helpers
 import Json.Encode as Encode
@@ -51,6 +53,8 @@ type alias FakeNavKey =
 type alias Options =
     { feed : Api.Response Article.Feed
     , article : Api.Response (Maybe Article)
+    , articles : Api.Response (List Article)
+    , authorFeed : Api.Response (Maybe Author.Feed)
     , route : Route
     , user : Maybe Ports.User
     }
@@ -92,7 +96,8 @@ defaultUser =
 
 user : String -> String -> Ports.User
 user name email =
-    { username = name
+    { id = 0
+    , username = name
     , email = email
     , token = "token"
     , bio = Nothing
@@ -111,6 +116,11 @@ simulateArticleFeed articles tags options =
     { options | feed = Ok (toGlobalFeed articles tags) }
 
 
+simulateAuthorFeed : Api.Response (Maybe Author.Feed) -> Options -> Options
+simulateAuthorFeed feed options =
+    { options | authorFeed = feed }
+
+
 toGlobalFeed : List Article -> List Tag -> Article.Feed
 toGlobalFeed articles tags =
     { articles = articles
@@ -122,6 +132,8 @@ defaultOptions : Route -> Options
 defaultOptions route =
     { route = route
     , feed = Ok emptyFeed
+    , articles = Ok []
+    , authorFeed = Ok Nothing
     , article = Ok Nothing
     , user = Nothing
     }
@@ -227,26 +239,23 @@ simulateEffects options eff =
         LoadUser _ ->
             SimulatedEffect.Cmd.none
 
-        LoadGlobalFeed query ->
-            simulateResponse query options.feed
-
-        LoadTagFeed query ->
-            simulateResponse query options.feed
-
-        LoadUserFeed query ->
+        LoadArticleFeed query ->
             simulateResponse query options.feed
 
         LoadArticle query ->
             simulateResponse query options.article
 
+        LoadArticles query ->
+            simulateResponse query options.articles
+
+        LoadAuthorFeed query ->
+            simulateResponse query options.authorFeed
+
         PublishArticle mutation ->
             simulateResponse mutation (Ok ())
 
-        LikeArticle mutation ->
-            simulateResponse mutation (Ok (Helpers.article "liked"))
-
-        UnLikeArticle mutation ->
-            simulateResponse mutation (Ok (Helpers.article "unliked"))
+        MutateArticle mutation ->
+            simulateResponse mutation (Ok (Helpers.article "updated"))
 
         AddToUserFollows _ ->
             SimulatedEffect.Cmd.none
@@ -254,10 +263,7 @@ simulateEffects options eff =
         RemoveFromUserFollows _ ->
             SimulatedEffect.Cmd.none
 
-        FollowAuthor mutation ->
-            simulateResponse mutation (Ok 1)
-
-        UnfollowAuthor mutation ->
+        MutateAuthor mutation ->
             simulateResponse mutation (Ok 1)
 
 

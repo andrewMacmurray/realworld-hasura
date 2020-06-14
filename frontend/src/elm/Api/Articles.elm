@@ -1,17 +1,22 @@
 module Api.Articles exposing
-    ( globalFeed
+    ( all
+    , articleSelection
+    , byTag
+    , followedByAuthor
     , like
+    , load
     , loadArticle
+    , loadFeed
+    , newestFirst
     , publish
-    , tagFeed
     , unlike
-    , userFeed
     )
 
 import Api
 import Api.Argument as Argument exposing (author, created_at, eq_, id, in_, order_by, tag, tags, where_)
 import Api.Date as Date
 import Article exposing (Article)
+import Article.Author as Author exposing (Author)
 import Effect exposing (Effect)
 import Graphql.Operation exposing (RootQuery)
 import Graphql.OptionalArgument exposing (OptionalArgument(..))
@@ -46,43 +51,35 @@ loadArticle id msg =
 
 
 
+--  Articles
+
+
+load : SelectionSet (List Article) RootQuery -> (Api.Response (List Article) -> msg) -> Effect msg
+load selection msg =
+    selection
+        |> Api.query msg
+        |> Effect.loadArticles
+
+
+
 -- Global Feed
 
 
-globalFeed : (Api.Response Article.Feed -> msg) -> Effect msg
-globalFeed msg =
-    globalFeedSelection
-        |> Api.query msg
-        |> Effect.loadGlobalFeed
-
-
-globalFeedSelection : SelectionSet Article.Feed RootQuery
-globalFeedSelection =
+loadFeed : SelectionSet (List Article) RootQuery -> (Api.Response Article.Feed -> msg) -> Effect msg
+loadFeed articlesSelection_ msg =
     SelectionSet.succeed Article.Feed
-        |> with articlesSelection
+        |> with articlesSelection_
         |> with popularTagsSelection
-
-
-
--- Tag Feed
-
-
-tagFeed : Tag -> (Api.Response Article.Feed -> msg) -> Effect msg
-tagFeed tag msg =
-    tagFeedSelection tag
         |> Api.query msg
-        |> Effect.loadTagFeed
+        |> Effect.loadFeed
 
 
-tagFeedSelection : Tag -> SelectionSet Article.Feed RootQuery
-tagFeedSelection tag =
-    SelectionSet.succeed Article.Feed
-        |> with (articlesByTagSelection tag)
-        |> with popularTagsSelection
+
+-- By Tag
 
 
-articlesByTagSelection : Tag -> SelectionSet (List Article) RootQuery
-articlesByTagSelection tag =
+byTag : Tag -> SelectionSet (List Article) RootQuery
+byTag tag =
     Hasura.Query.articles (newestFirst >> containsTag tag) articleSelection
 
 
@@ -96,25 +93,11 @@ containsTag tag_ =
 
 
 
--- Your Feed
+-- By Author
 
 
-userFeed : User.Profile -> (Api.Response Article.Feed -> msg) -> Effect msg
-userFeed profile msg =
-    userFeedSelection profile
-        |> Api.query msg
-        |> Effect.loadUserFeed
-
-
-userFeedSelection : User.Profile -> SelectionSet Article.Feed RootQuery
-userFeedSelection profile =
-    SelectionSet.succeed Article.Feed
-        |> with (followedAuthorArticles profile)
-        |> with popularTagsSelection
-
-
-followedAuthorArticles : User.Profile -> SelectionSet (List Article) RootQuery
-followedAuthorArticles profile =
+followedByAuthor : User.Profile -> SelectionSet (List Article) RootQuery
+followedByAuthor profile =
     Hasura.Query.articles (newestFirst >> followedBy profile) articleSelection
 
 
@@ -124,7 +107,7 @@ followedBy profile =
         (where_ Input.buildArticles_bool_exp)
         (author Input.buildUsers_bool_exp)
         (id Input.buildInt_comparison_exp)
-        (in_ (User.following profile))
+        (in_ (User.id profile :: User.following profile))
 
 
 
@@ -153,8 +136,8 @@ popularTagSelection =
 -- Articles
 
 
-articlesSelection : SelectionSet (List Article) RootQuery
-articlesSelection =
+all : SelectionSet (List Article) RootQuery
+all =
     Hasura.Query.articles newestFirst articleSelection
 
 
@@ -172,17 +155,17 @@ articleSelection =
         |> with (Articles.likes identity likedBySelection)
 
 
-authorSelection : SelectionSet Article.Author Articles
+authorSelection : SelectionSet Author Articles
 authorSelection =
-    SelectionSet.succeed Article.Author
+    SelectionSet.succeed Author.build
         |> with (Articles.author Users.id)
         |> with (Articles.author Users.username)
         |> with (Articles.author Users.profile_image)
 
 
-likedBySelection : SelectionSet Article.Author Hasura.Object.Likes
+likedBySelection : SelectionSet Author Hasura.Object.Likes
 likedBySelection =
-    SelectionSet.succeed Article.Author
+    SelectionSet.succeed Author.build
         |> with (Likes.user Users.id)
         |> with (Likes.user Users.username)
         |> with (Likes.user Users.profile_image)

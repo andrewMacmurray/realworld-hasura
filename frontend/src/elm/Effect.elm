@@ -5,11 +5,11 @@ module Effect exposing
     , followAuthor
     , likeArticle
     , loadArticle
-    , loadGlobalFeed
-    , loadTagFeed
+    , loadArticles
+    , loadAuthorFeed
+    , loadFeed
     , loadUrl
     , loadUser
-    , loadUserFeed
     , logout
     , map
     , none
@@ -26,6 +26,7 @@ module Effect exposing
 
 import Api
 import Article exposing (Article)
+import Article.Author.Feed as Author
 import Browser.Navigation as Navigation
 import Ports
 import Route exposing (Route)
@@ -49,15 +50,13 @@ type Effect msg
     | RemoveFromUserFollows Int
     | SignUp (Api.Mutation User.Profile msg)
     | SignIn (Api.Mutation User.Profile msg)
-    | LoadGlobalFeed (Api.Query Article.Feed msg)
-    | LoadTagFeed (Api.Query Article.Feed msg)
-    | LoadUserFeed (Api.Query Article.Feed msg)
+    | LoadArticleFeed (Api.Query Article.Feed msg)
+    | LoadArticles (Api.Query (List Article) msg)
     | LoadArticle (Api.Query (Maybe Article) msg)
     | PublishArticle (Api.Mutation () msg)
-    | LikeArticle (Api.Mutation Article msg)
-    | UnLikeArticle (Api.Mutation Article msg)
-    | FollowAuthor (Api.Mutation Int msg)
-    | UnfollowAuthor (Api.Mutation Int msg)
+    | MutateArticle (Api.Mutation Article msg)
+    | MutateAuthor (Api.Mutation Int msg)
+    | LoadAuthorFeed (Api.Query (Maybe Author.Feed) msg)
 
 
 none : Effect msg
@@ -115,24 +114,19 @@ removeFromUserFollows =
     RemoveFromUserFollows
 
 
-loadGlobalFeed : Api.Query Article.Feed msg -> Effect msg
-loadGlobalFeed =
-    LoadGlobalFeed
-
-
-loadTagFeed : Api.Query Article.Feed msg -> Effect msg
-loadTagFeed =
-    LoadTagFeed
-
-
-loadUserFeed : Api.Query Article.Feed msg -> Effect msg
-loadUserFeed =
-    LoadUserFeed
+loadFeed : Api.Query Article.Feed msg -> Effect msg
+loadFeed =
+    LoadArticleFeed
 
 
 loadArticle : Api.Query (Maybe Article) msg -> Effect msg
 loadArticle =
     LoadArticle
+
+
+loadArticles : Api.Query (List Article) msg -> Effect msg
+loadArticles =
+    LoadArticles
 
 
 publishArticle : Api.Mutation () msg -> Effect msg
@@ -142,22 +136,27 @@ publishArticle =
 
 likeArticle : Api.Mutation Article msg -> Effect msg
 likeArticle =
-    LikeArticle
+    MutateArticle
 
 
 unlikeArticle : Api.Mutation Article msg -> Effect msg
 unlikeArticle =
-    UnLikeArticle
+    MutateArticle
 
 
 followAuthor : Api.Mutation Int msg -> Effect msg
 followAuthor =
-    FollowAuthor
+    MutateAuthor
 
 
 unfollowAuthor : Api.Mutation Int msg -> Effect msg
 unfollowAuthor =
-    UnfollowAuthor
+    MutateAuthor
+
+
+loadAuthorFeed : Api.Query (Maybe Author.Feed) msg -> Effect msg
+loadAuthorFeed =
+    LoadAuthorFeed
 
 
 
@@ -200,32 +199,26 @@ map toMsg effect =
         RemoveFromUserFollows id ->
             RemoveFromUserFollows id
 
-        LoadGlobalFeed query ->
-            LoadGlobalFeed (Api.map toMsg query)
-
-        LoadTagFeed query ->
-            LoadTagFeed (Api.map toMsg query)
-
-        LoadUserFeed query ->
-            LoadUserFeed (Api.map toMsg query)
+        LoadArticleFeed query ->
+            LoadArticleFeed (Api.map toMsg query)
 
         LoadArticle query ->
             LoadArticle (Api.map toMsg query)
 
+        LoadArticles query ->
+            LoadArticles (Api.map toMsg query)
+
         PublishArticle mut ->
             PublishArticle (Api.map toMsg mut)
 
-        LikeArticle mut ->
-            LikeArticle (Api.map toMsg mut)
+        MutateArticle mut ->
+            MutateArticle (Api.map toMsg mut)
 
-        UnLikeArticle mut ->
-            UnLikeArticle (Api.map toMsg mut)
+        MutateAuthor mut ->
+            MutateAuthor (Api.map toMsg mut)
 
-        FollowAuthor mut ->
-            FollowAuthor (Api.map toMsg mut)
-
-        UnfollowAuthor mut ->
-            UnfollowAuthor (Api.map toMsg mut)
+        LoadAuthorFeed query ->
+            LoadAuthorFeed (Api.map toMsg query)
 
 
 
@@ -283,32 +276,26 @@ perform pushUrl_ ( model, effect ) =
         SignIn mutation ->
             ( model, Api.doMutation model.user mutation )
 
-        LoadGlobalFeed query ->
-            ( model, Api.doQuery model.user query )
-
-        LoadUserFeed query ->
-            ( model, Api.doQuery model.user query )
-
-        LoadTagFeed query ->
+        LoadArticleFeed query ->
             ( model, Api.doQuery model.user query )
 
         LoadArticle query ->
             ( model, Api.doQuery model.user query )
 
+        LoadArticles query ->
+            ( model, Api.doQuery model.user query )
+
         PublishArticle mutation ->
             ( model, Api.doMutation model.user mutation )
 
-        LikeArticle mutation ->
+        MutateArticle mutation ->
             ( model, Api.doMutation model.user mutation )
 
-        UnLikeArticle mutation ->
+        MutateAuthor mutation ->
             ( model, Api.doMutation model.user mutation )
 
-        FollowAuthor mutation ->
-            ( model, Api.doMutation model.user mutation )
-
-        UnfollowAuthor mutation ->
-            ( model, Api.doMutation model.user mutation )
+        LoadAuthorFeed query ->
+            ( model, Api.doQuery model.user query )
 
 
 andThenCacheUser : Model model key -> ( Model model key, Cmd msg )

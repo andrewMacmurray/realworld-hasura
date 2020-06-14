@@ -189,6 +189,10 @@
 - table:
     schema: public
     name: users
+  configuration:
+    custom_root_fields:
+      select_by_pk: user
+    custom_column_names: {}
   array_relationships:
   - name: articles
     using:

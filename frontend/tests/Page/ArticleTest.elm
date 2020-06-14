@@ -1,7 +1,6 @@
 module Page.ArticleTest exposing (..)
 
 import Article exposing (Article)
-import Graphql.Http exposing (HttpError(..), RawError(..))
 import Helpers
 import Program exposing (defaultUser)
 import Program.Selector exposing (el)
@@ -28,7 +27,7 @@ suite =
         , test "User sees failure message if server returns an error" <|
             \_ ->
                 Program.withPage articlePage
-                    |> Program.simulateArticle (Err serverError)
+                    |> Program.simulateArticle (Err Helpers.serverError)
                     |> Program.start
                     |> expectViewHas [ el "error-message" ]
         , test "Logged in user can follow an author" <|
@@ -61,8 +60,3 @@ articleBy =
 article : Article
 article =
     Helpers.article "An Article"
-
-
-serverError : Graphql.Http.Error a
-serverError =
-    HttpError NetworkError
