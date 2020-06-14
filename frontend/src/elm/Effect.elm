@@ -50,14 +50,12 @@ type Effect msg
     | RemoveFromUserFollows Int
     | SignUp (Api.Mutation User.Profile msg)
     | SignIn (Api.Mutation User.Profile msg)
-    | LoadFeed (Api.Query Article.Feed msg)
+    | LoadArticleFeed (Api.Query Article.Feed msg)
     | LoadArticles (Api.Query (List Article) msg)
     | LoadArticle (Api.Query (Maybe Article) msg)
     | PublishArticle (Api.Mutation () msg)
-    | LikeArticle (Api.Mutation Article msg)
-    | UnLikeArticle (Api.Mutation Article msg)
-    | FollowAuthor (Api.Mutation Int msg)
-    | UnfollowAuthor (Api.Mutation Int msg)
+    | MutateArticle (Api.Mutation Article msg)
+    | MutateAuthor (Api.Mutation Int msg)
     | LoadAuthorFeed (Api.Query (Maybe Author.Feed) msg)
 
 
@@ -118,7 +116,7 @@ removeFromUserFollows =
 
 loadFeed : Api.Query Article.Feed msg -> Effect msg
 loadFeed =
-    LoadFeed
+    LoadArticleFeed
 
 
 loadArticle : Api.Query (Maybe Article) msg -> Effect msg
@@ -138,22 +136,22 @@ publishArticle =
 
 likeArticle : Api.Mutation Article msg -> Effect msg
 likeArticle =
-    LikeArticle
+    MutateArticle
 
 
 unlikeArticle : Api.Mutation Article msg -> Effect msg
 unlikeArticle =
-    UnLikeArticle
+    MutateArticle
 
 
 followAuthor : Api.Mutation Int msg -> Effect msg
 followAuthor =
-    FollowAuthor
+    MutateAuthor
 
 
 unfollowAuthor : Api.Mutation Int msg -> Effect msg
 unfollowAuthor =
-    UnfollowAuthor
+    MutateAuthor
 
 
 loadAuthorFeed : Api.Query (Maybe Author.Feed) msg -> Effect msg
@@ -201,8 +199,8 @@ map toMsg effect =
         RemoveFromUserFollows id ->
             RemoveFromUserFollows id
 
-        LoadFeed query ->
-            LoadFeed (Api.map toMsg query)
+        LoadArticleFeed query ->
+            LoadArticleFeed (Api.map toMsg query)
 
         LoadArticle query ->
             LoadArticle (Api.map toMsg query)
@@ -213,17 +211,11 @@ map toMsg effect =
         PublishArticle mut ->
             PublishArticle (Api.map toMsg mut)
 
-        LikeArticle mut ->
-            LikeArticle (Api.map toMsg mut)
+        MutateArticle mut ->
+            MutateArticle (Api.map toMsg mut)
 
-        UnLikeArticle mut ->
-            UnLikeArticle (Api.map toMsg mut)
-
-        FollowAuthor mut ->
-            FollowAuthor (Api.map toMsg mut)
-
-        UnfollowAuthor mut ->
-            UnfollowAuthor (Api.map toMsg mut)
+        MutateAuthor mut ->
+            MutateAuthor (Api.map toMsg mut)
 
         LoadAuthorFeed query ->
             LoadAuthorFeed (Api.map toMsg query)
@@ -284,7 +276,7 @@ perform pushUrl_ ( model, effect ) =
         SignIn mutation ->
             ( model, Api.doMutation model.user mutation )
 
-        LoadFeed query ->
+        LoadArticleFeed query ->
             ( model, Api.doQuery model.user query )
 
         LoadArticle query ->
@@ -296,16 +288,10 @@ perform pushUrl_ ( model, effect ) =
         PublishArticle mutation ->
             ( model, Api.doMutation model.user mutation )
 
-        LikeArticle mutation ->
+        MutateArticle mutation ->
             ( model, Api.doMutation model.user mutation )
 
-        UnLikeArticle mutation ->
-            ( model, Api.doMutation model.user mutation )
-
-        FollowAuthor mutation ->
-            ( model, Api.doMutation model.user mutation )
-
-        UnfollowAuthor mutation ->
+        MutateAuthor mutation ->
             ( model, Api.doMutation model.user mutation )
 
         LoadAuthorFeed query ->

@@ -1,4 +1,8 @@
-module Api.Authors exposing (feed)
+module Api.Authors exposing
+    ( authoredArticles
+    , likedArticles
+    , loadFeed
+    )
 
 import Api
 import Api.Argument as Argument exposing (..)
@@ -16,22 +20,20 @@ import Hasura.Query exposing (ArticlesOptionalArguments)
 
 
 
--- Author Feed
+-- load
 
 
-feed : Int -> (Api.Response (Maybe Feed) -> msg) -> Effect msg
-feed id_ msg =
-    feedSelection id_
+loadFeed : (Int -> SelectionSet (List Article) RootQuery) -> Int -> (Api.Response (Maybe Feed) -> msg) -> Effect msg
+loadFeed articles id_ msg =
+    feedSelection id_ articles
         |> Api.query msg
         |> Effect.loadAuthorFeed
 
 
-feedSelection : Author.Id -> SelectionSet (Maybe Feed) RootQuery
-feedSelection id_ =
+feedSelection id_ articles =
     SelectionSet.succeed Feed.build
         |> with (authorById id_)
-        |> with (authoredArticles id_)
-        |> with (likedArticles id_)
+        |> with (articles id_)
 
 
 authoredArticles : Int -> SelectionSet (List Article) RootQuery

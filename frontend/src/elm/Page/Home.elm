@@ -25,7 +25,6 @@ import Route
 import Tag exposing (Tag)
 import User exposing (User(..))
 import Utils.String as String
-import Utils.Update exposing (updateWith)
 import WebData exposing (WebData)
 
 
@@ -116,26 +115,18 @@ update msg model =
             )
 
         GlobalFeedClicked ->
-            Feed.load Api.Articles.all
-                |> updateFeed model
-                |> updateModel (\m -> { m | tab = GlobalTab })
+            embedFeed { model | tab = GlobalTab } (Feed.load Api.Articles.all)
 
         UserFeedClicked profile_ ->
-            Feed.load (Api.Articles.followedByAuthor profile_)
-                |> updateFeed model
-                |> updateModel (\m -> { m | tab = UserTab })
+            embedFeed { model | tab = UserTab } (Feed.load (Api.Articles.followedByAuthor profile_))
 
         FeedMsg msg_ ->
-            Feed.update msg_ model.feed |> updateFeed model
+            Feed.updateWith FeedMsg msg_ model
 
 
-updateFeed : Model -> ( Feed.Model, Effect Feed.Msg ) -> ( Model, Effect Msg )
-updateFeed model =
-    updateWith (\feed -> { model | feed = feed }) FeedMsg
-
-
-updateModel =
-    Tuple.mapFirst
+embedFeed : Model -> ( Feed.Model, Effect Feed.Msg ) -> ( Model, Effect Msg )
+embedFeed =
+    Feed.embedWith FeedMsg
 
 
 

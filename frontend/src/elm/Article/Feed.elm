@@ -1,11 +1,12 @@
 module Article.Feed exposing
     ( Model
     , Msg
+    , embedWith
     , failure
     , load
     , loaded
     , loading
-    , update
+    , updateWith
     , view
     )
 
@@ -25,7 +26,20 @@ import Graphql.SelectionSet exposing (SelectionSet)
 import Route
 import Tag exposing (Tag)
 import User exposing (User)
+import Utils.Update as Update
 import WebData exposing (WebData)
+
+
+
+-- Page Model
+
+
+type alias PageModel model =
+    { model | feed : Model }
+
+
+type alias PageMsg msg =
+    Msg -> msg
 
 
 
@@ -75,8 +89,18 @@ loading =
 -- Update
 
 
-update : Msg -> Model -> ( Model, Effect Msg )
-update msg model =
+embedWith : PageMsg msg -> PageModel model -> ( Model, Effect Msg ) -> ( PageModel model, Effect msg )
+embedWith pageMsg pageModel =
+    Update.updateWith (\feed -> { pageModel | feed = feed }) pageMsg
+
+
+updateWith : PageMsg msg -> Msg -> PageModel model -> ( PageModel model, Effect msg )
+updateWith pageMsg msg pageModel =
+    update_ msg pageModel.feed |> embedWith pageMsg pageModel
+
+
+update_ : Msg -> Model -> ( Model, Effect Msg )
+update_ msg model =
     case msg of
         LoadArticlesResponseReceived response ->
             ( { model | articles = WebData.fromResult response }, Effect.none )
