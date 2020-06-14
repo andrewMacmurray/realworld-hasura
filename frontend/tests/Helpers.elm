@@ -1,6 +1,7 @@
 module Helpers exposing (article, articleBy, articleLikedBy)
 
 import Article exposing (Article)
+import Article.Author as Author exposing (Author)
 import Date
 import Time exposing (Month(..))
 
@@ -44,9 +45,6 @@ article title =
         []
 
 
-author : Int -> String -> Article.Author
+author : Int -> String -> Author
 author id username =
-    { id = id
-    , username = username
-    , profileImage = Nothing
-    }
+    Author.build id username Nothing

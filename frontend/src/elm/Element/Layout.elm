@@ -146,6 +146,7 @@ banner_ ( attrs, content ) =
         )
         (el
             [ centerX
+            , centerY
             , constrainWidth
             , paddingXY Scale.medium (Scale.large * 2)
             ]

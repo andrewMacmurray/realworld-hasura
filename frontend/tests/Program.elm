@@ -15,6 +15,7 @@ module Program exposing
 
 import Api
 import Article exposing (Article)
+import Article.Author.Feed as Author
 import Effect exposing (Effect(..))
 import Helpers
 import Json.Encode as Encode
@@ -51,6 +52,7 @@ type alias FakeNavKey =
 type alias Options =
     { feed : Api.Response Article.Feed
     , article : Api.Response (Maybe Article)
+    , authorFeed : Api.Response (Maybe Author.Feed)
     , route : Route
     , user : Maybe Ports.User
     }
@@ -92,7 +94,8 @@ defaultUser =
 
 user : String -> String -> Ports.User
 user name email =
-    { username = name
+    { id = 0
+    , username = name
     , email = email
     , token = "token"
     , bio = Nothing
@@ -122,6 +125,7 @@ defaultOptions : Route -> Options
 defaultOptions route =
     { route = route
     , feed = Ok emptyFeed
+    , authorFeed = Ok Nothing
     , article = Ok Nothing
     , user = Nothing
     }
@@ -238,6 +242,9 @@ simulateEffects options eff =
 
         LoadArticle query ->
             simulateResponse query options.article
+
+        LoadAuthorFeed query ->
+            simulateResponse query options.authorFeed
 
         PublishArticle mutation ->
             simulateResponse mutation (Ok ())

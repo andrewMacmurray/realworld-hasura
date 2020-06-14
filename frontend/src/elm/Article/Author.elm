@@ -11,10 +11,10 @@ module Article.Author exposing
 
 
 type Author
-    = Author_ Details
+    = Author Author_
 
 
-type alias Details =
+type alias Author_ =
     { id : Id
     , username : String
     , profileImage : Maybe String
@@ -31,7 +31,7 @@ type alias Id =
 
 build : Id -> String -> Maybe String -> Author
 build id_ username_ profileImage_ =
-    Author_
+    Author
         { id = id_
         , username = username_
         , profileImage = profileImage_
@@ -61,6 +61,6 @@ profileImage =
 -- Helpers
 
 
-author_ : Author -> Details
-author_ (Author_ a) =
+author_ : Author -> Author_
+author_ (Author a) =
     a

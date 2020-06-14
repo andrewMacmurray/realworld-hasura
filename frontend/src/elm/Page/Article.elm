@@ -8,14 +8,12 @@ module Page.Article exposing
 
 import Api
 import Api.Articles
-import Api.Users
 import Article exposing (Article)
-import Article.Author exposing (Author)
+import Article.Author.Follow as Follow
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Avatar as Avatar
 import Element.Background as Background
-import Element.Button.Follow as Follow
 import Element.Layout as Layout exposing (Layout)
 import Element.Palette as Palette
 import Element.Scale as Scale
@@ -36,10 +34,7 @@ type alias Model =
 
 type Msg
     = ArticleReceived (Api.Response (Maybe Article))
-    | FollowAuthorClicked Author
-    | FollowResponseReceived (Api.Response Int)
-    | UnfollowAuthorClicked Author
-    | UnfollowResponseReceived (Api.Response Int)
+    | FollowMsg Follow.Msg
 
 
 type LoadStatus a
@@ -85,33 +80,13 @@ update msg model =
         ArticleReceived (Err _) ->
             ( { model | article = FailedToLoad }, Effect.none )
 
-        FollowAuthorClicked author_ ->
-            ( model, followAuthor author_ )
-
-        FollowResponseReceived (Ok following_id) ->
-            ( model, Effect.addToUserFollows following_id )
-
-        FollowResponseReceived (Err _) ->
-            ( model, Effect.none )
-
-        UnfollowAuthorClicked author_ ->
-            ( model, unfollowAuthor author_ )
-
-        UnfollowResponseReceived (Ok following_id) ->
-            ( model, Effect.removeFromUserFollows following_id )
-
-        UnfollowResponseReceived (Err _) ->
-            ( model, Effect.none )
+        FollowMsg msg_ ->
+            ( model, handleFollowEffect msg_ )
 
 
-followAuthor : Author -> Effect Msg
-followAuthor author_ =
-    Api.Users.follow author_ FollowResponseReceived
-
-
-unfollowAuthor : Author -> Effect Msg
-unfollowAuthor author_ =
-    Api.Users.unfollow author_ UnfollowResponseReceived
+handleFollowEffect : Follow.Msg -> Effect Msg
+handleFollowEffect =
+    Follow.effect >> Effect.map FollowMsg
 
 
 
@@ -156,8 +131,7 @@ followButton user article =
     Follow.button
         { user = user
         , author = Article.author article
-        , onFollow = FollowAuthorClicked
-        , onUnfollow = UnfollowAuthorClicked
+        , msg = FollowMsg
         }
 
 

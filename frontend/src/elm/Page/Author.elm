@@ -9,15 +9,14 @@ module Page.Author exposing
 import Api
 import Api.Articles
 import Api.Authors
-import Api.Users
 import Article exposing (Article)
 import Article.Author as Author exposing (Author)
 import Article.Author.Feed as Feed exposing (Feed)
+import Article.Author.Follow as Follow
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Avatar as Avatar
 import Element.Background as Background
-import Element.Button.Follow as Follow
 import Element.Feed as Feed
 import Element.Layout as Layout exposing (Layout)
 import Element.Palette as Palette
@@ -39,11 +38,8 @@ type Msg
     = FeedResponseReceived (Api.Response (Maybe Feed))
     | LikeArticleClicked Article
     | UnlikeArticleClicked Article
-    | FollowAuthorClicked Author
-    | UnfollowAuthorClicked Author
     | UpdateArticleResponseReceived (Api.Response Article)
-    | FollowResponseReceived (Api.Response User.Id)
-    | UnfollowResponseReceived (Api.Response User.Id)
+    | FollowMsg Follow.Msg
 
 
 type LoadStatus a
@@ -95,29 +91,19 @@ update msg model =
         UnlikeArticleClicked article ->
             ( model, unlikeArticle article )
 
-        FollowAuthorClicked author_ ->
-            ( model, followAuthor author_ )
-
-        UnfollowAuthorClicked author_ ->
-            ( model, unfollowAuthor author_ )
-
-        FollowResponseReceived (Ok id) ->
-            ( model, Effect.addToUserFollows id )
-
-        FollowResponseReceived (Err _) ->
-            ( model, Effect.none )
-
-        UnfollowResponseReceived (Ok id) ->
-            ( model, Effect.removeFromUserFollows id )
-
-        UnfollowResponseReceived (Err _) ->
-            ( model, Effect.none )
-
         UpdateArticleResponseReceived (Ok article) ->
             ( { model | feed = updateArticle article model.feed }, Effect.none )
 
         UpdateArticleResponseReceived (Err _) ->
             ( model, Effect.none )
+
+        FollowMsg msg_ ->
+            ( model, handleFollowEffect msg_ )
+
+
+handleFollowEffect : Follow.Msg -> Effect Msg
+handleFollowEffect =
+    Follow.effect >> Effect.map FollowMsg
 
 
 updateArticle : Article -> LoadStatus Feed -> LoadStatus Feed
@@ -138,16 +124,6 @@ likeArticle article =
 unlikeArticle : Article -> Effect Msg
 unlikeArticle article =
     Api.Articles.unlike article UpdateArticleResponseReceived
-
-
-followAuthor : Author -> Effect Msg
-followAuthor author_ =
-    Api.Users.follow author_ FollowResponseReceived
-
-
-unfollowAuthor : Author -> Effect Msg
-unfollowAuthor author_ =
-    Api.Users.unfollow author_ UnfollowResponseReceived
 
 
 
@@ -191,8 +167,7 @@ followButton user author =
     Follow.button
         { user = user
         , author = author
-        , onFollow = FollowAuthorClicked
-        , onUnfollow = UnfollowAuthorClicked
+        , msg = FollowMsg
         }
 
 
