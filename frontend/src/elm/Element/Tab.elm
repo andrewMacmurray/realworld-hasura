@@ -5,6 +5,7 @@ module Element.Tab exposing
     )
 
 import Element exposing (..)
+import Element.Anchor as Anchor
 import Element.Divider as Divider
 import Element.Events exposing (onClick)
 import Element.Scale as Scale
@@ -21,7 +22,7 @@ tabs els =
 
 active : String -> Element msg
 active text =
-    greenSubtitle text
+    el [ Anchor.description ("active-tab-" ++ text) ] (greenSubtitle text)
 
 
 link : msg -> String -> Element msg

@@ -114,10 +114,10 @@ update msg model =
             )
 
         GlobalFeedClicked ->
-            embedFeed { model | activeTab = Global } (Feed.load Api.Articles.all)
+            loadGlobalFeed model
 
         YourFeedClicked profile_ ->
-            embedFeed { model | activeTab = YourFeed } (Feed.load (Api.Articles.followedByAuthor profile_))
+            loadYourFeed profile_ model
 
         FeedMsg msg_ ->
             Feed.updateWith FeedMsg msg_ model
@@ -126,6 +126,19 @@ update msg model =
 embedFeed : Model -> ( Feed.Model, Effect Feed.Msg ) -> ( Model, Effect Msg )
 embedFeed =
     Feed.embedWith FeedMsg
+
+
+loadGlobalFeed : Model -> ( Model, Effect Msg )
+loadGlobalFeed model =
+    Feed.load Api.Articles.all
+        |> embedFeed { model | activeTab = Global }
+
+
+loadYourFeed : User.Profile -> Model -> ( Model, Effect Msg )
+loadYourFeed profile_ model =
+    Api.Articles.followedByAuthor profile_
+        |> Feed.load
+        |> embedFeed { model | activeTab = YourFeed }
 
 
 

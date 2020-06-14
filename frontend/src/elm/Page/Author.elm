@@ -102,14 +102,26 @@ update msg model =
             ( model, handleFollowEffect msg_ )
 
         LikedArticlesClicked ->
-            embedFeed { model | activeTab = LikedArticles } (handleLoadFeed Authors.likedArticles model)
+            handleLoadLikedArticles model
 
         AuthoredArticlesClicked ->
-            embedFeed { model | activeTab = AuthoredArticles } (handleLoadFeed Authors.authoredArticles model)
+            handleLoadAuthoredArticles model
 
 
-handleLoadFeed : Authors.ArticlesSelection -> Model -> ( Feed.Model, Effect Feed.Msg )
-handleLoadFeed selection model =
+handleLoadLikedArticles : Model -> ( Model, Effect Msg )
+handleLoadLikedArticles model =
+    loadFeed Authors.likedArticles model
+        |> embedFeed { model | activeTab = LikedArticles }
+
+
+handleLoadAuthoredArticles : Model -> ( Model, Effect Msg )
+handleLoadAuthoredArticles model =
+    loadFeed Authors.authoredArticles model
+        |> embedFeed { model | activeTab = AuthoredArticles }
+
+
+loadFeed : Authors.ArticlesSelection -> Model -> ( Feed.Model, Effect Feed.Msg )
+loadFeed selection model =
     case model.author of
         Loaded author ->
             Feed.load (selection (Author.id author))
@@ -181,7 +193,7 @@ pageContents : User -> Model -> Element Msg
 pageContents user model =
     column [ width fill, spacing Scale.large ]
         [ tabs model.activeTab
-        , feed user model.feed
+        , feed user model
         ]
 
 
@@ -201,10 +213,21 @@ tabs activeTab =
                 ]
 
 
-feed : User -> Feed.Model -> Element Msg
-feed user feed_ =
-    Feed.view
-        { user = user
-        , feed = feed_
-        , msg = FeedMsg
-        }
+feed : User -> Model -> Element Msg
+feed user model =
+    case model.author of
+        Loading ->
+            Text.text [] "Loading..."
+
+        Failed ->
+            Text.error [ Text.description "error-message" ] "Something went wrong"
+
+        NotFound ->
+            Text.text [ Text.description "not-found-message" ] "Author not found"
+
+        Loaded _ ->
+            Feed.view
+                { user = user
+                , feed = model.feed
+                , msg = FeedMsg
+                }

@@ -1,9 +1,21 @@
-module Helpers exposing (article, articleBy, articleLikedBy)
+module Helpers exposing
+    ( article
+    , articleBy
+    , articleLikedBy
+    , author
+    , serverError
+    )
 
 import Article exposing (Article)
 import Article.Author as Author exposing (Author)
 import Date
+import Graphql.Http exposing (HttpError(..), RawError(..))
 import Time exposing (Month(..))
+
+
+serverError : Graphql.Http.Error a
+serverError =
+    HttpError NetworkError
 
 
 articleLikedBy : String -> { a | title : String } -> Article

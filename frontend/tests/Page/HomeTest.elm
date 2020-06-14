@@ -19,7 +19,7 @@ suite =
                     |> Program.simulateArticleFeed [ article "foo", article "bar" ] []
                     |> Program.start
                     |> expectViewHas
-                        [ el "global-feed"
+                        [ el "active-tab-global-feed"
                         , el "article-foo"
                         , el "article-bar"
                         ]
@@ -29,14 +29,14 @@ suite =
                     |> Program.withLoggedInUser
                     |> Program.start
                     |> expectViewHas
-                        [ el "your-feed"
+                        [ el "active-tab-your-feed"
                         ]
         , test "Shows feed for a particular tag" <|
             \_ ->
                 Program.withPage (Route.tagFeed (Tag.one "bread"))
                     |> Program.start
                     |> expectViewHas
-                        [ el "tag-feed-for-bread"
+                        [ el "active-tab-#bread"
                         ]
         , test "Shows collection of popular tags" <|
             \_ ->
