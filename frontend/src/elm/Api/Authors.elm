@@ -1,5 +1,6 @@
 module Api.Authors exposing
-    ( authoredArticles
+    ( ArticlesSelection
+    , authoredArticles
     , likedArticles
     , loadFeed
     )
@@ -19,38 +20,43 @@ import Hasura.Object.Users as Users
 import Hasura.Query exposing (ArticlesOptionalArguments)
 
 
+type alias ArticlesSelection =
+    Author.Id -> SelectionSet (List Article) RootQuery
+
+
 
 -- load
 
 
-loadFeed : (Int -> SelectionSet (List Article) RootQuery) -> Int -> (Api.Response (Maybe Feed) -> msg) -> Effect msg
+loadFeed : ArticlesSelection -> Author.Id -> (Api.Response (Maybe Feed) -> msg) -> Effect msg
 loadFeed articles id_ msg =
     feedSelection id_ articles
         |> Api.query msg
         |> Effect.loadAuthorFeed
 
 
-feedSelection id_ articles =
+feedSelection : Author.Id -> ArticlesSelection -> SelectionSet (Maybe Feed) RootQuery
+feedSelection id_ selection =
     SelectionSet.succeed Feed.build
         |> with (authorById id_)
-        |> with (articles id_)
+        |> with (selection id_)
 
 
-authoredArticles : Int -> SelectionSet (List Article) RootQuery
+authoredArticles : ArticlesSelection
 authoredArticles id_ =
     Hasura.Query.articles
         (Articles.newestFirst >> authoredBy id_)
         Articles.articleSelection
 
 
-likedArticles : Int -> SelectionSet (List Article) RootQuery
+likedArticles : ArticlesSelection
 likedArticles id_ =
     Hasura.Query.articles
         (Articles.newestFirst >> likedBy id_)
         Articles.articleSelection
 
 
-authoredBy : Int -> ArticlesOptionalArguments -> ArticlesOptionalArguments
+authoredBy : Author.Id -> ArticlesOptionalArguments -> ArticlesOptionalArguments
 authoredBy id_ =
     Argument.combine4
         (where_ Input.buildArticles_bool_exp)
@@ -59,7 +65,7 @@ authoredBy id_ =
         (eq_ id_)
 
 
-likedBy : Int -> ArticlesOptionalArguments -> ArticlesOptionalArguments
+likedBy : Author.Id -> ArticlesOptionalArguments -> ArticlesOptionalArguments
 likedBy id_ =
     Argument.combine4
         (where_ Input.buildArticles_bool_exp)
@@ -68,7 +74,7 @@ likedBy id_ =
         (eq_ id_)
 
 
-authorById : Int -> SelectionSet (Maybe Author) RootQuery
+authorById : Author.Id -> SelectionSet (Maybe Author) RootQuery
 authorById id_ =
     Hasura.Query.user { id = id_ } authorSelection
 

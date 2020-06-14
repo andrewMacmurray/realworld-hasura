@@ -19,6 +19,7 @@ import Element.Background as Background
 import Element.Layout as Layout exposing (Layout)
 import Element.Palette as Palette
 import Element.Scale as Scale
+import Element.Tab as Tab
 import Element.Text as Text
 import User exposing (User)
 
@@ -30,18 +31,20 @@ import User exposing (User)
 type alias Model =
     { feed : Feed.Model
     , author : LoadStatus Author
-    , tab : Tab
+    , activeTab : Tab
     }
 
 
 type Msg
     = LoadAuthorResponseReceived (Api.Response (Maybe Author.Feed))
+    | LikedArticlesClicked
+    | AuthoredArticlesClicked
     | FeedMsg Feed.Msg
     | FollowMsg Follow.Msg
 
 
 type Tab
-    = MyArticles
+    = AuthoredArticles
     | LikedArticles
 
 
@@ -65,7 +68,7 @@ initialModel : Model
 initialModel =
     { feed = Feed.loading
     , author = Loading
-    , tab = MyArticles
+    , activeTab = AuthoredArticles
     }
 
 
@@ -81,8 +84,8 @@ fetchAuthorFeed id_ =
 update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
-        LoadAuthorResponseReceived (Ok (Just f)) ->
-            ( { model | author = Loaded f.author, feed = Feed.loaded f.articles }
+        LoadAuthorResponseReceived (Ok (Just authorFeed)) ->
+            ( { model | author = Loaded authorFeed.author, feed = Feed.loaded authorFeed.articles }
             , Effect.none
             )
 
@@ -97,6 +100,27 @@ update msg model =
 
         FollowMsg msg_ ->
             ( model, handleFollowEffect msg_ )
+
+        LikedArticlesClicked ->
+            embedFeed { model | activeTab = LikedArticles } (handleLoadFeed Authors.likedArticles model)
+
+        AuthoredArticlesClicked ->
+            embedFeed { model | activeTab = AuthoredArticles } (handleLoadFeed Authors.authoredArticles model)
+
+
+handleLoadFeed : Authors.ArticlesSelection -> Model -> ( Feed.Model, Effect Feed.Msg )
+handleLoadFeed selection model =
+    case model.author of
+        Loaded author ->
+            Feed.load (selection (Author.id author))
+
+        _ ->
+            ( model.feed, Effect.none )
+
+
+embedFeed : Model -> ( Feed.Model, Effect Feed.Msg ) -> ( Model, Effect Msg )
+embedFeed =
+    Feed.embedWith FeedMsg
 
 
 handleFollowEffect : Follow.Msg -> Effect Msg
@@ -155,19 +179,32 @@ followButton user author =
 
 pageContents : User -> Model -> Element Msg
 pageContents user model =
-    case model.author of
-        Loading ->
-            Text.text [] "Loading Author"
+    column [ width fill, spacing Scale.large ]
+        [ tabs model.activeTab
+        , feed user model.feed
+        ]
 
-        Failed ->
-            Text.error [] "Error Loading Author"
 
-        NotFound ->
-            Text.error [] "No Author found"
+tabs : Tab -> Element Msg
+tabs activeTab =
+    case activeTab of
+        AuthoredArticles ->
+            Tab.tabs
+                [ Tab.active "By Author"
+                , Tab.link LikedArticlesClicked "Liked"
+                ]
 
-        Loaded _ ->
-            Feed.view
-                { user = user
-                , feed = model.feed
-                , msg = FeedMsg
-                }
+        LikedArticles ->
+            Tab.tabs
+                [ Tab.link AuthoredArticlesClicked "By Author"
+                , Tab.active "Liked"
+                ]
+
+
+feed : User -> Feed.Model -> Element Msg
+feed user feed_ =
+    Feed.view
+        { user = user
+        , feed = feed_
+        , msg = FeedMsg
+        }

@@ -15,11 +15,10 @@ import Element exposing (..)
 import Element.Anchor as Anchor
 import Element.Background as Background
 import Element.Border as Border
-import Element.Divider as Divider
-import Element.Events exposing (onClick)
 import Element.Layout as Layout
 import Element.Palette as Palette
 import Element.Scale as Scale
+import Element.Tab as Tab
 import Element.Text as Text
 import Route
 import Tag exposing (Tag)
@@ -35,21 +34,21 @@ import WebData exposing (WebData)
 type alias Model =
     { popularTags : WebData (List Tag.Popular)
     , feed : Feed.Model
-    , tab : Tab
+    , activeTab : Tab
     }
 
 
 type Msg
     = LoadFeedResponseReceived (Api.Response Article.Feed)
     | GlobalFeedClicked
-    | UserFeedClicked User.Profile
+    | YourFeedClicked User.Profile
     | FeedMsg Feed.Msg
 
 
 type Tab
-    = GlobalTab
-    | UserTab
-    | TagTab Tag
+    = Global
+    | YourFeed
+    | TagFeed Tag
 
 
 
@@ -78,7 +77,7 @@ fetchFeed user tag =
 
 initialModel : User -> Maybe Tag -> Model
 initialModel user tag =
-    { tab = initTab user tag
+    { activeTab = initTab user tag
     , feed = Feed.loading
     , popularTags = WebData.Loading
     }
@@ -88,13 +87,13 @@ initTab : User -> Maybe Tag -> Tab
 initTab user tag =
     case ( user, tag ) of
         ( _, Just t ) ->
-            TagTab t
+            TagFeed t
 
         ( User.LoggedIn _, _ ) ->
-            UserTab
+            YourFeed
 
         ( User.Guest, _ ) ->
-            GlobalTab
+            Global
 
 
 
@@ -104,8 +103,8 @@ initTab user tag =
 update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
-        LoadFeedResponseReceived (Ok { popularTags, articles }) ->
-            ( { model | popularTags = WebData.Success popularTags, feed = Feed.loaded articles }
+        LoadFeedResponseReceived (Ok feed) ->
+            ( { model | popularTags = WebData.Success feed.popularTags, feed = Feed.loaded feed.articles }
             , Effect.none
             )
 
@@ -115,10 +114,10 @@ update msg model =
             )
 
         GlobalFeedClicked ->
-            embedFeed { model | tab = GlobalTab } (Feed.load Api.Articles.all)
+            embedFeed { model | activeTab = Global } (Feed.load Api.Articles.all)
 
-        UserFeedClicked profile_ ->
-            embedFeed { model | tab = UserTab } (Feed.load (Api.Articles.followedByAuthor profile_))
+        YourFeedClicked profile_ ->
+            embedFeed { model | activeTab = YourFeed } (Feed.load (Api.Articles.followedByAuthor profile_))
 
         FeedMsg msg_ ->
             Feed.updateWith FeedMsg msg_ model
@@ -162,60 +161,55 @@ whiteHeadline =
 -- Links
 
 
-feedLinks : User -> Tab -> List (Element Msg)
-feedLinks user feed =
+tabs : User -> Tab -> Element Msg
+tabs user feed =
     case user of
         User.Guest ->
-            guestLinks feed
+            Tab.tabs (guestTabs feed)
 
         User.LoggedIn profile_ ->
-            userLinks profile_ feed
+            Tab.tabs (userTabs profile_ feed)
 
 
-userLinks : User.Profile -> Tab -> List (Element Msg)
-userLinks profile_ tab =
+userTabs : User.Profile -> Tab -> List (Element Msg)
+userTabs profile_ tab =
     case tab of
-        GlobalTab ->
-            [ greenSubtitle "Global Feed"
-            , userFeedLink profile_ (subtitleLink "Your Feed")
+        Global ->
+            [ Tab.active "Global Feed"
+            , Tab.link (YourFeedClicked profile_) "Your Feed"
             ]
 
-        UserTab ->
-            [ globalFeedLink (subtitleLink "Global Feed")
-            , el [] (greenSubtitle "Your Feed")
+        YourFeed ->
+            [ Tab.link GlobalFeedClicked "Global Feed"
+            , Tab.active "Your Feed"
             ]
 
-        TagTab tag_ ->
-            [ globalFeedLink (subtitleLink "Global Feed")
-            , userFeedLink profile_ (subtitleLink "Your Feed")
-            , greenSubtitle ("#" ++ String.capitalize (Tag.value tag_))
+        TagFeed tag_ ->
+            [ Tab.link GlobalFeedClicked "Global Feed"
+            , Tab.link (YourFeedClicked profile_) "Your Feed"
+            , tagTab tag_
             ]
 
 
-guestLinks : Tab -> List (Element Msg)
-guestLinks tab =
+guestTabs : Tab -> List (Element Msg)
+guestTabs tab =
     case tab of
-        GlobalTab ->
-            [ greenSubtitle "Global Feed"
+        Global ->
+            [ Tab.active "Global Feed"
             ]
 
-        TagTab tag_ ->
-            [ globalFeedLink (subtitleLink "Global Feed")
-            , greenSubtitle ("#" ++ String.capitalize (Tag.value tag_))
+        TagFeed tag_ ->
+            [ Tab.link GlobalFeedClicked "Global Feed"
+            , tagTab tag_
             ]
 
-        UserTab ->
+        YourFeed ->
             []
 
 
-globalFeedLink : Element Msg -> Element Msg
-globalFeedLink =
-    el [ onClick GlobalFeedClicked ]
-
-
-userFeedLink : User.Profile -> Element Msg -> Element Msg
-userFeedLink profile_ =
-    el [ onClick (UserFeedClicked profile_) ]
+tagTab : Tag -> Element msg
+tagTab tag =
+    Tab.active ("#" ++ String.capitalize (Tag.value tag))
 
 
 
@@ -229,8 +223,7 @@ pageContents user model =
             [ width fill
             , spacing Scale.large
             ]
-            [ row [ spacing Scale.large ] (feedLinks user model.tab)
-            , Divider.divider
+            [ tabs user model.activeTab
             , viewFeed user model.feed
             ]
         , column
@@ -240,7 +233,7 @@ pageContents user model =
             , width (fill |> maximum 300)
             ]
             [ Text.title [] "Popular Tags"
-            , viewPopularTags model.popularTags
+            , popularTags model.popularTags
             ]
         ]
 
@@ -254,8 +247,8 @@ viewFeed user feed =
         }
 
 
-viewPopularTags : WebData (List Tag.Popular) -> Element msg
-viewPopularTags tags =
+popularTags : WebData (List Tag.Popular) -> Element msg
+popularTags tags =
     case tags of
         WebData.Loading ->
             none
@@ -264,11 +257,11 @@ viewPopularTags tags =
             none
 
         WebData.Success tags_ ->
-            wrappedRow [ spacing Scale.small ] (List.map viewPopularTag tags_)
+            wrappedRow [ spacing Scale.small ] (List.map popularTag tags_)
 
 
-viewPopularTag : Tag.Popular -> Element msg
-viewPopularTag t =
+popularTag : Tag.Popular -> Element msg
+popularTag t =
     Route.el (Route.tagFeed t.tag)
         (row
             [ spacing 4
@@ -291,13 +284,3 @@ viewPopularTag t =
 whiteLabel : String -> Element msg
 whiteLabel =
     Text.label [ Text.white ]
-
-
-subtitleLink : String -> Element msg
-subtitleLink =
-    Text.subtitle [ Text.asLink ]
-
-
-greenSubtitle : String -> Element msg
-greenSubtitle =
-    Text.subtitle [ Text.green ]
