@@ -5,12 +5,11 @@ module Effect exposing
     , followAuthor
     , likeArticle
     , loadArticle
+    , loadArticles
     , loadAuthorFeed
-    , loadGlobalFeed
-    , loadTagFeed
+    , loadFeed
     , loadUrl
     , loadUser
-    , loadUserFeed
     , logout
     , map
     , none
@@ -27,7 +26,6 @@ module Effect exposing
 
 import Api
 import Article exposing (Article)
-import Article.Author exposing (Author)
 import Article.Author.Feed as Author
 import Browser.Navigation as Navigation
 import Ports
@@ -52,9 +50,8 @@ type Effect msg
     | RemoveFromUserFollows Int
     | SignUp (Api.Mutation User.Profile msg)
     | SignIn (Api.Mutation User.Profile msg)
-    | LoadGlobalFeed (Api.Query Article.Feed msg)
-    | LoadTagFeed (Api.Query Article.Feed msg)
-    | LoadUserFeed (Api.Query Article.Feed msg)
+    | LoadFeed (Api.Query Article.Feed msg)
+    | LoadArticles (Api.Query (List Article) msg)
     | LoadArticle (Api.Query (Maybe Article) msg)
     | PublishArticle (Api.Mutation () msg)
     | LikeArticle (Api.Mutation Article msg)
@@ -119,24 +116,19 @@ removeFromUserFollows =
     RemoveFromUserFollows
 
 
-loadGlobalFeed : Api.Query Article.Feed msg -> Effect msg
-loadGlobalFeed =
-    LoadGlobalFeed
-
-
-loadTagFeed : Api.Query Article.Feed msg -> Effect msg
-loadTagFeed =
-    LoadTagFeed
-
-
-loadUserFeed : Api.Query Article.Feed msg -> Effect msg
-loadUserFeed =
-    LoadUserFeed
+loadFeed : Api.Query Article.Feed msg -> Effect msg
+loadFeed =
+    LoadFeed
 
 
 loadArticle : Api.Query (Maybe Article) msg -> Effect msg
 loadArticle =
     LoadArticle
+
+
+loadArticles : Api.Query (List Article) msg -> Effect msg
+loadArticles =
+    LoadArticles
 
 
 publishArticle : Api.Mutation () msg -> Effect msg
@@ -209,17 +201,14 @@ map toMsg effect =
         RemoveFromUserFollows id ->
             RemoveFromUserFollows id
 
-        LoadGlobalFeed query ->
-            LoadGlobalFeed (Api.map toMsg query)
-
-        LoadTagFeed query ->
-            LoadTagFeed (Api.map toMsg query)
-
-        LoadUserFeed query ->
-            LoadUserFeed (Api.map toMsg query)
+        LoadFeed query ->
+            LoadFeed (Api.map toMsg query)
 
         LoadArticle query ->
             LoadArticle (Api.map toMsg query)
+
+        LoadArticles query ->
+            LoadArticles (Api.map toMsg query)
 
         PublishArticle mut ->
             PublishArticle (Api.map toMsg mut)
@@ -295,16 +284,13 @@ perform pushUrl_ ( model, effect ) =
         SignIn mutation ->
             ( model, Api.doMutation model.user mutation )
 
-        LoadGlobalFeed query ->
-            ( model, Api.doQuery model.user query )
-
-        LoadUserFeed query ->
-            ( model, Api.doQuery model.user query )
-
-        LoadTagFeed query ->
+        LoadFeed query ->
             ( model, Api.doQuery model.user query )
 
         LoadArticle query ->
+            ( model, Api.doQuery model.user query )
+
+        LoadArticles query ->
             ( model, Api.doQuery model.user query )
 
         PublishArticle mutation ->

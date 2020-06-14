@@ -9,6 +9,7 @@ module Page.Home exposing
 import Api
 import Api.Articles
 import Article exposing (Article)
+import Article.Feed as Feed
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Anchor as Anchor
@@ -16,7 +17,6 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Divider as Divider
 import Element.Events exposing (onClick)
-import Element.Feed as Feed
 import Element.Layout as Layout
 import Element.Palette as Palette
 import Element.Scale as Scale
@@ -25,6 +25,7 @@ import Route
 import Tag exposing (Tag)
 import User exposing (User(..))
 import Utils.String as String
+import Utils.Update exposing (updateWith)
 import WebData exposing (WebData)
 
 
@@ -33,25 +34,23 @@ import WebData exposing (WebData)
 
 
 type alias Model =
-    { feed : Feed
+    { popularTags : WebData (List Tag.Popular)
+    , feed : Feed.Model
+    , tab : Tab
     }
 
 
 type Msg
-    = GlobalFeedResponseReceived (Api.Response Article.Feed)
-    | TagFeedResponseReceived Tag (Api.Response Article.Feed)
-    | UserFeedResponseReceived (Api.Response Article.Feed)
-    | LikeArticleClicked Article
-    | UnLikeArticleClicked Article
+    = LoadFeedResponseReceived (Api.Response Article.Feed)
     | GlobalFeedClicked
     | UserFeedClicked User.Profile
-    | UpdateArticleResponseReceived (Api.Response Article)
+    | FeedMsg Feed.Msg
 
 
-type Feed
-    = Global (WebData Article.Feed)
-    | UserFeed (WebData Article.Feed)
-    | TagFeed Tag (WebData Article.Feed)
+type Tab
+    = GlobalTab
+    | UserTab
+    | TagTab Tag
 
 
 
@@ -68,33 +67,35 @@ init user tag =
 fetchFeed : User -> Maybe Tag -> Effect Msg
 fetchFeed user tag =
     case ( user, tag ) of
-        ( _, Just t ) ->
-            Api.Articles.tagFeed t (TagFeedResponseReceived t)
+        ( _, Just tag_ ) ->
+            Api.Articles.loadFeed (Api.Articles.byTag tag_) LoadFeedResponseReceived
 
         ( User.Guest, _ ) ->
-            loadGlobalFeed
+            Api.Articles.loadFeed Api.Articles.all LoadFeedResponseReceived
 
         ( User.LoggedIn profile_, _ ) ->
-            loadUserFeed profile_
+            Api.Articles.loadFeed (Api.Articles.followedByAuthor profile_) LoadFeedResponseReceived
 
 
 initialModel : User -> Maybe Tag -> Model
 initialModel user tag =
-    { feed = toInitialFeed user tag
+    { tab = initTab user tag
+    , feed = Feed.loading
+    , popularTags = WebData.Loading
     }
 
 
-toInitialFeed : User -> Maybe Tag -> Feed
-toInitialFeed user tag =
+initTab : User -> Maybe Tag -> Tab
+initTab user tag =
     case ( user, tag ) of
         ( _, Just t ) ->
-            TagFeed t WebData.Loading
+            TagTab t
 
         ( User.LoggedIn _, _ ) ->
-            UserFeed WebData.Loading
+            UserTab
 
         ( User.Guest, _ ) ->
-            Global WebData.Loading
+            GlobalTab
 
 
 
@@ -104,69 +105,37 @@ toInitialFeed user tag =
 update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
-        GlobalFeedResponseReceived response ->
-            ( { model | feed = Global (WebData.fromResult response) }, Effect.none )
+        LoadFeedResponseReceived (Ok { popularTags, articles }) ->
+            ( { model | popularTags = WebData.Success popularTags, feed = Feed.loaded articles }
+            , Effect.none
+            )
 
-        TagFeedResponseReceived tag response ->
-            ( { model | feed = TagFeed tag (WebData.fromResult response) }, Effect.none )
-
-        UserFeedResponseReceived response ->
-            ( { model | feed = UserFeed (WebData.fromResult response) }, Effect.none )
-
-        LikeArticleClicked article ->
-            ( model, likeArticle article )
-
-        UnLikeArticleClicked article ->
-            ( model, unlikeArticle article )
-
-        UpdateArticleResponseReceived (Ok article) ->
-            ( { model | feed = updateArticle (Article.replaceInFeed article) model.feed }, Effect.none )
-
-        UpdateArticleResponseReceived (Err _) ->
-            ( model, Effect.none )
+        LoadFeedResponseReceived (Err _) ->
+            ( { model | popularTags = WebData.Failure, feed = Feed.failure }
+            , Effect.none
+            )
 
         GlobalFeedClicked ->
-            ( { model | feed = Global WebData.Loading }, loadGlobalFeed )
+            Feed.load Api.Articles.all
+                |> updateFeed model
+                |> updateModel (\m -> { m | tab = GlobalTab })
 
         UserFeedClicked profile_ ->
-            ( { model | feed = UserFeed WebData.Loading }, loadUserFeed profile_ )
+            Feed.load (Api.Articles.followedByAuthor profile_)
+                |> updateFeed model
+                |> updateModel (\m -> { m | tab = UserTab })
+
+        FeedMsg msg_ ->
+            Feed.update msg_ model.feed |> updateFeed model
 
 
-loadGlobalFeed : Effect Msg
-loadGlobalFeed =
-    Api.Articles.globalFeed GlobalFeedResponseReceived
+updateFeed : Model -> ( Feed.Model, Effect Feed.Msg ) -> ( Model, Effect Msg )
+updateFeed model =
+    updateWith (\feed -> { model | feed = feed }) FeedMsg
 
 
-loadUserFeed : User.Profile -> Effect Msg
-loadUserFeed profile_ =
-    Api.Articles.userFeed profile_ UserFeedResponseReceived
-
-
-likeArticle : Article -> Effect Msg
-likeArticle article =
-    Api.Articles.like article UpdateArticleResponseReceived
-
-
-unlikeArticle : Article -> Effect Msg
-unlikeArticle article =
-    Api.Articles.unlike article UpdateArticleResponseReceived
-
-
-
--- Feed
-
-
-updateArticle : (Article.Feed -> Article.Feed) -> Feed -> Feed
-updateArticle f feed =
-    case feed of
-        Global feed_ ->
-            Global (WebData.map f feed_)
-
-        UserFeed feed_ ->
-            UserFeed (WebData.map f feed_)
-
-        TagFeed tag feed_ ->
-            TagFeed tag (WebData.map f feed_)
+updateModel =
+    Tuple.mapFirst
 
 
 
@@ -198,29 +167,11 @@ whiteHeadline =
     Text.headline [ Text.white ]
 
 
-pageContents : User -> Model -> Element Msg
-pageContents user model =
-    pageWrapper user model (feedLinks user model.feed)
-
-
-pageWrapper : User -> Model -> List (Element Msg) -> Element Msg
-pageWrapper user model =
-    case model.feed of
-        Global feed_ ->
-            feedWrapper user feed_ "global-feed"
-
-        TagFeed tag_ feed_ ->
-            feedWrapper user feed_ ("tag-feed-for-" ++ Tag.value tag_)
-
-        UserFeed feed_ ->
-            feedWrapper user feed_ "your-feed"
-
-
 
 -- Links
 
 
-feedLinks : User -> Feed -> List (Element Msg)
+feedLinks : User -> Tab -> List (Element Msg)
 feedLinks user feed =
     case user of
         User.Guest ->
@@ -230,39 +181,39 @@ feedLinks user feed =
             userLinks profile_ feed
 
 
-userLinks : User.Profile -> Feed -> List (Element Msg)
-userLinks profile_ feed =
-    case feed of
-        Global _ ->
+userLinks : User.Profile -> Tab -> List (Element Msg)
+userLinks profile_ tab =
+    case tab of
+        GlobalTab ->
             [ greenSubtitle "Global Feed"
             , userFeedLink profile_ (subtitleLink "Your Feed")
             ]
 
-        UserFeed _ ->
+        UserTab ->
             [ globalFeedLink (subtitleLink "Global Feed")
             , el [] (greenSubtitle "Your Feed")
             ]
 
-        TagFeed tag_ _ ->
+        TagTab tag_ ->
             [ globalFeedLink (subtitleLink "Global Feed")
             , userFeedLink profile_ (subtitleLink "Your Feed")
             , greenSubtitle ("#" ++ String.capitalize (Tag.value tag_))
             ]
 
 
-guestLinks : Feed -> List (Element Msg)
-guestLinks feed =
-    case feed of
-        Global _ ->
+guestLinks : Tab -> List (Element Msg)
+guestLinks tab =
+    case tab of
+        GlobalTab ->
             [ greenSubtitle "Global Feed"
             ]
 
-        TagFeed tag_ _ ->
+        TagTab tag_ ->
             [ globalFeedLink (subtitleLink "Global Feed")
             , greenSubtitle ("#" ++ String.capitalize (Tag.value tag_))
             ]
 
-        UserFeed _ ->
+        UserTab ->
             []
 
 
@@ -280,17 +231,16 @@ userFeedLink profile_ =
 -- Page
 
 
-feedWrapper : User -> WebData Article.Feed -> String -> List (Element Msg) -> Element Msg
-feedWrapper user feed description links =
+pageContents : User -> Model -> Element Msg
+pageContents user model =
     row [ width fill, spacing Scale.large ]
         [ column
-            [ Anchor.description description
-            , width fill
+            [ width fill
             , spacing Scale.large
             ]
-            [ row [ spacing Scale.large ] links
+            [ row [ spacing Scale.large ] (feedLinks user model.tab)
             , Divider.divider
-            , viewFeed user feed
+            , viewFeed user model.feed
             ]
         , column
             [ Anchor.description "popular-tags"
@@ -299,40 +249,31 @@ feedWrapper user feed description links =
             , width (fill |> maximum 300)
             ]
             [ Text.title [] "Popular Tags"
-            , viewPopularTags feed
+            , viewPopularTags model.popularTags
             ]
         ]
 
 
-viewFeed : User -> WebData Article.Feed -> Element Msg
+viewFeed : User -> Feed.Model -> Element Msg
 viewFeed user feed =
-    case feed of
-        WebData.Loading ->
-            Text.text [] "Loading Feed"
-
-        WebData.Success data ->
-            Feed.articles
-                { onLike = LikeArticleClicked
-                , onUnlike = UnLikeArticleClicked
-                , user = user
-                , articles = data.articles
-                }
-
-        WebData.Failure ->
-            Text.error [] "Something went wrong"
+    Feed.view
+        { feed = feed
+        , user = user
+        , msg = FeedMsg
+        }
 
 
-viewPopularTags : WebData Article.Feed -> Element msg
-viewPopularTags feed =
-    case feed of
+viewPopularTags : WebData (List Tag.Popular) -> Element msg
+viewPopularTags tags =
+    case tags of
         WebData.Loading ->
             none
 
-        WebData.Success data ->
-            wrappedRow [ spacing Scale.small ] (List.map viewPopularTag data.popularTags)
-
         WebData.Failure ->
             none
+
+        WebData.Success tags_ ->
+            wrappedRow [ spacing Scale.small ] (List.map viewPopularTag tags_)
 
 
 viewPopularTag : Tag.Popular -> Element msg
