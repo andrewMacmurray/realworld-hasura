@@ -64,7 +64,7 @@ user user_ =
         User.Guest ->
             guest
 
-        User.LoggedIn profile ->
+        User.Author profile ->
             authenticated profile
 
 

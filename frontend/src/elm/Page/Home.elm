@@ -71,7 +71,7 @@ fetchFeed user tag =
         ( User.Guest, _ ) ->
             Api.Articles.loadFeed Api.Articles.all LoadFeedResponseReceived
 
-        ( User.LoggedIn profile_, _ ) ->
+        ( User.Author profile_, _ ) ->
             Api.Articles.loadFeed (Api.Articles.followedByAuthor profile_) LoadFeedResponseReceived
 
 
@@ -89,7 +89,7 @@ initTab user tag =
         ( _, Just t ) ->
             TagFeed t
 
-        ( User.LoggedIn _, _ ) ->
+        ( User.Author _, _ ) ->
             YourFeed
 
         ( User.Guest, _ ) ->
@@ -180,7 +180,7 @@ tabs user feed =
         User.Guest ->
             Tab.tabs (guestTabs feed)
 
-        User.LoggedIn profile_ ->
+        User.Author profile_ ->
             Tab.tabs (userTabs profile_ feed)
 
 

@@ -1,5 +1,6 @@
 module Article exposing
     ( Article
+    , Comment
     , Feed
     , Id
     , ToCreate
@@ -14,7 +15,6 @@ module Article exposing
     , likes
     , profileImage
     , replace
-    , replaceInFeed
     , tags
     , title
     , toCreate
@@ -44,6 +44,7 @@ type alias Article_ =
     , tags : List Tag
     , likes : Int
     , likedBy : List Author
+    , comments : List Comment
     }
 
 
@@ -56,6 +57,14 @@ type alias ToCreate =
     , about : String
     , content : String
     , tags : List Tag
+    }
+
+
+type alias Comment =
+    { id : Int
+    , comment : String
+    , date : Date
+    , by : Author
     }
 
 
@@ -86,8 +95,19 @@ toCreate i =
 -- Build
 
 
-build : Id -> String -> String -> String -> Author -> Date -> List Tag -> Int -> List Author -> Article
-build id_ title_ about_ content_ author_ createdAt_ tags_ likes_ likedBy_ =
+build :
+    Id
+    -> String
+    -> String
+    -> String
+    -> Author
+    -> Date
+    -> List Tag
+    -> Int
+    -> List Author
+    -> List Comment
+    -> Article
+build id_ title_ about_ content_ author_ createdAt_ tags_ likes_ likedBy_ comments_ =
     Article
         { id = id_
         , title = title_
@@ -98,6 +118,7 @@ build id_ title_ about_ content_ author_ createdAt_ tags_ likes_ likedBy_ =
         , tags = tags_
         , likes = likes_
         , likedBy = likedBy_
+        , comments = comments_
         }
 
 
@@ -174,11 +195,6 @@ equals a b =
 
 
 -- Update
-
-
-replaceInFeed : Article -> Feed -> Feed
-replaceInFeed article feed =
-    { feed | articles = replace article feed.articles }
 
 
 replace : Article -> List Article -> List Article

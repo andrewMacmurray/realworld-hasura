@@ -43,7 +43,7 @@ toUser user =
 
 toLoggedIn : User -> User.User
 toLoggedIn =
-    User.LoggedIn << toProfile
+    User.Author << toProfile
 
 
 toProfile : User -> User.Profile

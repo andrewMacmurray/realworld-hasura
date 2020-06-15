@@ -13,6 +13,14 @@ type Articles_mutation_response
     = Articles_mutation_response
 
 
+type Comments
+    = Comments
+
+
+type Comments_mutation_response
+    = Comments_mutation_response
+
+
 type Follows
     = Follows
 
@@ -75,6 +83,10 @@ type Likes_var_samp_fields
 
 type Likes_variance_fields
     = Likes_variance_fields
+
+
+type PageInfo
+    = PageInfo
 
 
 type Tags

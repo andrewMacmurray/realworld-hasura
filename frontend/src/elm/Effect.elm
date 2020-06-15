@@ -266,7 +266,7 @@ perform pushUrl_ ( model, effect ) =
             ( model, Navigation.load url )
 
         LoadUser user ->
-            ( { model | user = User.LoggedIn user }
+            ( { model | user = User.Author user }
             , Ports.toUser user |> Ports.saveUser
             )
 

@@ -102,7 +102,7 @@ doQuery user { msg, selection } =
 authorizeForUser : User -> Graphql.Http.Request decodesTo -> Graphql.Http.Request decodesTo
 authorizeForUser user request =
     case user of
-        User.LoggedIn profile ->
+        User.Author profile ->
             withAuthHeader request profile
 
         User.Guest ->
