@@ -1,5 +1,7 @@
 module Article exposing
     ( Article
+    , Comment
+    , Details
     , Feed
     , Id
     , ToCreate
@@ -7,6 +9,7 @@ module Article exposing
     , author
     , authorUsername
     , build
+    , comments
     , content
     , createdAt
     , id
@@ -14,7 +17,6 @@ module Article exposing
     , likes
     , profileImage
     , replace
-    , replaceInFeed
     , tags
     , title
     , toCreate
@@ -31,10 +33,10 @@ import User exposing (User)
 
 
 type Article
-    = Article Article_
+    = Article Details
 
 
-type alias Article_ =
+type alias Details =
     { id : Id
     , title : String
     , about : String
@@ -44,6 +46,7 @@ type alias Article_ =
     , tags : List Tag
     , likes : Int
     , likedBy : List Author
+    , comments : List Comment
     }
 
 
@@ -56,6 +59,14 @@ type alias ToCreate =
     , about : String
     , content : String
     , tags : List Tag
+    }
+
+
+type alias Comment =
+    { id : Int
+    , comment : String
+    , date : Date
+    , by : Author
     }
 
 
@@ -86,19 +97,9 @@ toCreate i =
 -- Build
 
 
-build : Id -> String -> String -> String -> Author -> Date -> List Tag -> Int -> List Author -> Article
-build id_ title_ about_ content_ author_ createdAt_ tags_ likes_ likedBy_ =
+build : Details -> Article
+build =
     Article
-        { id = id_
-        , title = title_
-        , about = about_
-        , content = content_
-        , author = author_
-        , createdAt = createdAt_
-        , tags = tags_
-        , likes = likes_
-        , likedBy = likedBy_
-        }
 
 
 
@@ -150,6 +151,11 @@ likes =
     article_ >> .likes
 
 
+comments : Article -> List Comment
+comments =
+    article_ >> .comments
+
+
 likedByMe : User.Profile -> Article -> Bool
 likedByMe profile article =
     likedBy article
@@ -176,11 +182,6 @@ equals a b =
 -- Update
 
 
-replaceInFeed : Article -> Feed -> Feed
-replaceInFeed article feed =
-    { feed | articles = replace article feed.articles }
-
-
 replace : Article -> List Article -> List Article
 replace article =
     List.map (replace_ article)
@@ -199,6 +200,6 @@ replace_ articleA articleB =
 -- Helpers
 
 
-article_ : Article -> Article_
+article_ : Article -> Details
 article_ (Article a) =
     a

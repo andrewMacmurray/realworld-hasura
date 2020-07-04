@@ -2,6 +2,7 @@ module Form.Field exposing
     ( Config
     , Style
     , area
+    , borderless
     , large
     , medium
     , small
@@ -10,9 +11,11 @@ module Form.Field exposing
 
 import Element exposing (..)
 import Element.Anchor as Anchor
+import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
-import Element.Scale as Scale
+import Element.Palette as Palette
+import Element.Scale as Scale exposing (edges)
 import Element.Text as Text
 
 
@@ -27,7 +30,12 @@ type Style
     = Large
     | Medium
     | Small
-    | TextArea
+    | TextArea Border
+
+
+type Border
+    = Borderless
+    | Bordered
 
 
 large : Style
@@ -47,7 +55,12 @@ small =
 
 area : Style
 area =
-    TextArea
+    TextArea Bordered
+
+
+borderless : Style
+borderless =
+    TextArea Borderless
 
 
 text : (inputs -> msg) -> Style -> Config inputs -> inputs -> Element msg
@@ -75,11 +88,12 @@ text msg style config inputs =
         Large ->
             Input.text (Font.size Text.medium :: commonAttributes) config_
 
-        TextArea ->
+        TextArea border ->
             Input.multiline
                 (List.concat
-                    [ [ Font.size Text.small, height (fill |> minimum 150) ]
+                    [ [ Font.size Text.small ]
                     , commonAttributes
+                    , toAreaStyle border
                     ]
                 )
                 { onChange = config_.onChange
@@ -88,6 +102,19 @@ text msg style config inputs =
                 , label = config_.label
                 , spellcheck = True
                 }
+
+
+toAreaStyle border =
+    case border of
+        Borderless ->
+            [ Border.widthEach { edges | bottom = 2 }
+            , padding Scale.small
+            , Border.rounded 0
+            , Border.color Palette.lightGrey
+            ]
+
+        Bordered ->
+            [ height (fill |> minimum 150) ]
 
 
 placeholder : String -> Input.Placeholder msg

@@ -77,7 +77,7 @@ button { author, user, msg } =
         User.Guest ->
             none
 
-        User.LoggedIn profile ->
+        User.Author profile ->
             if User.equals profile author then
                 none
 

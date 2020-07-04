@@ -68,9 +68,9 @@ buildArticles_bool_exp fillOptionals =
     let
         optionals =
             fillOptionals
-                { and_ = Absent, not_ = Absent, or_ = Absent, about = Absent, author = Absent, content = Absent, created_at = Absent, id = Absent, likes = Absent, tags = Absent, title = Absent }
+                { and_ = Absent, not_ = Absent, or_ = Absent, about = Absent, author = Absent, comments = Absent, content = Absent, created_at = Absent, id = Absent, likes = Absent, tags = Absent, title = Absent }
     in
-    Articles_bool_exp { and_ = optionals.and_, not_ = optionals.not_, or_ = optionals.or_, about = optionals.about, author = optionals.author, content = optionals.content, created_at = optionals.created_at, id = optionals.id, likes = optionals.likes, tags = optionals.tags, title = optionals.title }
+    Articles_bool_exp { and_ = optionals.and_, not_ = optionals.not_, or_ = optionals.or_, about = optionals.about, author = optionals.author, comments = optionals.comments, content = optionals.content, created_at = optionals.created_at, id = optionals.id, likes = optionals.likes, tags = optionals.tags, title = optionals.title }
 
 
 type alias Articles_bool_expOptionalFields =
@@ -79,6 +79,7 @@ type alias Articles_bool_expOptionalFields =
     , or_ : OptionalArgument (List (Maybe Articles_bool_exp))
     , about : OptionalArgument String_comparison_exp
     , author : OptionalArgument Users_bool_exp
+    , comments : OptionalArgument Comments_bool_exp
     , content : OptionalArgument String_comparison_exp
     , created_at : OptionalArgument Timestamptz_comparison_exp
     , id : OptionalArgument Int_comparison_exp
@@ -99,6 +100,7 @@ type alias Articles_bool_expRaw =
     , or_ : OptionalArgument (List (Maybe Articles_bool_exp))
     , about : OptionalArgument String_comparison_exp
     , author : OptionalArgument Users_bool_exp
+    , comments : OptionalArgument Comments_bool_exp
     , content : OptionalArgument String_comparison_exp
     , created_at : OptionalArgument Timestamptz_comparison_exp
     , id : OptionalArgument Int_comparison_exp
@@ -119,7 +121,7 @@ type Articles_bool_exp
 encodeArticles_bool_exp : Articles_bool_exp -> Value
 encodeArticles_bool_exp (Articles_bool_exp input) =
     Encode.maybeObject
-        [ ( "_and", (encodeArticles_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.and_ ), ( "_not", encodeArticles_bool_exp |> Encode.optional input.not_ ), ( "_or", (encodeArticles_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.or_ ), ( "about", encodeString_comparison_exp |> Encode.optional input.about ), ( "author", encodeUsers_bool_exp |> Encode.optional input.author ), ( "content", encodeString_comparison_exp |> Encode.optional input.content ), ( "created_at", encodeTimestamptz_comparison_exp |> Encode.optional input.created_at ), ( "id", encodeInt_comparison_exp |> Encode.optional input.id ), ( "likes", encodeLikes_bool_exp |> Encode.optional input.likes ), ( "tags", encodeTags_bool_exp |> Encode.optional input.tags ), ( "title", encodeString_comparison_exp |> Encode.optional input.title ) ]
+        [ ( "_and", (encodeArticles_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.and_ ), ( "_not", encodeArticles_bool_exp |> Encode.optional input.not_ ), ( "_or", (encodeArticles_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.or_ ), ( "about", encodeString_comparison_exp |> Encode.optional input.about ), ( "author", encodeUsers_bool_exp |> Encode.optional input.author ), ( "comments", encodeComments_bool_exp |> Encode.optional input.comments ), ( "content", encodeString_comparison_exp |> Encode.optional input.content ), ( "created_at", encodeTimestamptz_comparison_exp |> Encode.optional input.created_at ), ( "id", encodeInt_comparison_exp |> Encode.optional input.id ), ( "likes", encodeLikes_bool_exp |> Encode.optional input.likes ), ( "tags", encodeTags_bool_exp |> Encode.optional input.tags ), ( "title", encodeString_comparison_exp |> Encode.optional input.title ) ]
 
 
 buildArticles_insert_input : (Articles_insert_inputOptionalFields -> Articles_insert_inputOptionalFields) -> Articles_insert_input
@@ -127,13 +129,14 @@ buildArticles_insert_input fillOptionals =
     let
         optionals =
             fillOptionals
-                { about = Absent, content = Absent, likes = Absent, tags = Absent, title = Absent }
+                { about = Absent, comments = Absent, content = Absent, likes = Absent, tags = Absent, title = Absent }
     in
-    Articles_insert_input { about = optionals.about, content = optionals.content, likes = optionals.likes, tags = optionals.tags, title = optionals.title }
+    Articles_insert_input { about = optionals.about, comments = optionals.comments, content = optionals.content, likes = optionals.likes, tags = optionals.tags, title = optionals.title }
 
 
 type alias Articles_insert_inputOptionalFields =
     { about : OptionalArgument String
+    , comments : OptionalArgument Comments_arr_rel_insert_input
     , content : OptionalArgument String
     , likes : OptionalArgument Likes_arr_rel_insert_input
     , tags : OptionalArgument Tags_arr_rel_insert_input
@@ -148,6 +151,7 @@ references to itself either directly (recursive) or indirectly (circular). See
 -}
 type alias Articles_insert_inputRaw =
     { about : OptionalArgument String
+    , comments : OptionalArgument Comments_arr_rel_insert_input
     , content : OptionalArgument String
     , likes : OptionalArgument Likes_arr_rel_insert_input
     , tags : OptionalArgument Tags_arr_rel_insert_input
@@ -166,7 +170,7 @@ type Articles_insert_input
 encodeArticles_insert_input : Articles_insert_input -> Value
 encodeArticles_insert_input (Articles_insert_input input) =
     Encode.maybeObject
-        [ ( "about", Encode.string |> Encode.optional input.about ), ( "content", Encode.string |> Encode.optional input.content ), ( "likes", encodeLikes_arr_rel_insert_input |> Encode.optional input.likes ), ( "tags", encodeTags_arr_rel_insert_input |> Encode.optional input.tags ), ( "title", Encode.string |> Encode.optional input.title ) ]
+        [ ( "about", Encode.string |> Encode.optional input.about ), ( "comments", encodeComments_arr_rel_insert_input |> Encode.optional input.comments ), ( "content", Encode.string |> Encode.optional input.content ), ( "likes", encodeLikes_arr_rel_insert_input |> Encode.optional input.likes ), ( "tags", encodeTags_arr_rel_insert_input |> Encode.optional input.tags ), ( "title", Encode.string |> Encode.optional input.title ) ]
 
 
 buildArticles_obj_rel_insert_input : Articles_obj_rel_insert_inputRequiredFields -> (Articles_obj_rel_insert_inputOptionalFields -> Articles_obj_rel_insert_inputOptionalFields) -> Articles_obj_rel_insert_input
@@ -355,6 +359,236 @@ encodeArticles_set_input : Articles_set_input -> Value
 encodeArticles_set_input input =
     Encode.maybeObject
         [ ( "about", Encode.string |> Encode.optional input.about ), ( "content", Encode.string |> Encode.optional input.content ), ( "title", Encode.string |> Encode.optional input.title ) ]
+
+
+buildComments_arr_rel_insert_input : Comments_arr_rel_insert_inputRequiredFields -> Comments_arr_rel_insert_input
+buildComments_arr_rel_insert_input required =
+    Comments_arr_rel_insert_input { data = required.data }
+
+
+type alias Comments_arr_rel_insert_inputRequiredFields =
+    { data : List Comments_insert_input }
+
+
+{-| Type alias for the `Comments_arr_rel_insert_input` attributes. Note that this type
+needs to use the `Comments_arr_rel_insert_input` type (not just a plain type alias) because it has
+references to itself either directly (recursive) or indirectly (circular). See
+<https://github.com/dillonkearns/elm-graphql/issues/33>.
+-}
+type alias Comments_arr_rel_insert_inputRaw =
+    { data : List Comments_insert_input }
+
+
+{-| Type for the Comments\_arr\_rel\_insert\_input input object.
+-}
+type Comments_arr_rel_insert_input
+    = Comments_arr_rel_insert_input Comments_arr_rel_insert_inputRaw
+
+
+{-| Encode a Comments\_arr\_rel\_insert\_input into a value that can be used as an argument.
+-}
+encodeComments_arr_rel_insert_input : Comments_arr_rel_insert_input -> Value
+encodeComments_arr_rel_insert_input (Comments_arr_rel_insert_input input) =
+    Encode.maybeObject
+        [ ( "data", (encodeComments_insert_input |> Encode.list) input.data |> Just ) ]
+
+
+buildComments_bool_exp : (Comments_bool_expOptionalFields -> Comments_bool_expOptionalFields) -> Comments_bool_exp
+buildComments_bool_exp fillOptionals =
+    let
+        optionals =
+            fillOptionals
+                { and_ = Absent, not_ = Absent, or_ = Absent, article = Absent, comment = Absent, created_at = Absent, id = Absent, user = Absent }
+    in
+    Comments_bool_exp { and_ = optionals.and_, not_ = optionals.not_, or_ = optionals.or_, article = optionals.article, comment = optionals.comment, created_at = optionals.created_at, id = optionals.id, user = optionals.user }
+
+
+type alias Comments_bool_expOptionalFields =
+    { and_ : OptionalArgument (List (Maybe Comments_bool_exp))
+    , not_ : OptionalArgument Comments_bool_exp
+    , or_ : OptionalArgument (List (Maybe Comments_bool_exp))
+    , article : OptionalArgument Articles_bool_exp
+    , comment : OptionalArgument String_comparison_exp
+    , created_at : OptionalArgument Timestamptz_comparison_exp
+    , id : OptionalArgument Int_comparison_exp
+    , user : OptionalArgument Users_bool_exp
+    }
+
+
+{-| Type alias for the `Comments_bool_exp` attributes. Note that this type
+needs to use the `Comments_bool_exp` type (not just a plain type alias) because it has
+references to itself either directly (recursive) or indirectly (circular). See
+<https://github.com/dillonkearns/elm-graphql/issues/33>.
+-}
+type alias Comments_bool_expRaw =
+    { and_ : OptionalArgument (List (Maybe Comments_bool_exp))
+    , not_ : OptionalArgument Comments_bool_exp
+    , or_ : OptionalArgument (List (Maybe Comments_bool_exp))
+    , article : OptionalArgument Articles_bool_exp
+    , comment : OptionalArgument String_comparison_exp
+    , created_at : OptionalArgument Timestamptz_comparison_exp
+    , id : OptionalArgument Int_comparison_exp
+    , user : OptionalArgument Users_bool_exp
+    }
+
+
+{-| Type for the Comments\_bool\_exp input object.
+-}
+type Comments_bool_exp
+    = Comments_bool_exp Comments_bool_expRaw
+
+
+{-| Encode a Comments\_bool\_exp into a value that can be used as an argument.
+-}
+encodeComments_bool_exp : Comments_bool_exp -> Value
+encodeComments_bool_exp (Comments_bool_exp input) =
+    Encode.maybeObject
+        [ ( "_and", (encodeComments_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.and_ ), ( "_not", encodeComments_bool_exp |> Encode.optional input.not_ ), ( "_or", (encodeComments_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.or_ ), ( "article", encodeArticles_bool_exp |> Encode.optional input.article ), ( "comment", encodeString_comparison_exp |> Encode.optional input.comment ), ( "created_at", encodeTimestamptz_comparison_exp |> Encode.optional input.created_at ), ( "id", encodeInt_comparison_exp |> Encode.optional input.id ), ( "user", encodeUsers_bool_exp |> Encode.optional input.user ) ]
+
+
+buildComments_insert_input : (Comments_insert_inputOptionalFields -> Comments_insert_inputOptionalFields) -> Comments_insert_input
+buildComments_insert_input fillOptionals =
+    let
+        optionals =
+            fillOptionals
+                { article = Absent, article_id = Absent, comment = Absent }
+    in
+    Comments_insert_input { article = optionals.article, article_id = optionals.article_id, comment = optionals.comment }
+
+
+type alias Comments_insert_inputOptionalFields =
+    { article : OptionalArgument Articles_obj_rel_insert_input
+    , article_id : OptionalArgument Int
+    , comment : OptionalArgument String
+    }
+
+
+{-| Type alias for the `Comments_insert_input` attributes. Note that this type
+needs to use the `Comments_insert_input` type (not just a plain type alias) because it has
+references to itself either directly (recursive) or indirectly (circular). See
+<https://github.com/dillonkearns/elm-graphql/issues/33>.
+-}
+type alias Comments_insert_inputRaw =
+    { article : OptionalArgument Articles_obj_rel_insert_input
+    , article_id : OptionalArgument Int
+    , comment : OptionalArgument String
+    }
+
+
+{-| Type for the Comments\_insert\_input input object.
+-}
+type Comments_insert_input
+    = Comments_insert_input Comments_insert_inputRaw
+
+
+{-| Encode a Comments\_insert\_input into a value that can be used as an argument.
+-}
+encodeComments_insert_input : Comments_insert_input -> Value
+encodeComments_insert_input (Comments_insert_input input) =
+    Encode.maybeObject
+        [ ( "article", encodeArticles_obj_rel_insert_input |> Encode.optional input.article ), ( "article_id", Encode.int |> Encode.optional input.article_id ), ( "comment", Encode.string |> Encode.optional input.comment ) ]
+
+
+buildComments_obj_rel_insert_input : Comments_obj_rel_insert_inputRequiredFields -> Comments_obj_rel_insert_input
+buildComments_obj_rel_insert_input required =
+    Comments_obj_rel_insert_input { data = required.data }
+
+
+type alias Comments_obj_rel_insert_inputRequiredFields =
+    { data : Comments_insert_input }
+
+
+{-| Type alias for the `Comments_obj_rel_insert_input` attributes. Note that this type
+needs to use the `Comments_obj_rel_insert_input` type (not just a plain type alias) because it has
+references to itself either directly (recursive) or indirectly (circular). See
+<https://github.com/dillonkearns/elm-graphql/issues/33>.
+-}
+type alias Comments_obj_rel_insert_inputRaw =
+    { data : Comments_insert_input }
+
+
+{-| Type for the Comments\_obj\_rel\_insert\_input input object.
+-}
+type Comments_obj_rel_insert_input
+    = Comments_obj_rel_insert_input Comments_obj_rel_insert_inputRaw
+
+
+{-| Encode a Comments\_obj\_rel\_insert\_input into a value that can be used as an argument.
+-}
+encodeComments_obj_rel_insert_input : Comments_obj_rel_insert_input -> Value
+encodeComments_obj_rel_insert_input (Comments_obj_rel_insert_input input) =
+    Encode.maybeObject
+        [ ( "data", encodeComments_insert_input input.data |> Just ) ]
+
+
+buildComments_order_by : (Comments_order_byOptionalFields -> Comments_order_byOptionalFields) -> Comments_order_by
+buildComments_order_by fillOptionals =
+    let
+        optionals =
+            fillOptionals
+                { article = Absent, comment = Absent, created_at = Absent, id = Absent, user = Absent }
+    in
+    Comments_order_by { article = optionals.article, comment = optionals.comment, created_at = optionals.created_at, id = optionals.id, user = optionals.user }
+
+
+type alias Comments_order_byOptionalFields =
+    { article : OptionalArgument Articles_order_by
+    , comment : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , created_at : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , user : OptionalArgument Users_order_by
+    }
+
+
+{-| Type alias for the `Comments_order_by` attributes. Note that this type
+needs to use the `Comments_order_by` type (not just a plain type alias) because it has
+references to itself either directly (recursive) or indirectly (circular). See
+<https://github.com/dillonkearns/elm-graphql/issues/33>.
+-}
+type alias Comments_order_byRaw =
+    { article : OptionalArgument Articles_order_by
+    , comment : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , created_at : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , user : OptionalArgument Users_order_by
+    }
+
+
+{-| Type for the Comments\_order\_by input object.
+-}
+type Comments_order_by
+    = Comments_order_by Comments_order_byRaw
+
+
+{-| Encode a Comments\_order\_by into a value that can be used as an argument.
+-}
+encodeComments_order_by : Comments_order_by -> Value
+encodeComments_order_by (Comments_order_by input) =
+    Encode.maybeObject
+        [ ( "article", encodeArticles_order_by |> Encode.optional input.article ), ( "comment", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.comment ), ( "created_at", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.created_at ), ( "id", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.id ), ( "user", encodeUsers_order_by |> Encode.optional input.user ) ]
+
+
+buildComments_pk_columns_input : Comments_pk_columns_inputRequiredFields -> Comments_pk_columns_input
+buildComments_pk_columns_input required =
+    { id = required.id }
+
+
+type alias Comments_pk_columns_inputRequiredFields =
+    { id : Int }
+
+
+{-| Type for the Comments\_pk\_columns\_input input object.
+-}
+type alias Comments_pk_columns_input =
+    { id : Int }
+
+
+{-| Encode a Comments\_pk\_columns\_input into a value that can be used as an argument.
+-}
+encodeComments_pk_columns_input : Comments_pk_columns_input -> Value
+encodeComments_pk_columns_input input =
+    Encode.maybeObject
+        [ ( "id", Encode.int input.id |> Just ) ]
 
 
 buildFollows_arr_rel_insert_input : Follows_arr_rel_insert_inputRequiredFields -> Follows_arr_rel_insert_input

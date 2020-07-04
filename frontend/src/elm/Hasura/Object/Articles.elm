@@ -10,6 +10,7 @@ import Graphql.Internal.Encode as Encode exposing (Value)
 import Graphql.Operation exposing (RootMutation, RootQuery, RootSubscription)
 import Graphql.OptionalArgument exposing (OptionalArgument(..))
 import Graphql.SelectionSet exposing (SelectionSet)
+import Hasura.Enum.Comments_select_column
 import Hasura.Enum.Likes_select_column
 import Hasura.Enum.Tags_select_column
 import Hasura.InputObject
@@ -31,6 +32,37 @@ about =
 author : SelectionSet decodesTo Hasura.Object.Users -> SelectionSet decodesTo Hasura.Object.Articles
 author object_ =
     Object.selectionForCompositeField "author" [] object_ identity
+
+
+type alias CommentsOptionalArguments =
+    { distinct_on : OptionalArgument (List Hasura.Enum.Comments_select_column.Comments_select_column)
+    , limit : OptionalArgument Int
+    , offset : OptionalArgument Int
+    , order_by : OptionalArgument (List Hasura.InputObject.Comments_order_by)
+    , where_ : OptionalArgument Hasura.InputObject.Comments_bool_exp
+    }
+
+
+{-| An array relationship
+
+  - distinct\_on - distinct select on columns
+  - limit - limit the number of rows returned
+  - offset - skip the first n rows. Use only with order\_by
+  - order\_by - sort the rows by one or more columns
+  - where\_ - filter the rows returned
+
+-}
+comments : (CommentsOptionalArguments -> CommentsOptionalArguments) -> SelectionSet decodesTo Hasura.Object.Comments -> SelectionSet (List decodesTo) Hasura.Object.Articles
+comments fillInOptionals object_ =
+    let
+        filledInOptionals =
+            fillInOptionals { distinct_on = Absent, limit = Absent, offset = Absent, order_by = Absent, where_ = Absent }
+
+        optionalArgs =
+            [ Argument.optional "distinct_on" filledInOptionals.distinct_on (Encode.enum Hasura.Enum.Comments_select_column.toString |> Encode.list), Argument.optional "limit" filledInOptionals.limit Encode.int, Argument.optional "offset" filledInOptionals.offset Encode.int, Argument.optional "order_by" filledInOptionals.order_by (Hasura.InputObject.encodeComments_order_by |> Encode.list), Argument.optional "where" filledInOptionals.where_ Hasura.InputObject.encodeComments_bool_exp ]
+                |> List.filterMap identity
+    in
+    Object.selectionForCompositeField "comments" optionalArgs object_ (identity >> Decode.list)
 
 
 content : SelectionSet String Hasura.Object.Articles

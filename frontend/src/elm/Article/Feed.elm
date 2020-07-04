@@ -187,7 +187,7 @@ likes options article =
                     |> Button.like
                     |> Button.toElement
 
-            User.LoggedIn profile_ ->
+            User.Author profile_ ->
                 if Article.likedByMe profile_ article then
                     Button.button (options.msg <| UnLikeArticleClicked article) likeCount
                         |> Button.description ("unlike-" ++ Article.title article)

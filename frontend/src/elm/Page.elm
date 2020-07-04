@@ -93,7 +93,7 @@ initAuthenticated modelF msgF init_ user =
         User.Guest ->
             ( NotFound, Effect.none )
 
-        User.LoggedIn profile ->
+        User.Author profile ->
             init_ profile |> updateWith modelF msgF
 
 
@@ -174,5 +174,5 @@ viewAuthenticated view__ subModel user =
         User.Guest ->
             NotFound.view
 
-        User.LoggedIn profile ->
+        User.Author profile ->
             view__ profile subModel

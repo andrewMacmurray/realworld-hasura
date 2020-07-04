@@ -13,6 +13,14 @@ type Articles_mutation_response
     = Articles_mutation_response
 
 
+type Comments
+    = Comments
+
+
+type Comments_mutation_response
+    = Comments_mutation_response
+
+
 type Follows
     = Follows
 

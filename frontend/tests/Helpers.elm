@@ -20,43 +20,34 @@ serverError =
 
 articleLikedBy : String -> { a | title : String } -> Article
 articleLikedBy username { title } =
-    Article.build 1
-        title
-        "about something"
-        "contents"
-        (author 1 "author")
-        (Date.fromCalendarDate 2020 Jan 20)
-        []
-        0
-        [ author 1 username ]
+    Article.build { article_ | title = title, likedBy = [ author 1 username ] }
 
 
 articleBy : Int -> String -> Article
 articleBy authorId username =
-    Article.build 1
-        "a title"
-        "about something"
-        "contents"
-        (author authorId username)
-        (Date.fromCalendarDate 2020 Jan 20)
-        []
-        0
-        []
+    Article.build { article_ | author = author authorId username }
 
 
 article : String -> Article
 article title =
-    Article.build 1
-        title
-        "about something"
-        "contents"
-        (author 1 "author")
-        (Date.fromCalendarDate 2020 Jan 20)
-        []
-        0
-        []
+    Article.build { article_ | title = title }
 
 
 author : Int -> String -> Author
 author id username =
     Author.build id username Nothing
+
+
+article_ : Article.Details
+article_ =
+    { id = 1
+    , title = "a title"
+    , about = "about something"
+    , content = "contents"
+    , author = author 1 "username"
+    , createdAt = Date.fromCalendarDate 2020 Jan 20
+    , tags = []
+    , likes = 0
+    , likedBy = []
+    , comments = []
+    }

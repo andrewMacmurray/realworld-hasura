@@ -12,6 +12,13 @@
     using:
       foreign_key_constraint_on: author_id
   array_relationships:
+  - name: comments
+    using:
+      foreign_key_constraint_on:
+        column: article_id
+        table:
+          schema: public
+          name: comments
   - name: likes
     using:
       foreign_key_constraint_on:
@@ -67,6 +74,53 @@
         author_id:
           _eq: X-Hasura-User-Id
       check: null
+- table:
+    schema: public
+    name: comments
+  configuration:
+    custom_root_fields:
+      insert_one: post_comment
+    custom_column_names: {}
+  object_relationships:
+  - name: article
+    using:
+      foreign_key_constraint_on: article_id
+  - name: user
+    using:
+      foreign_key_constraint_on: user_id
+  insert_permissions:
+  - role: user
+    permission:
+      check:
+        comment:
+          _ne: ""
+      set:
+        user_id: x-hasura-User-Id
+      columns:
+      - article_id
+      - comment
+      backend_only: false
+  select_permissions:
+  - role: anonymous
+    permission:
+      columns:
+      - comment
+      - created_at
+      - id
+      filter: {}
+  - role: user
+    permission:
+      columns:
+      - comment
+      - created_at
+      - id
+      filter: {}
+  delete_permissions:
+  - role: user
+    permission:
+      filter:
+        user_id:
+          _eq: X-Hasura-User-Id
 - table:
     schema: public
     name: follows
@@ -162,7 +216,6 @@
       function:
         schema: public
         name: tag_count
-      table_argument: null
     comment: ""
   insert_permissions:
   - role: user

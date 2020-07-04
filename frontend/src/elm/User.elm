@@ -29,7 +29,7 @@ import Utils.List as List
 
 type User
     = Guest
-    | LoggedIn Profile
+    | Author Profile
 
 
 type Profile
@@ -69,7 +69,7 @@ getProfile user =
         Guest ->
             Nothing
 
-        LoggedIn p ->
+        Author p ->
             Just p
 
 
@@ -139,8 +139,8 @@ updateProfile f user =
         Guest ->
             Guest
 
-        LoggedIn (Profile_ token_ details) ->
-            LoggedIn (Profile_ token_ (f details))
+        Author (Profile_ token_ details) ->
+            Author (Profile_ token_ (f details))
 
 
 

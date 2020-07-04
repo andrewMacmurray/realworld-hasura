@@ -106,7 +106,9 @@ signIn inputs =
 
 view : Model -> Element Msg
 view model =
-    Layout.guest |> Layout.toElement [ signup model ]
+    Layout.guest
+        |> Layout.halfWidth
+        |> Layout.toPage (signup model)
 
 
 signup : Model -> Element Msg
@@ -118,14 +120,12 @@ signup model =
         ]
         [ el [ centerX ] (Text.title [] "Sign In")
         , el [ centerX ] (Route.link Route.SignUp [ Text.green ] "Need an Account?")
-        , Layout.halfWidth
-            (column [ spacing Scale.medium, width fill ]
-                [ username model.inputs
-                , password model.inputs
-                , el [ alignRight ] signInButton
-                , el [ alignRight ] (statusMessage model.request)
-                ]
-            )
+        , column [ spacing Scale.medium, width fill ]
+            [ username model.inputs
+            , password model.inputs
+            , el [ alignRight ] signInButton
+            , el [ alignRight ] (statusMessage model.request)
+            ]
         ]
 
 

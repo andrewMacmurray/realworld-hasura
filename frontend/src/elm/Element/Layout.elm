@@ -4,9 +4,9 @@ module Element.Layout exposing
     , guest
     , halfWidth
     , maxWidth
-    , padded
-    , toElement
+    , measured
     , toHtml
+    , toPage
     , user
     , withBanner
     )
@@ -31,11 +31,30 @@ type Layout msg
 type alias Options msg =
     { profile : Maybe User.Profile
     , banner : Maybe (Banner msg)
+    , width : Width
     }
 
 
 type alias Banner msg =
     ( List (Attribute msg), Element msg )
+
+
+type Width
+    = Full
+    | Measured
+    | Half
+
+
+
+-- Defaults
+
+
+default_ profile =
+    Layout
+        { profile = profile
+        , banner = Nothing
+        , width = Full
+        }
 
 
 
@@ -44,18 +63,12 @@ type alias Banner msg =
 
 guest : Layout msg
 guest =
-    Layout
-        { profile = Nothing
-        , banner = Nothing
-        }
+    default_ Nothing
 
 
 authenticated : User.Profile -> Layout msg
 authenticated profile =
-    Layout
-        { profile = Just profile
-        , banner = Nothing
-        }
+    default_ (Just profile)
 
 
 user : User -> Layout msg
@@ -64,7 +77,7 @@ user user_ =
         User.Guest ->
             guest
 
-        User.LoggedIn profile ->
+        User.Author profile ->
             authenticated profile
 
 
@@ -75,6 +88,21 @@ user user_ =
 withBanner : List (Attribute msg) -> Element msg -> Layout msg -> Layout msg
 withBanner attr el (Layout options) =
     Layout { options | banner = Just ( attr, el ) }
+
+
+measured : Layout msg -> Layout msg
+measured =
+    withWidth_ Measured
+
+
+halfWidth : Layout msg -> Layout msg
+halfWidth =
+    withWidth_ Half
+
+
+withWidth_ : Width -> Layout msg -> Layout msg
+withWidth_ w (Layout options) =
+    Layout { options | width = w }
 
 
 
@@ -100,46 +128,36 @@ layoutOptions =
 -- Render
 
 
-toElement : List (Element msg) -> Layout msg -> Element msg
-toElement els (Layout options) =
-    column [ width fill ]
+toPage : Element msg -> Layout msg -> Element msg
+toPage page (Layout options) =
+    column [ width fill, height fill ]
         [ toNavBar options
         , toBanner options
-        , column
+        , el
             [ paddingXY Scale.medium Scale.large
-            , constrainWidth
+            , constrainBy (toWidth_ options)
             , centerX
             ]
-            els
+            page
         ]
-
-
-padded : Element msg -> Element msg
-padded =
-    el [ width (fill |> maximum (maxWidth - (Scale.large * 6))), centerX ]
-
-
-halfWidth : Element msg -> Element msg
-halfWidth =
-    el [ width (fill |> maximum (maxWidth // 2)), centerX ]
 
 
 toBanner : Options msg -> Element msg
 toBanner options =
     case options.banner of
         Just b ->
-            banner_ b
+            banner_ options b
 
         Nothing ->
             none
 
 
-banner_ : Banner msg -> Element msg
-banner_ ( attrs, content ) =
+banner_ : Options msg -> Banner msg -> Element msg
+banner_ options ( attrs, content ) =
     el
         (List.concat
             [ [ width fill
-              , height (fill |> minimum 255)
+              , height (shrink |> minimum 255)
               ]
             , attrs
             ]
@@ -147,7 +165,7 @@ banner_ ( attrs, content ) =
         (el
             [ centerX
             , centerY
-            , constrainWidth
+            , constrainBy (toWidth_ options)
             , paddingXY Scale.medium (Scale.large * 2)
             ]
             content
@@ -199,6 +217,19 @@ navBar links =
         )
 
 
+toWidth_ : Options msg -> Int
+toWidth_ options =
+    case options.width of
+        Full ->
+            maxWidth
+
+        Measured ->
+            790
+
+        Half ->
+            maxWidth // 2
+
+
 navItems : List (Element msg) -> Element msg
 navItems =
     row [ alignRight, spacing Scale.medium ]
@@ -207,6 +238,10 @@ navItems =
 constrainWidth : Attribute msg
 constrainWidth =
     width (fill |> maximum maxWidth)
+
+
+constrainBy n =
+    width (fill |> maximum n)
 
 
 maxWidth : number

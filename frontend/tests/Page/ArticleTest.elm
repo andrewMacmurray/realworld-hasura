@@ -3,8 +3,9 @@ module Page.ArticleTest exposing (..)
 import Article exposing (Article)
 import Helpers
 import Program exposing (defaultUser)
+import Program.Expect exposing (noEl)
 import Program.Selector exposing (el)
-import ProgramTest exposing (expectViewHas)
+import ProgramTest exposing (ensureViewHas, expectView, expectViewHas)
 import Route
 import Test exposing (..)
 
@@ -33,18 +34,36 @@ suite =
         , test "Logged in user can follow an author" <|
             \_ ->
                 Program.withPage articlePage
-                    |> Program.simulateArticle (Ok (Just (articleBy 2 "someone")))
+                    |> Program.simulateArticle articleResponse
                     |> Program.loggedInWithUser "amacmurray"
                     |> Program.start
                     |> expectViewHas [ el "follow-someone" ]
         , test "Logged in user can unfollow a previously followed author" <|
             \_ ->
                 Program.withPage articlePage
-                    |> Program.simulateArticle (Ok (Just (articleBy 2 "someone")))
+                    |> Program.simulateArticle articleResponse
                     |> Program.loggedInWithDetails { defaultUser | following = [ 2 ] }
                     |> Program.start
                     |> expectViewHas [ el "unfollow-someone" ]
+        , test "Logged in user can post a comment" <|
+            \_ ->
+                Program.withPage articlePage
+                    |> Program.simulateArticle articleResponse
+                    |> Program.withLoggedInUser
+                    |> Program.start
+                    |> expectViewHas [ el "comments", el "post-new-comment" ]
+        , test "Guest user cannot post comment" <|
+            \_ ->
+                Program.withPage articlePage
+                    |> Program.simulateArticle articleResponse
+                    |> Program.start
+                    |> ensureViewHas [ el "comments" ]
+                    |> expectView (noEl "post-new-comment")
         ]
+
+
+articleResponse =
+    Ok (Just (articleBy 2 "someone"))
 
 
 articlePage : Route.Route

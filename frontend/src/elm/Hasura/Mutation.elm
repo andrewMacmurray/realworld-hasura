@@ -19,6 +19,31 @@ import Hasura.Union
 import Json.Decode as Decode exposing (Decoder)
 
 
+type alias DeleteCommentsRequiredArguments =
+    { where_ : Hasura.InputObject.Comments_bool_exp }
+
+
+{-| delete data from the table: "comments"
+
+  - where\_ - filter the rows which have to be deleted
+
+-}
+delete_comments : DeleteCommentsRequiredArguments -> SelectionSet decodesTo Hasura.Object.Comments_mutation_response -> SelectionSet (Maybe decodesTo) RootMutation
+delete_comments requiredArgs object_ =
+    Object.selectionForCompositeField "delete_comments" [ Argument.required "where" requiredArgs.where_ Hasura.InputObject.encodeComments_bool_exp ] object_ (identity >> Decode.nullable)
+
+
+type alias DeleteCommentsByPkRequiredArguments =
+    { id : Int }
+
+
+{-| delete single row from the table: "comments"
+-}
+delete_comments_by_pk : DeleteCommentsByPkRequiredArguments -> SelectionSet decodesTo Hasura.Object.Comments -> SelectionSet (Maybe decodesTo) RootMutation
+delete_comments_by_pk requiredArgs object_ =
+    Object.selectionForCompositeField "delete_comments_by_pk" [ Argument.required "id" requiredArgs.id Encode.int ] object_ (identity >> Decode.nullable)
+
+
 type alias DeleteFollowsByPkRequiredArguments =
     { id : Int }
 
@@ -56,6 +81,20 @@ type alias FollowAuthorsRequiredArguments =
 follow_authors : FollowAuthorsRequiredArguments -> SelectionSet decodesTo Hasura.Object.Follows_mutation_response -> SelectionSet (Maybe decodesTo) RootMutation
 follow_authors requiredArgs object_ =
     Object.selectionForCompositeField "follow_authors" [ Argument.required "objects" requiredArgs.objects (Hasura.InputObject.encodeFollows_insert_input |> Encode.list) ] object_ (identity >> Decode.nullable)
+
+
+type alias InsertCommentsRequiredArguments =
+    { objects : List Hasura.InputObject.Comments_insert_input }
+
+
+{-| insert data into the table: "comments"
+
+  - objects - the rows to be inserted
+
+-}
+insert_comments : InsertCommentsRequiredArguments -> SelectionSet decodesTo Hasura.Object.Comments_mutation_response -> SelectionSet (Maybe decodesTo) RootMutation
+insert_comments requiredArgs object_ =
+    Object.selectionForCompositeField "insert_comments" [ Argument.required "objects" requiredArgs.objects (Hasura.InputObject.encodeComments_insert_input |> Encode.list) ] object_ (identity >> Decode.nullable)
 
 
 type alias InsertTagRequiredArguments =
@@ -125,6 +164,20 @@ type alias LoginRequiredArguments =
 login : LoginRequiredArguments -> SelectionSet decodesTo Hasura.Object.TokenResponse -> SelectionSet decodesTo RootMutation
 login requiredArgs object_ =
     Object.selectionForCompositeField "login" [ Argument.required "password" requiredArgs.password Encode.string, Argument.required "username" requiredArgs.username Encode.string ] object_ identity
+
+
+type alias PostCommentRequiredArguments =
+    { object : Hasura.InputObject.Comments_insert_input }
+
+
+{-| insert a single row into the table: "comments"
+
+  - object - the row to be inserted
+
+-}
+post_comment : PostCommentRequiredArguments -> SelectionSet decodesTo Hasura.Object.Comments -> SelectionSet (Maybe decodesTo) RootMutation
+post_comment requiredArgs object_ =
+    Object.selectionForCompositeField "post_comment" [ Argument.required "object" requiredArgs.object Hasura.InputObject.encodeComments_insert_input ] object_ (identity >> Decode.nullable)
 
 
 type alias PublishArticleOptionalArguments =

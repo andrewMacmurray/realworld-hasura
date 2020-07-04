@@ -9,18 +9,26 @@ module Page.Article exposing
 import Api
 import Api.Articles
 import Article exposing (Article)
+import Article.Author as Author exposing (Author)
 import Article.Author.Follow as Follow
 import Effect exposing (Effect)
 import Element exposing (..)
+import Element.Anchor as Anchor
 import Element.Avatar as Avatar
 import Element.Background as Background
+import Element.Button as Button
+import Element.Divider as Divider
+import Element.Font as Font
 import Element.Layout as Layout exposing (Layout)
+import Element.Layout.Block as Block
 import Element.Palette as Palette
 import Element.Scale as Scale
 import Element.Text as Text
+import Form.Field as Field
 import Route
 import Tag exposing (Tag)
 import User exposing (User(..))
+import Utils.String as String
 
 
 
@@ -29,12 +37,16 @@ import User exposing (User(..))
 
 type alias Model =
     { article : LoadStatus Article
+    , comment : String
     }
 
 
 type Msg
     = ArticleReceived (Api.Response (Maybe Article))
     | FollowMsg Follow.Msg
+    | CommentTyped String
+    | PostCommentClicked Article
+    | PostCommentResponseReceived (Api.Response Article)
 
 
 type LoadStatus a
@@ -61,6 +73,7 @@ loadArticle id =
 initialModel : Model
 initialModel =
     { article = Loading
+    , comment = ""
     }
 
 
@@ -83,10 +96,27 @@ update msg model =
         FollowMsg msg_ ->
             ( model, handleFollowEffect msg_ )
 
+        CommentTyped comment ->
+            ( { model | comment = comment }, Effect.none )
+
+        PostCommentClicked article ->
+            ( model, postComment article model.comment )
+
+        PostCommentResponseReceived (Ok article) ->
+            ( { model | article = Loaded article, comment = "" }, Effect.none )
+
+        PostCommentResponseReceived (Err _) ->
+            ( model, Effect.none )
+
 
 handleFollowEffect : Follow.Msg -> Effect Msg
 handleFollowEffect =
     Follow.effect >> Effect.map FollowMsg
+
+
+postComment : Article -> String -> Effect Msg
+postComment =
+    Api.Articles.postComment PostCommentResponseReceived
 
 
 
@@ -97,7 +127,7 @@ view : User -> Model -> Element Msg
 view user model =
     Layout.user user
         |> withBanner user model
-        |> Layout.toElement [ articleBody model.article ]
+        |> Layout.toPage (articleBody user model)
 
 
 withBanner : User -> Model -> Layout Msg -> Layout Msg
@@ -117,12 +147,15 @@ bannerConfig =
 
 loadedBanner : User -> Article -> Element Msg
 loadedBanner user article =
-    column [ spacing Scale.large ]
-        [ headline article
-        , row [ spacing Scale.medium ]
-            [ author article
-            , followButton user article
+    row [ width fill ]
+        [ column [ spacing Scale.large, width fill ]
+            [ headline article
+            , row [ spacing Scale.medium ]
+                [ author article
+                , followButton user article
+                ]
             ]
+        , el [ alignRight, alignBottom ] (tags article)
         ]
 
 
@@ -158,7 +191,7 @@ headline article =
 
 author : Article -> Element msg
 author article =
-    authorLink article
+    authorLink (Article.author article)
         (row [ spacing Scale.small ]
             [ Avatar.medium (Article.profileImage article)
             , column [ spacing Scale.extraSmall ]
@@ -169,19 +202,19 @@ author article =
         )
 
 
-authorLink : Article -> Element msg -> Element msg
+authorLink : Author -> Element msg -> Element msg
 authorLink =
-    Article.author >> Route.author >> Route.el
+    Route.author >> Route.el
 
 
-articleBody : LoadStatus Article -> Element msg
-articleBody article_ =
-    case article_ of
+articleBody : User -> Model -> Element Msg
+articleBody user model =
+    case model.article of
         Loading ->
             Text.text [] "Loading..."
 
-        Loaded a ->
-            showArticleBody a
+        Loaded article ->
+            showArticleBody user model article
 
         NotFound ->
             Text.text [ Text.description "not-found-message" ] "Article Not Found"
@@ -190,12 +223,103 @@ articleBody article_ =
             Text.text [ Text.description "error-message" ] "There was an error loading the article"
 
 
-showArticleBody : Article -> Element msg
-showArticleBody a =
-    column [ spacing Scale.large, width fill ]
-        [ row [ width fill ]
-            [ Text.subtitle [] (Article.about a)
-            , el [ alignRight ] (tags a)
+showArticleBody : User -> Model -> Article -> Element Msg
+showArticleBody user model article =
+    column [ spacing Scale.large, width fill, height fill ]
+        [ paragraph [] [ Text.title [] (Article.about article) ]
+        , paragraph [ Font.color Palette.black ] [ Text.text [] (Article.content article) ]
+        , column [ width fill, spacing Scale.extraLarge ]
+            [ Divider.divider
+            , comments user model article
             ]
-        , Text.text [] (Article.content a)
         ]
+
+
+
+-- Comments
+
+
+comments : User -> Model -> Article -> Element Msg
+comments user model article =
+    Block.halfWidth
+        (column
+            [ spacing Scale.large
+            , width fill
+            , height fill
+            , Anchor.description "comments"
+            ]
+            [ Text.title [ Text.green ] (commentsTitle (Article.comments article))
+            , newComment user article model
+            , column [ spacing Scale.large ] (List.map showComment (Article.comments article))
+            ]
+        )
+
+
+newComment : User -> Article -> Model -> Element Msg
+newComment user article model =
+    case user of
+        User.Guest ->
+            none
+
+        Author _ ->
+            newComment_ article model
+
+
+newComment_ : Article -> Model -> Element Msg
+newComment_ article model =
+    row
+        [ width fill
+        , spacing Scale.medium
+        , height fill
+        ]
+        [ commentInput model.comment
+        , el [ alignBottom ] (postCommentButton article)
+        ]
+
+
+postCommentButton : Article -> Element Msg
+postCommentButton article =
+    Button.button (PostCommentClicked article) "Post"
+        |> Button.description "post-new-comment"
+        |> Button.post
+        |> Button.toElement
+
+
+commentInput : String -> Element Msg
+commentInput =
+    Field.text CommentTyped
+        Field.borderless
+        { label = "Post a new comment"
+        , value = identity
+        , update = always identity
+        }
+
+
+commentsTitle : List Article.Comment -> String
+commentsTitle comments_ =
+    String.pluralize "Comment" (List.length comments_)
+
+
+showComment : Article.Comment -> Element msg
+showComment comment =
+    row [ spacing Scale.extraLarge ]
+        [ el [ alignTop ] (commentAuthor comment)
+        , paragraph [] [ Text.text [] comment.comment ]
+        ]
+
+
+commentAuthor : Article.Comment -> Element msg
+commentAuthor comment =
+    let
+        author_ =
+            comment.by
+    in
+    authorLink author_
+        (row [ spacing Scale.small ]
+            [ Avatar.medium (Author.profileImage author_)
+            , column [ spacing Scale.extraSmall ]
+                [ Text.text [ Text.black ] (Author.username author_)
+                , Text.date [ Text.black ] comment.date
+                ]
+            ]
+        )

@@ -8,6 +8,7 @@ module Api.Articles exposing
     , loadArticle
     , loadFeed
     , newestFirst
+    , postComment
     , publish
     , unlike
     )
@@ -27,6 +28,7 @@ import Hasura.InputObject as Input exposing (Articles_insert_input, Articles_ord
 import Hasura.Mutation
 import Hasura.Object exposing (Articles)
 import Hasura.Object.Articles as Articles
+import Hasura.Object.Comments as Comments
 import Hasura.Object.Likes as Likes
 import Hasura.Object.Likes_aggregate as LikesAggregate
 import Hasura.Object.Likes_aggregate_fields as LikesAggregateFields
@@ -143,32 +145,46 @@ all =
 
 articleSelection : SelectionSet Article Hasura.Object.Articles
 articleSelection =
-    SelectionSet.succeed Article.build
-        |> with Articles.id
-        |> with Articles.title
-        |> with Articles.about
-        |> with Articles.content
-        |> with authorSelection
-        |> with (Date.fromScalar Articles.created_at)
-        |> with (Articles.tags identity tagSelection)
-        |> with (Articles.likes_aggregate identity likesCountSelection)
-        |> with (Articles.likes identity likedBySelection)
+    SelectionSet.map Article.build
+        (SelectionSet.succeed Article.Details
+            |> with Articles.id
+            |> with Articles.title
+            |> with Articles.about
+            |> with Articles.content
+            |> with (Articles.author authorSelection)
+            |> with (Date.fromScalar Articles.created_at)
+            |> with (Articles.tags identity tagSelection)
+            |> with (Articles.likes_aggregate identity likesCountSelection)
+            |> with (Articles.likes identity likedBySelection)
+            |> with (Articles.comments identity commentSelection)
+        )
 
 
-authorSelection : SelectionSet Author Articles
+commentSelection : SelectionSet Article.Comment Hasura.Object.Comments
+commentSelection =
+    SelectionSet.succeed Article.Comment
+        |> with Comments.id
+        |> with Comments.comment
+        |> with (Date.fromScalar Comments.created_at)
+        |> with (Comments.user authorSelection)
+
+
+authorSelection : SelectionSet Author Hasura.Object.Users
 authorSelection =
     SelectionSet.succeed Author.build
-        |> with (Articles.author Users.id)
-        |> with (Articles.author Users.username)
-        |> with (Articles.author Users.profile_image)
+        |> with Users.id
+        |> with Users.username
+        |> with Users.profile_image
 
 
 likedBySelection : SelectionSet Author Hasura.Object.Likes
 likedBySelection =
-    SelectionSet.succeed Author.build
-        |> with (Likes.user Users.id)
-        |> with (Likes.user Users.username)
-        |> with (Likes.user Users.profile_image)
+    Likes.user
+        (SelectionSet.succeed Author.build
+            |> with Users.id
+            |> with Users.username
+            |> with Users.profile_image
+        )
 
 
 likesCountSelection : SelectionSet Int Hasura.Object.Likes_aggregate
@@ -244,3 +260,31 @@ unlike article msg =
         |> SelectionSet.failOnNothing
         |> Api.mutation msg
         |> Effect.unlikeArticle
+
+
+
+-- Post Comment
+
+
+postComment : (Api.Response Article -> msg) -> Article -> String -> Effect msg
+postComment msg article comment =
+    Hasura.Mutation.post_comment { object = postCommentArgs article comment } postCommentSelection
+        |> SelectionSet.failOnNothing
+        |> Api.mutation msg
+        |> Effect.postComment
+
+
+postCommentSelection : SelectionSet Article Hasura.Object.Comments
+postCommentSelection =
+    Comments.article articleSelection
+
+
+postCommentArgs : Article -> String -> Input.Comments_insert_input
+postCommentArgs article comment =
+    Input.buildComments_insert_input
+        (\args ->
+            { args
+                | article_id = Present (Article.id article)
+                , comment = Present comment
+            }
+        )

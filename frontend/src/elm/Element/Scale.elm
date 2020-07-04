@@ -1,5 +1,6 @@
 module Element.Scale exposing
     ( edges
+    , extraLarge
     , extraSmall
     , large
     , medium
@@ -25,6 +26,11 @@ medium =
 large : number
 large =
     32
+
+
+extraLarge : number
+extraLarge =
+    64
 
 
 edges : { top : number, right : number, bottom : number, left : number }

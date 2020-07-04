@@ -1,6 +1,7 @@
 module Route exposing
     ( Route(..)
     , author
+    , button
     , el
     , fromUrl
     , home
@@ -12,6 +13,7 @@ module Route exposing
 import Article
 import Article.Author as Author exposing (Author)
 import Element exposing (Element)
+import Element.Button as Button exposing (Button)
 import Element.Text as Text
 import Tag exposing (Tag)
 import Url exposing (Url)
@@ -73,6 +75,14 @@ tagQuery =
 link : Route -> List Text.Option -> String -> Element msg
 link route options label =
     el route (Text.link (options ++ [ Text.description (label ++ "-link") ]) label)
+
+
+button : Route -> String -> Button msg
+button route text =
+    Button.link
+        { href = routeToString route
+        , text = text
+        }
 
 
 el : Route -> Element msg -> Element msg
