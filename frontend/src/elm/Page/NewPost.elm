@@ -16,6 +16,7 @@ import Element.Layout as Layout
 import Element.Scale as Scale
 import Element.Text as Text
 import Form.Field as Field
+import Form.View.Field as Field
 import Tag exposing (Tag)
 import User exposing (User(..))
 
@@ -138,40 +139,48 @@ showTag tag_ =
 
 title : Inputs -> Element Msg
 title =
-    textInput Field.large
+    Field.field
         { value = .title
         , update = \i v -> { i | title = v }
         , label = "Article Title"
         }
+        |> Field.large
+        |> textInput
 
 
 about : Inputs -> Element Msg
 about =
-    textInput Field.small
+    Field.field
         { value = .about
         , update = \i v -> { i | about = v }
         , label = "What's this article about?"
         }
+        |> Field.small
+        |> textInput
 
 
 content : Inputs -> Element Msg
 content =
-    textInput Field.area
+    Field.field
         { value = .content
         , update = \i v -> { i | content = v }
         , label = "Write your article (in markdown)"
         }
+        |> Field.area
+        |> textInput
 
 
 tags : Inputs -> Element Msg
 tags =
-    textInput Field.small
+    Field.field
         { value = .tags
         , update = \i v -> { i | tags = v }
         , label = "Enter tags"
         }
+        |> Field.small
+        |> textInput
 
 
-textInput : Field.Style -> Field.Config Inputs -> Inputs -> Element Msg
+textInput : Field.View Inputs -> Inputs -> Element Msg
 textInput =
-    Field.text InputsChanged
+    Field.toElement InputsChanged

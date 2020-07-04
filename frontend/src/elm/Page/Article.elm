@@ -25,6 +25,7 @@ import Element.Palette as Palette
 import Element.Scale as Scale
 import Element.Text as Text
 import Form.Field as Field
+import Form.View.Field as Field
 import Route
 import Tag exposing (Tag)
 import User exposing (User(..))
@@ -287,12 +288,13 @@ postCommentButton article =
 
 commentInput : String -> Element Msg
 commentInput =
-    Field.text CommentTyped
-        Field.borderless
+    Field.field
         { label = "Post a new comment"
         , value = identity
         , update = always identity
         }
+        |> Field.borderless
+        |> Field.toElement CommentTyped
 
 
 commentsTitle : List Article.Comment -> String

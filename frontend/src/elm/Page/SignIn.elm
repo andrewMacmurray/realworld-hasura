@@ -15,6 +15,7 @@ import Element.Layout as Layout
 import Element.Scale as Scale
 import Element.Text as Text
 import Form.Field as Field
+import Form.View.Field as Field
 import Route
 import User exposing (User)
 
@@ -169,4 +170,4 @@ password =
 
 textInput : Field.Config Inputs -> Inputs -> Element Msg
 textInput =
-    Field.text InputsChanged Field.medium
+    Field.toElement InputsChanged << Field.medium << Field.field

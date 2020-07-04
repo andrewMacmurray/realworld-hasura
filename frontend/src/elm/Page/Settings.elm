@@ -14,6 +14,7 @@ import Element.Layout as Layout
 import Element.Scale as Scale
 import Element.Text as Text
 import Form.Field as Field
+import Form.View.Field as Field
 import User exposing (User(..))
 
 
@@ -153,6 +154,6 @@ bio =
         }
 
 
-textField : Field.Style -> Field.Config Inputs -> Inputs -> Element Msg
-textField =
-    Field.text InputsChanged
+textField : (Field.Field inputs -> Field.View Inputs) -> Field.Config inputs -> Inputs -> Element Msg
+textField style =
+    Field.field >> style >> Field.toElement InputsChanged
