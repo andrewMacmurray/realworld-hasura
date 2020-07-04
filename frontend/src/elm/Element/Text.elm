@@ -1,11 +1,13 @@
 module Element.Text exposing
     ( Option
     , asLink
+    , black
     , bold
     , date
     , description
     , error
     , green
+    , grey
     , headline
     , label
     , large
@@ -99,6 +101,16 @@ green =
 white : Option
 white =
     withColor White
+
+
+black : Option
+black =
+    withColor Black
+
+
+grey : Option
+grey =
+    withColor Grey
 
 
 withSize : Size -> Option

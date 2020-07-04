@@ -9,18 +9,24 @@ module Page.Article exposing
 import Api
 import Api.Articles
 import Article exposing (Article)
+import Article.Author as Author exposing (Author)
 import Article.Author.Follow as Follow
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Avatar as Avatar
 import Element.Background as Background
+import Element.Divider as Divider
+import Element.Font as Font
 import Element.Layout as Layout exposing (Layout)
+import Element.Layout.Block as Block
 import Element.Palette as Palette
 import Element.Scale as Scale
 import Element.Text as Text
+import Form.Field as Field
 import Route
 import Tag exposing (Tag)
 import User exposing (User(..))
+import Utils.String as String
 
 
 
@@ -29,12 +35,14 @@ import User exposing (User(..))
 
 type alias Model =
     { article : LoadStatus Article
+    , comment : String
     }
 
 
 type Msg
     = ArticleReceived (Api.Response (Maybe Article))
     | FollowMsg Follow.Msg
+    | CommentTyped String
 
 
 type LoadStatus a
@@ -61,6 +69,7 @@ loadArticle id =
 initialModel : Model
 initialModel =
     { article = Loading
+    , comment = ""
     }
 
 
@@ -83,6 +92,9 @@ update msg model =
         FollowMsg msg_ ->
             ( model, handleFollowEffect msg_ )
 
+        CommentTyped comment ->
+            ( { model | comment = comment }, Effect.none )
+
 
 handleFollowEffect : Follow.Msg -> Effect Msg
 handleFollowEffect =
@@ -97,7 +109,7 @@ view : User -> Model -> Element Msg
 view user model =
     Layout.user user
         |> withBanner user model
-        |> Layout.toElement [ articleBody model.article ]
+        |> Layout.toPage (articleBody model)
 
 
 withBanner : User -> Model -> Layout Msg -> Layout Msg
@@ -117,12 +129,15 @@ bannerConfig =
 
 loadedBanner : User -> Article -> Element Msg
 loadedBanner user article =
-    column [ spacing Scale.large ]
-        [ headline article
-        , row [ spacing Scale.medium ]
-            [ author article
-            , followButton user article
+    row [ width fill ]
+        [ column [ spacing Scale.large, width fill ]
+            [ headline article
+            , row [ spacing Scale.medium ]
+                [ author article
+                , followButton user article
+                ]
             ]
+        , el [ alignRight, alignBottom ] (tags article)
         ]
 
 
@@ -158,7 +173,7 @@ headline article =
 
 author : Article -> Element msg
 author article =
-    authorLink article
+    authorLink (Article.author article)
         (row [ spacing Scale.small ]
             [ Avatar.medium (Article.profileImage article)
             , column [ spacing Scale.extraSmall ]
@@ -169,19 +184,19 @@ author article =
         )
 
 
-authorLink : Article -> Element msg -> Element msg
+authorLink : Author -> Element msg -> Element msg
 authorLink =
-    Article.author >> Route.author >> Route.el
+    Route.author >> Route.el
 
 
-articleBody : LoadStatus Article -> Element msg
-articleBody article_ =
-    case article_ of
+articleBody : Model -> Element Msg
+articleBody model =
+    case model.article of
         Loading ->
             Text.text [] "Loading..."
 
         Loaded a ->
-            showArticleBody a
+            showArticleBody model a
 
         NotFound ->
             Text.text [ Text.description "not-found-message" ] "Article Not Found"
@@ -190,12 +205,66 @@ articleBody article_ =
             Text.text [ Text.description "error-message" ] "There was an error loading the article"
 
 
-showArticleBody : Article -> Element msg
-showArticleBody a =
-    column [ spacing Scale.large, width fill ]
-        [ row [ width fill ]
-            [ Text.subtitle [] (Article.about a)
-            , el [ alignRight ] (tags a)
-            ]
-        , Text.text [] (Article.content a)
+showArticleBody : Model -> Article -> Element Msg
+showArticleBody model a =
+    column [ spacing Scale.large, width fill, height fill ]
+        [ paragraph [] [ Text.title [] (Article.about a) ]
+        , paragraph [ Font.color Palette.black ] [ Text.text [] (Article.content a) ]
+        , Divider.divider
+        , showComments model (Article.comments a)
         ]
+
+
+showComments : Model -> List Article.Comment -> Element Msg
+showComments model comments_ =
+    Block.halfWidth
+        (column [ spacing Scale.large, width fill, height fill ]
+            [ Text.title [] (commentsTitle comments_)
+            , newComment model
+            , column [] (List.map showComment comments_)
+            ]
+        )
+
+
+newComment : Model -> Element Msg
+newComment model =
+    column [ width fill, spacing Scale.medium, height fill ]
+        [ commentInput model.comment
+        ]
+
+
+commentInput : String -> Element Msg
+commentInput =
+    Field.text CommentTyped
+        Field.borderless
+        { label = "Post a new comment"
+        , value = identity
+        , update = always identity
+        }
+
+
+commentsTitle : List Article.Comment -> String
+commentsTitle comments_ =
+    String.pluralize "Comment" (List.length comments_)
+
+
+showComment : Article.Comment -> Element msg
+showComment comment =
+    row [ spacing Scale.large ] [ commentAuthor comment, Text.text [] comment.comment ]
+
+
+commentAuthor : Article.Comment -> Element msg
+commentAuthor comment =
+    let
+        author_ =
+            comment.by
+    in
+    authorLink author_
+        (row [ spacing Scale.small ]
+            [ Avatar.medium (Author.profileImage author_)
+            , column [ spacing Scale.extraSmall ]
+                [ Text.text [ Text.black ] (Author.username author_)
+                , Text.date [ Text.black ] comment.date
+                ]
+            ]
+        )

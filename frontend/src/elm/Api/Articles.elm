@@ -144,17 +144,19 @@ all =
 
 articleSelection : SelectionSet Article Hasura.Object.Articles
 articleSelection =
-    SelectionSet.succeed Article.build
-        |> with Articles.id
-        |> with Articles.title
-        |> with Articles.about
-        |> with Articles.content
-        |> with (Articles.author authorSelection)
-        |> with (Date.fromScalar Articles.created_at)
-        |> with (Articles.tags identity tagSelection)
-        |> with (Articles.likes_aggregate identity likesCountSelection)
-        |> with (Articles.likes identity likedBySelection)
-        |> with (Articles.comments identity commentSelection)
+    SelectionSet.map Article.build
+        (SelectionSet.succeed Article.Details
+            |> with Articles.id
+            |> with Articles.title
+            |> with Articles.about
+            |> with Articles.content
+            |> with (Articles.author authorSelection)
+            |> with (Date.fromScalar Articles.created_at)
+            |> with (Articles.tags identity tagSelection)
+            |> with (Articles.likes_aggregate identity likesCountSelection)
+            |> with (Articles.likes identity likedBySelection)
+            |> with (Articles.comments identity commentSelection)
+        )
 
 
 commentSelection : SelectionSet Article.Comment Hasura.Object.Comments

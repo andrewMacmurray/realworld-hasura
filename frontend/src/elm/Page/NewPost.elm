@@ -98,22 +98,21 @@ publishArticle =
 view : User.Profile -> Model -> Element Msg
 view user model =
     Layout.authenticated user
-        |> Layout.toElement
-            [ Layout.padded
-                (column
-                    [ width fill
-                    , spacing Scale.medium
-                    , paddingXY 0 Scale.large
-                    ]
-                    [ title model.inputs
-                    , about model.inputs
-                    , content model.inputs
-                    , tags model.inputs
-                    , showTags model.inputs.tags
-                    , publishButton
-                    ]
-                )
-            ]
+        |> Layout.measured
+        |> Layout.toPage
+            (column
+                [ width fill
+                , spacing Scale.medium
+                , paddingXY 0 Scale.large
+                ]
+                [ title model.inputs
+                , about model.inputs
+                , content model.inputs
+                , tags model.inputs
+                , showTags model.inputs.tags
+                , publishButton
+                ]
+            )
 
 
 publishButton : Element Msg

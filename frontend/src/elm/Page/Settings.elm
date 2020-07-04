@@ -88,26 +88,25 @@ update msg model =
 view : User.Profile -> Model -> Element Msg
 view user model =
     Layout.authenticated user
-        |> Layout.toElement
-            [ column [ spacing Scale.large, width fill ]
+        |> Layout.halfWidth
+        |> Layout.toPage
+            (column [ spacing Scale.large, width fill ]
                 [ el [ centerX ] (Text.title [ Text.description "settings-title" ] "Your Settings")
                 , settingsFields model
                 ]
-            ]
+            )
 
 
 settingsFields : Model -> Element Msg
 settingsFields model =
-    Layout.halfWidth
-        (column [ width fill, spacing Scale.medium ]
-            [ profileImage model.inputs
-            , username model.inputs
-            , email model.inputs
-            , bio model.inputs
-            , Divider.divider
-            , logout
-            ]
-        )
+    column [ width fill, spacing Scale.medium ]
+        [ profileImage model.inputs
+        , username model.inputs
+        , email model.inputs
+        , bio model.inputs
+        , Divider.divider
+        , logout
+        ]
 
 
 logout : Element Msg

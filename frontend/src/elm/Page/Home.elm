@@ -149,7 +149,7 @@ view : User -> Model -> Element Msg
 view user model =
     Layout.user user
         |> Layout.withBanner [ Background.color Palette.green ] banner
-        |> Layout.toElement [ pageContents user model ]
+        |> Layout.toPage (pageContents user model)
 
 
 banner : Element msg

@@ -148,7 +148,7 @@ view : User -> Model -> Element Msg
 view user model =
     Layout.user user
         |> withBanner user model
-        |> Layout.toElement [ pageContents user model ]
+        |> Layout.toPage (pageContents user model)
 
 
 
