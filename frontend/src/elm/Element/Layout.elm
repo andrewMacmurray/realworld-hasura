@@ -135,7 +135,6 @@ toPage page (Layout options) =
         , toBanner options
         , el
             [ paddingXY Scale.medium Scale.large
-            , height fill
             , constrainBy (toWidth_ options)
             , centerX
             ]
@@ -158,7 +157,7 @@ banner_ options ( attrs, content ) =
     el
         (List.concat
             [ [ width fill
-              , height (px 255)
+              , height (shrink |> minimum 255)
               ]
             , attrs
             ]

@@ -13,8 +13,10 @@ import Article.Author as Author exposing (Author)
 import Article.Author.Follow as Follow
 import Effect exposing (Effect)
 import Element exposing (..)
+import Element.Anchor as Anchor
 import Element.Avatar as Avatar
 import Element.Background as Background
+import Element.Button as Button
 import Element.Divider as Divider
 import Element.Font as Font
 import Element.Layout as Layout exposing (Layout)
@@ -43,6 +45,8 @@ type Msg
     = ArticleReceived (Api.Response (Maybe Article))
     | FollowMsg Follow.Msg
     | CommentTyped String
+    | PostCommentClicked Article
+    | PostCommentResponseReceived (Api.Response Article)
 
 
 type LoadStatus a
@@ -95,10 +99,24 @@ update msg model =
         CommentTyped comment ->
             ( { model | comment = comment }, Effect.none )
 
+        PostCommentClicked article ->
+            ( model, postComment article model.comment )
+
+        PostCommentResponseReceived (Ok article) ->
+            ( { model | article = Loaded article, comment = "" }, Effect.none )
+
+        PostCommentResponseReceived (Err _) ->
+            ( model, Effect.none )
+
 
 handleFollowEffect : Follow.Msg -> Effect Msg
 handleFollowEffect =
     Follow.effect >> Effect.map FollowMsg
+
+
+postComment : Article -> String -> Effect Msg
+postComment =
+    Api.Articles.postComment PostCommentResponseReceived
 
 
 
@@ -109,7 +127,7 @@ view : User -> Model -> Element Msg
 view user model =
     Layout.user user
         |> withBanner user model
-        |> Layout.toPage (articleBody model)
+        |> Layout.toPage (articleBody user model)
 
 
 withBanner : User -> Model -> Layout Msg -> Layout Msg
@@ -189,14 +207,14 @@ authorLink =
     Route.author >> Route.el
 
 
-articleBody : Model -> Element Msg
-articleBody model =
+articleBody : User -> Model -> Element Msg
+articleBody user model =
     case model.article of
         Loading ->
             Text.text [] "Loading..."
 
-        Loaded a ->
-            showArticleBody model a
+        Loaded article ->
+            showArticleBody user model article
 
         NotFound ->
             Text.text [ Text.description "not-found-message" ] "Article Not Found"
@@ -205,32 +223,66 @@ articleBody model =
             Text.text [ Text.description "error-message" ] "There was an error loading the article"
 
 
-showArticleBody : Model -> Article -> Element Msg
-showArticleBody model a =
+showArticleBody : User -> Model -> Article -> Element Msg
+showArticleBody user model article =
     column [ spacing Scale.large, width fill, height fill ]
-        [ paragraph [] [ Text.title [] (Article.about a) ]
-        , paragraph [ Font.color Palette.black ] [ Text.text [] (Article.content a) ]
-        , Divider.divider
-        , showComments model (Article.comments a)
+        [ paragraph [] [ Text.title [] (Article.about article) ]
+        , paragraph [ Font.color Palette.black ] [ Text.text [] (Article.content article) ]
+        , column [ width fill, spacing Scale.extraLarge ]
+            [ Divider.divider
+            , comments user model article
+            ]
         ]
 
 
-showComments : Model -> List Article.Comment -> Element Msg
-showComments model comments_ =
+
+-- Comments
+
+
+comments : User -> Model -> Article -> Element Msg
+comments user model article =
     Block.halfWidth
-        (column [ spacing Scale.large, width fill, height fill ]
-            [ Text.title [] (commentsTitle comments_)
-            , newComment model
-            , column [] (List.map showComment comments_)
+        (column
+            [ spacing Scale.large
+            , width fill
+            , height fill
+            , Anchor.description "comments"
+            ]
+            [ Text.title [ Text.green ] (commentsTitle (Article.comments article))
+            , newComment user article model
+            , column [ spacing Scale.large ] (List.map showComment (Article.comments article))
             ]
         )
 
 
-newComment : Model -> Element Msg
-newComment model =
-    column [ width fill, spacing Scale.medium, height fill ]
-        [ commentInput model.comment
+newComment : User -> Article -> Model -> Element Msg
+newComment user article model =
+    case user of
+        User.Guest ->
+            none
+
+        Author _ ->
+            newComment_ article model
+
+
+newComment_ : Article -> Model -> Element Msg
+newComment_ article model =
+    row
+        [ width fill
+        , spacing Scale.medium
+        , height fill
         ]
+        [ commentInput model.comment
+        , el [ alignBottom ] (postCommentButton article)
+        ]
+
+
+postCommentButton : Article -> Element Msg
+postCommentButton article =
+    Button.button (PostCommentClicked article) "Post"
+        |> Button.description "post-new-comment"
+        |> Button.post
+        |> Button.toElement
 
 
 commentInput : String -> Element Msg
@@ -250,7 +302,10 @@ commentsTitle comments_ =
 
 showComment : Article.Comment -> Element msg
 showComment comment =
-    row [ spacing Scale.large ] [ commentAuthor comment, Text.text [] comment.comment ]
+    row [ spacing Scale.extraLarge ]
+        [ el [ alignTop ] (commentAuthor comment)
+        , paragraph [] [ Text.text [] comment.comment ]
+        ]
 
 
 commentAuthor : Article.Comment -> Element msg

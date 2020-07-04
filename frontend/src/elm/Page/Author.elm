@@ -16,11 +16,13 @@ import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Avatar as Avatar
 import Element.Background as Background
+import Element.Button as Button
 import Element.Layout as Layout exposing (Layout)
 import Element.Palette as Palette
 import Element.Scale as Scale
 import Element.Tab as Tab
 import Element.Text as Text
+import Route
 import User exposing (User)
 
 
@@ -170,10 +172,23 @@ bannerContent user author =
                     , Text.headline [ Text.white ] (Author.username author_)
                     ]
                 , followButton user author_
+                , newPostButton user
                 ]
 
         _ ->
             none
+
+
+newPostButton : User -> Element msg
+newPostButton user =
+    case user of
+        User.Guest ->
+            none
+
+        User.Author _ ->
+            Route.button Route.NewPost "New Post"
+                |> Button.follow
+                |> Button.toElement
 
 
 followButton : User -> Author -> Element Msg

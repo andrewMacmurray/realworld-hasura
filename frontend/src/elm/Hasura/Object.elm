@@ -85,10 +85,6 @@ type Likes_variance_fields
     = Likes_variance_fields
 
 
-type PageInfo
-    = PageInfo
-
-
 type Tags
     = Tags
 

@@ -97,20 +97,6 @@ insert_comments requiredArgs object_ =
     Object.selectionForCompositeField "insert_comments" [ Argument.required "objects" requiredArgs.objects (Hasura.InputObject.encodeComments_insert_input |> Encode.list) ] object_ (identity >> Decode.nullable)
 
 
-type alias InsertCommentsOneRequiredArguments =
-    { object : Hasura.InputObject.Comments_insert_input }
-
-
-{-| insert a single row into the table: "comments"
-
-  - object - the row to be inserted
-
--}
-insert_comments_one : InsertCommentsOneRequiredArguments -> SelectionSet decodesTo Hasura.Object.Comments -> SelectionSet (Maybe decodesTo) RootMutation
-insert_comments_one requiredArgs object_ =
-    Object.selectionForCompositeField "insert_comments_one" [ Argument.required "object" requiredArgs.object Hasura.InputObject.encodeComments_insert_input ] object_ (identity >> Decode.nullable)
-
-
 type alias InsertTagRequiredArguments =
     { object : Hasura.InputObject.Tags_insert_input }
 
@@ -178,6 +164,20 @@ type alias LoginRequiredArguments =
 login : LoginRequiredArguments -> SelectionSet decodesTo Hasura.Object.TokenResponse -> SelectionSet decodesTo RootMutation
 login requiredArgs object_ =
     Object.selectionForCompositeField "login" [ Argument.required "password" requiredArgs.password Encode.string, Argument.required "username" requiredArgs.username Encode.string ] object_ identity
+
+
+type alias PostCommentRequiredArguments =
+    { object : Hasura.InputObject.Comments_insert_input }
+
+
+{-| insert a single row into the table: "comments"
+
+  - object - the row to be inserted
+
+-}
+post_comment : PostCommentRequiredArguments -> SelectionSet decodesTo Hasura.Object.Comments -> SelectionSet (Maybe decodesTo) RootMutation
+post_comment requiredArgs object_ =
+    Object.selectionForCompositeField "post_comment" [ Argument.required "object" requiredArgs.object Hasura.InputObject.encodeComments_insert_input ] object_ (identity >> Decode.nullable)
 
 
 type alias PublishArticleOptionalArguments =

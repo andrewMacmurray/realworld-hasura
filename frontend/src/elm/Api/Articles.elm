@@ -8,6 +8,7 @@ module Api.Articles exposing
     , loadArticle
     , loadFeed
     , newestFirst
+    , postComment
     , publish
     , unlike
     )
@@ -259,3 +260,31 @@ unlike article msg =
         |> SelectionSet.failOnNothing
         |> Api.mutation msg
         |> Effect.unlikeArticle
+
+
+
+-- Post Comment
+
+
+postComment : (Api.Response Article -> msg) -> Article -> String -> Effect msg
+postComment msg article comment =
+    Hasura.Mutation.post_comment { object = postCommentArgs article comment } postCommentSelection
+        |> SelectionSet.failOnNothing
+        |> Api.mutation msg
+        |> Effect.postComment
+
+
+postCommentSelection : SelectionSet Article Hasura.Object.Comments
+postCommentSelection =
+    Comments.article articleSelection
+
+
+postCommentArgs : Article -> String -> Input.Comments_insert_input
+postCommentArgs article comment =
+    Input.buildComments_insert_input
+        (\args ->
+            { args
+                | article_id = Present (Article.id article)
+                , comment = Present comment
+            }
+        )

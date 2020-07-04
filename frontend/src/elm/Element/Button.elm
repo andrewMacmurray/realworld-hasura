@@ -5,6 +5,8 @@ module Element.Button exposing
     , description
     , follow
     , like
+    , link
+    , post
     , primary
     , secondary
     , solid
@@ -18,6 +20,7 @@ import Element.Border as Border
 import Element.Font as Font
 import Element.Icon as Icon
 import Element.Icon.Heart as Heart
+import Element.Icon.Plane as Plane
 import Element.Icon.Plus as Plus
 import Element.Input as Input
 import Element.Palette as Palette
@@ -41,10 +44,16 @@ type alias Options msg =
     , shape : Shape
     , color : Color
     , icon : Maybe Icon
-    , onClick : Maybe msg
     , description : Maybe String
     , hover : Bool
+    , onClick : Action msg
     }
+
+
+type Action msg
+    = Msg msg
+    | Link String
+    | None
 
 
 type Shape
@@ -73,14 +82,15 @@ type Color
 type Icon
     = Heart
     | Plus
+    | Plane
 
 
 
 -- Defaults
 
 
-defaults : Maybe msg -> String -> Button msg
-defaults msg text =
+defaults : Action msg -> String -> Button msg
+defaults action text =
     Button
         { fill = Solid
         , color = Green
@@ -88,7 +98,7 @@ defaults msg text =
         , icon = Nothing
         , shape = Square
         , text = text
-        , onClick = msg
+        , onClick = action
         , description = Nothing
         , hover = True
         }
@@ -100,12 +110,17 @@ defaults msg text =
 
 decorative : String -> Button msg
 decorative text =
-    defaults Nothing text |> noHover
+    defaults None text |> noHover
 
 
 button : msg -> String -> Button msg
 button msg text =
-    defaults (Just msg) text
+    defaults (Msg msg) text
+
+
+link : { href : String, text : String } -> Button msg
+link { href, text } =
+    defaults (Link href) text
 
 
 
@@ -122,24 +137,32 @@ secondary =
     red >> hollow
 
 
+post : Button msg -> Button msg
+post =
+    small
+        >> withIcon_ Plane
+        >> borderless
+
+
 like : Button msg -> Button msg
 like =
-    borderless >> heart >> small >> pill
+    borderless
+        >> withIcon_ Heart
+        >> small
+        >> pill
 
 
 follow : Button msg -> Button msg
 follow =
-    borderless >> plus >> grey >> small
+    borderless
+        >> withIcon_ Plus
+        >> grey
+        >> small
 
 
 red : Button msg -> Button msg
 red (Button options) =
     Button { options | color = Red }
-
-
-plus : Button msg -> Button msg
-plus (Button options) =
-    Button { options | icon = Just Plus }
 
 
 grey : Button msg -> Button msg
@@ -168,23 +191,28 @@ borderless (Button options) =
 
 
 hollow : Button msg -> Button msg
-hollow (Button options) =
-    Button { options | fill = Hollow }
+hollow =
+    withFill_ Hollow
 
 
 solid : Button msg -> Button msg
-solid (Button options) =
-    Button { options | fill = Solid }
-
-
-heart : Button msg -> Button msg
-heart (Button options) =
-    Button { options | icon = Just Heart }
+solid =
+    withFill_ Solid
 
 
 noHover : Button msg -> Button msg
 noHover (Button options) =
     Button { options | hover = False }
+
+
+withFill_ : Fill -> Button msg -> Button msg
+withFill_ fill (Button options) =
+    Button { options | fill = fill }
+
+
+withIcon_ : Icon -> Button msg -> Button msg
+withIcon_ icon_ (Button options) =
+    Button { options | icon = Just icon_ }
 
 
 
@@ -193,24 +221,48 @@ noHover (Button options) =
 
 toElement : Button msg -> Element msg
 toElement (Button options) =
-    Input.button
-        (List.concat
-            [ [ fill_ options
-              , Transition.colors
-              , borderColor options
-              , fontColor options
-              , Border.width 1
-              , borderRadius_ options
-              , padding_ options
-              , mouseOver (hoverStyles options)
-              ]
-            , description_ options
-            , iconHover options
-            ]
-        )
-        { onPress = options.onClick
+    case options.onClick of
+        Msg msg ->
+            toButton (Just msg) options
+
+        Link href ->
+            toLink href options
+
+        None ->
+            toButton Nothing options
+
+
+toLink : String -> Options msg -> Element msg
+toLink href options =
+    Element.link (toAttributes options)
+        { url = href
         , label = label options
         }
+
+
+toButton : Maybe msg -> Options msg -> Element msg
+toButton onPress options =
+    Input.button (toAttributes options)
+        { onPress = onPress
+        , label = label options
+        }
+
+
+toAttributes : Options msg -> List (Attribute msg)
+toAttributes options =
+    List.concat
+        [ [ fill_ options
+          , Transition.colors
+          , borderColor options
+          , fontColor options
+          , Border.width 1
+          , borderRadius_ options
+          , padding_ options
+          , mouseOver (hoverStyles options)
+          ]
+        , description_ options
+        , iconHover options
+        ]
 
 
 description_ : Options msg -> List (Attribute msg)
@@ -358,6 +410,9 @@ icon icon_ options =
 
         Plus ->
             Plus.icon (iconColor options)
+
+        Plane ->
+            Plane.icon (iconColor options)
 
 
 iconColor : Options msg -> Element.Color

@@ -14,6 +14,7 @@ module Effect exposing
     , map
     , none
     , perform
+    , postComment
     , publishArticle
     , pushUrl
     , redirectHome
@@ -141,6 +142,11 @@ likeArticle =
 
 unlikeArticle : Api.Mutation Article msg -> Effect msg
 unlikeArticle =
+    MutateArticle
+
+
+postComment : Api.Mutation Article msg -> Effect msg
+postComment =
     MutateArticle
 
 
