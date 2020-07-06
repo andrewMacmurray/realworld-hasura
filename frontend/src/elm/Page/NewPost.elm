@@ -181,6 +181,6 @@ tags =
         |> textInput
 
 
-textInput : Field.View Inputs -> Inputs -> Element Msg
+textInput : Field.View Inputs outputs -> Inputs -> Element Msg
 textInput =
     Field.toElement InputsChanged

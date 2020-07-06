@@ -6,6 +6,8 @@ module Api.Argument exposing
     , eq_
     , field
     , following_id
+    , fromNonEmpty
+    , fromOptional
     , id
     , in_
     , likes
@@ -18,6 +20,7 @@ module Api.Argument exposing
     )
 
 import Graphql.OptionalArgument exposing (OptionalArgument(..))
+import Utils.String as String
 
 
 
@@ -122,3 +125,22 @@ user_id =
 
 where_ =
     field (\val args -> { args | where_ = Present val })
+
+
+
+-- String conversions
+
+
+fromNonEmpty : String.NonEmpty -> OptionalArgument String
+fromNonEmpty =
+    String.fromNonEmpty >> Present
+
+
+fromOptional : String.Optional -> OptionalArgument String
+fromOptional op =
+    case String.fromOptional op of
+        Just a ->
+            Present a
+
+        Nothing ->
+            Absent

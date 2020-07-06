@@ -3,6 +3,7 @@ module Element.Button exposing
     , button
     , decorative
     , description
+    , disabled
     , follow
     , like
     , link
@@ -121,6 +122,11 @@ button msg text =
 link : { href : String, text : String } -> Button msg
 link { href, text } =
     defaults (Link href) text
+
+
+disabled : String -> Button msg
+disabled =
+    decorative >> grey >> hollow
 
 
 

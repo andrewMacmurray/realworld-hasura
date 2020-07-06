@@ -12,6 +12,7 @@ module Effect exposing
     , loadUser
     , logout
     , map
+    , mutateSettings
     , none
     , perform
     , postComment
@@ -23,6 +24,7 @@ module Effect exposing
     , signUp
     , unfollowAuthor
     , unlikeArticle
+    , updateSettings
     )
 
 import Api
@@ -54,10 +56,12 @@ type Effect msg
     | LoadArticleFeed (Api.Query Article.Feed msg)
     | LoadArticles (Api.Query (List Article) msg)
     | LoadArticle (Api.Query (Maybe Article) msg)
-    | PublishArticle (Api.Mutation () msg)
+    | MutateWithEmptyResponse (Api.Mutation () msg)
     | MutateArticle (Api.Mutation Article msg)
     | MutateAuthor (Api.Mutation Int msg)
     | LoadAuthorFeed (Api.Query (Maybe Author.Feed) msg)
+    | MutateSettings (Api.Mutation () msg)
+    | UpdateSettings User.SettingsUpdate
 
 
 none : Effect msg
@@ -132,7 +136,7 @@ loadArticles =
 
 publishArticle : Api.Mutation () msg -> Effect msg
 publishArticle =
-    PublishArticle
+    MutateWithEmptyResponse
 
 
 likeArticle : Api.Mutation Article msg -> Effect msg
@@ -163,6 +167,16 @@ unfollowAuthor =
 loadAuthorFeed : Api.Query (Maybe Author.Feed) msg -> Effect msg
 loadAuthorFeed =
     LoadAuthorFeed
+
+
+mutateSettings : Api.Mutation () msg -> Effect msg
+mutateSettings =
+    MutateSettings
+
+
+updateSettings : User.SettingsUpdate -> Effect msg
+updateSettings =
+    UpdateSettings
 
 
 
@@ -214,8 +228,8 @@ map toMsg effect =
         LoadArticles query ->
             LoadArticles (Api.map toMsg query)
 
-        PublishArticle mut ->
-            PublishArticle (Api.map toMsg mut)
+        MutateWithEmptyResponse mut ->
+            MutateWithEmptyResponse (Api.map toMsg mut)
 
         MutateArticle mut ->
             MutateArticle (Api.map toMsg mut)
@@ -225,6 +239,12 @@ map toMsg effect =
 
         LoadAuthorFeed query ->
             LoadAuthorFeed (Api.map toMsg query)
+
+        MutateSettings mut ->
+            MutateSettings (Api.map toMsg mut)
+
+        UpdateSettings settings ->
+            UpdateSettings settings
 
 
 
@@ -260,10 +280,10 @@ perform pushUrl_ ( model, effect ) =
             )
 
         AddToUserFollows following_id ->
-            { model | user = User.addFollowingId following_id model.user } |> andThenCacheUser
+            andThenCacheUser { model | user = User.addFollowingId following_id model.user }
 
         RemoveFromUserFollows following_id ->
-            { model | user = User.removeFollowingId following_id model.user } |> andThenCacheUser
+            andThenCacheUser { model | user = User.removeFollowingId following_id model.user }
 
         PushUrl url ->
             ( model, pushUrl_ model.navKey (Url.toString url) )
@@ -291,7 +311,7 @@ perform pushUrl_ ( model, effect ) =
         LoadArticles query ->
             ( model, Api.doQuery model.user query )
 
-        PublishArticle mutation ->
+        MutateWithEmptyResponse mutation ->
             ( model, Api.doMutation model.user mutation )
 
         MutateArticle mutation ->
@@ -302,6 +322,12 @@ perform pushUrl_ ( model, effect ) =
 
         LoadAuthorFeed query ->
             ( model, Api.doQuery model.user query )
+
+        MutateSettings mutation ->
+            ( model, Api.doMutation model.user mutation )
+
+        UpdateSettings settings ->
+            andThenCacheUser { model | user = User.updateSettings settings model.user }
 
 
 andThenCacheUser : Model model key -> ( Model model key, Cmd msg )

@@ -7,6 +7,7 @@ module Form.View.Field exposing
     , medium
     , small
     , toElement
+    , validateWith
     )
 
 import Element exposing (..)
@@ -17,15 +18,18 @@ import Element.Input as Input
 import Element.Palette as Palette
 import Element.Scale as Scale exposing (edges)
 import Element.Text as Text
+import Form.Error as Error
 import Form.Field as Field exposing (Field)
+import Form.Validation exposing (Validation)
 
 
 
 -- View
 
 
-type alias View inputs =
+type alias View inputs output =
     { style : Style
+    , validation : Maybe (Validation inputs output)
     , field : Field inputs
     }
 
@@ -46,54 +50,71 @@ type Border
 -- Construct
 
 
-large : Field inputs -> View inputs
+large : Field inputs -> View inputs output
 large =
-    View Large
+    defaults_ Large
 
 
-medium : Field inputs -> View inputs
+medium : Field inputs -> View inputs output
 medium =
-    View Medium
+    defaults_ Medium
 
 
-small : Field inputs -> View inputs
+small : Field inputs -> View inputs output
 small =
-    View Small
+    defaults_ Small
 
 
-area : Field inputs -> View inputs
+area : Field inputs -> View inputs output
 area =
-    View (TextArea Bordered)
+    defaults_ (TextArea Bordered)
 
 
-borderless : Field inputs -> View inputs
+borderless : Field inputs -> View inputs output
 borderless =
-    View (TextArea Borderless)
+    defaults_ (TextArea Borderless)
+
+
+defaults_ : Style -> Field inputs -> View inputs output
+defaults_ style field =
+    { style = style
+    , validation = Nothing
+    , field = field
+    }
+
+
+
+-- Configure
+
+
+validateWith : Validation inputs output -> View inputs output -> View inputs output
+validateWith validation options =
+    { options | validation = Just validation }
 
 
 
 -- Render
 
 
-toElement : (inputs -> msg) -> View inputs -> inputs -> Element msg
-toElement msg viewConfig inputs =
+toElement : (inputs -> msg) -> View inputs output -> inputs -> Element msg
+toElement msg { field, style, validation } inputs =
     let
-        field =
-            Field.config viewConfig.field
-
         commonAttributes =
-            [ Anchor.description field.label
-            , padding Scale.small
-            ]
+            List.concat
+                [ [ Anchor.description (Field.label field)
+                  , padding Scale.small
+                  ]
+                , errorAttributes validation field inputs
+                ]
 
         config_ =
-            { onChange = field.update inputs >> msg
-            , text = field.value inputs
-            , placeholder = Just (placeholder field.label)
-            , label = Input.labelHidden field.label
+            { onChange = Field.update field inputs >> msg
+            , text = Field.value field inputs
+            , placeholder = Just (placeholder (Field.label field))
+            , label = Input.labelHidden (Field.label field)
             }
     in
-    case viewConfig.style of
+    case style of
         Small ->
             Input.text (Font.size Text.small :: commonAttributes) config_
 
@@ -117,6 +138,13 @@ toElement msg viewConfig inputs =
                 , label = config_.label
                 , spellcheck = True
                 }
+
+
+errorAttributes : Maybe (Validation inputs output) -> Field inputs -> inputs -> List (Attribute msg)
+errorAttributes validation field inputs =
+    validation
+        |> Maybe.map (Error.attributes field inputs)
+        |> Maybe.withDefault []
 
 
 toAreaStyle : Border -> List (Attribute msg)

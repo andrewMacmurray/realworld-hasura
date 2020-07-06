@@ -324,3 +324,56 @@ update_articles_by_pk fillInOptionals requiredArgs object_ =
                 |> List.filterMap identity
     in
     Object.selectionForCompositeField "update_articles_by_pk" (optionalArgs ++ [ Argument.required "pk_columns" requiredArgs.pk_columns Hasura.InputObject.encodeArticles_pk_columns_input ]) object_ (identity >> Decode.nullable)
+
+
+type alias UpdateUserOptionalArguments =
+    { set_ : OptionalArgument Hasura.InputObject.Users_set_input }
+
+
+type alias UpdateUserRequiredArguments =
+    { pk_columns : Hasura.InputObject.Users_pk_columns_input }
+
+
+{-| update single row of the table: "users"
+
+  - set\_ - sets the columns of the filtered rows to the given values
+
+-}
+update_user : (UpdateUserOptionalArguments -> UpdateUserOptionalArguments) -> UpdateUserRequiredArguments -> SelectionSet decodesTo Hasura.Object.Users -> SelectionSet (Maybe decodesTo) RootMutation
+update_user fillInOptionals requiredArgs object_ =
+    let
+        filledInOptionals =
+            fillInOptionals { set_ = Absent }
+
+        optionalArgs =
+            [ Argument.optional "_set" filledInOptionals.set_ Hasura.InputObject.encodeUsers_set_input ]
+                |> List.filterMap identity
+    in
+    Object.selectionForCompositeField "update_user" (optionalArgs ++ [ Argument.required "pk_columns" requiredArgs.pk_columns Hasura.InputObject.encodeUsers_pk_columns_input ]) object_ (identity >> Decode.nullable)
+
+
+type alias UpdateUsersOptionalArguments =
+    { set_ : OptionalArgument Hasura.InputObject.Users_set_input }
+
+
+type alias UpdateUsersRequiredArguments =
+    { where_ : Hasura.InputObject.Users_bool_exp }
+
+
+{-| update data of the table: "users"
+
+  - set\_ - sets the columns of the filtered rows to the given values
+  - where\_ - filter the rows which have to be updated
+
+-}
+update_users : (UpdateUsersOptionalArguments -> UpdateUsersOptionalArguments) -> UpdateUsersRequiredArguments -> SelectionSet decodesTo Hasura.Object.Users_mutation_response -> SelectionSet (Maybe decodesTo) RootMutation
+update_users fillInOptionals requiredArgs object_ =
+    let
+        filledInOptionals =
+            fillInOptionals { set_ = Absent }
+
+        optionalArgs =
+            [ Argument.optional "_set" filledInOptionals.set_ Hasura.InputObject.encodeUsers_set_input ]
+                |> List.filterMap identity
+    in
+    Object.selectionForCompositeField "update_users" (optionalArgs ++ [ Argument.required "where" requiredArgs.where_ Hasura.InputObject.encodeUsers_bool_exp ]) object_ (identity >> Decode.nullable)

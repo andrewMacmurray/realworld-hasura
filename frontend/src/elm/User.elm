@@ -2,6 +2,7 @@ module User exposing
     ( Details
     , Id
     , Profile
+    , SettingsUpdate
     , User(..)
     , addFollowingId
     , bio
@@ -14,13 +15,16 @@ module User exposing
     , profile
     , profileImage
     , removeFollowingId
+    , settingsUpdate
     , token
+    , updateSettings
     , username
     )
 
 import Api.Token exposing (Token)
 import Article.Author as Author exposing (Author)
 import Utils.List as List
+import Utils.String as String
 
 
 
@@ -50,6 +54,15 @@ type alias Id =
     Int
 
 
+type alias SettingsUpdate =
+    { id : Id
+    , username : String.NonEmpty
+    , email : String.NonEmpty
+    , bio : String.Optional
+    , profileImage : String.Optional
+    }
+
+
 
 -- Construct
 
@@ -57,6 +70,11 @@ type alias Id =
 profile : Token -> Details -> Profile
 profile =
     Profile_
+
+
+settingsUpdate : Id -> String.NonEmpty -> String.NonEmpty -> String.Optional -> String.Optional -> SettingsUpdate
+settingsUpdate =
+    SettingsUpdate
 
 
 
@@ -141,6 +159,19 @@ updateProfile f user =
 
         Author (Profile_ token_ details) ->
             Author (Profile_ token_ (f details))
+
+
+updateSettings : SettingsUpdate -> User -> User
+updateSettings settings =
+    updateProfile
+        (\profile_ ->
+            { profile_
+                | username = String.fromNonEmpty settings.username
+                , email = String.fromNonEmpty settings.email
+                , bio = String.fromOptional settings.bio
+                , profileImage = String.fromOptional settings.profileImage
+            }
+        )
 
 
 

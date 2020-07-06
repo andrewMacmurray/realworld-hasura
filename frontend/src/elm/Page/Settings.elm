@@ -6,16 +6,19 @@ module Page.Settings exposing
     , view
     )
 
+import Api
+import Api.Users
 import Effect exposing (Effect)
 import Element exposing (..)
-import Element.Button as Button
 import Element.Divider as Divider
 import Element.Layout as Layout
 import Element.Scale as Scale
 import Element.Text as Text
-import Form.Field as Field
+import Form
+import Form.Field as Field exposing (Field)
+import Form.Validation as Validation exposing (Validation)
 import Form.View.Field as Field
-import User exposing (User(..))
+import User exposing (SettingsUpdate, User(..))
 
 
 
@@ -28,8 +31,9 @@ type alias Model =
 
 
 type Msg
-    = LogoutClicked
-    | InputsChanged Inputs
+    = InputsChanged Inputs
+    | UpdateSettingsClicked User.SettingsUpdate
+    | UpdateSettingsResponseReceived User.SettingsUpdate (Api.Response ())
 
 
 type alias Inputs =
@@ -75,11 +79,22 @@ defaultToEmpty =
 update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
-        LogoutClicked ->
-            ( model, Effect.logout )
-
         InputsChanged inputs ->
             ( { model | inputs = inputs }, Effect.none )
+
+        UpdateSettingsClicked settingsUpdate ->
+            ( model, updateSettings settingsUpdate )
+
+        UpdateSettingsResponseReceived settings (Ok _) ->
+            ( model, Effect.updateSettings settings )
+
+        UpdateSettingsResponseReceived _ (Err _) ->
+            ( model, Effect.none )
+
+
+updateSettings : SettingsUpdate -> Effect Msg
+updateSettings settings =
+    Api.Users.update settings (UpdateSettingsResponseReceived settings)
 
 
 
@@ -93,67 +108,105 @@ view user model =
         |> Layout.toPage
             (column [ spacing Scale.large, width fill ]
                 [ el [ centerX ] (Text.title [ Text.description "settings-title" ] "Your Settings")
-                , settingsFields model
+                , settingsFields user model
                 ]
             )
 
 
-settingsFields : Model -> Element Msg
-settingsFields model =
+settingsFields : User.Profile -> Model -> Element Msg
+settingsFields profile model =
     column [ width fill, spacing Scale.medium ]
-        [ profileImage model.inputs
-        , username model.inputs
-        , email model.inputs
-        , bio model.inputs
+        [ profileImage profile model.inputs
+        , username profile model.inputs
+        , email profile model.inputs
+        , bio profile model.inputs
         , Divider.divider
-        , logout
+        , updateButton profile model
         ]
 
 
-logout : Element Msg
-logout =
-    Button.button LogoutClicked "Logout"
-        |> Button.secondary
-        |> Button.description "logout"
-        |> Button.toElement
+updateButton : User.Profile -> Model -> Element Msg
+updateButton profile model =
+    Form.button
+        { label = "Update Settings"
+        , validation = validation profile
+        , inputs = model.inputs
+        , onSubmit = UpdateSettingsClicked
+        }
 
 
-email : Inputs -> Element Msg
-email =
-    textField Field.small
+email profile =
+    textField profile Field.small email_
+
+
+username profile =
+    textField profile Field.small username_
+
+
+profileImage profile =
+    textField profile Field.small profileImage_
+
+
+bio : User.Profile -> Inputs -> Element Msg
+bio profile =
+    textField profile Field.area bio_
+
+
+textField profile style field =
+    style field
+        |> Field.validateWith (validation profile)
+        |> Field.toElement InputsChanged
+
+
+
+-- Validation
+
+
+validation : User.Profile -> Validation Inputs SettingsUpdate
+validation profile_ =
+    Validation.build User.settingsUpdate
+        |> Validation.constant (User.id profile_)
+        |> Validation.nonEmpty username_
+        |> Validation.nonEmpty email_
+        |> Validation.optional bio_
+        |> Validation.optional profileImage_
+
+
+
+-- Fields
+
+
+email_ : Field Inputs
+email_ =
+    Field.field
         { value = .email
         , update = \i v -> { i | email = v }
         , label = "Email"
         }
 
 
-username : Inputs -> Element Msg
-username =
-    textField Field.small
+username_ : Field Inputs
+username_ =
+    Field.field
         { value = .username
         , update = \i v -> { i | username = v }
         , label = "Username"
         }
 
 
-profileImage : Inputs -> Element Msg
-profileImage =
-    textField Field.small
+profileImage_ : Field Inputs
+profileImage_ =
+    Field.field
         { value = .profileImage
         , update = \i v -> { i | profileImage = v }
         , label = "Profile Image Url"
         }
 
 
-bio : Inputs -> Element Msg
-bio =
-    textField Field.area
+bio_ : Field Inputs
+bio_ =
+    Field.field
         { value = .bio
         , update = \i v -> { i | bio = v }
         , label = "A short bio about you"
         }
-
-
-textField : (Field.Field inputs -> Field.View Inputs) -> Field.Config inputs -> Inputs -> Element Msg
-textField style =
-    Field.field >> style >> Field.toElement InputsChanged
