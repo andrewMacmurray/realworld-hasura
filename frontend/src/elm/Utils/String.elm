@@ -1,7 +1,6 @@
 module Utils.String exposing
     ( NonEmpty
     , Optional
-    , capitalize
     , fromNonEmpty
     , fromOptional
     , pluralize
@@ -10,14 +9,6 @@ module Utils.String exposing
     )
 
 -- Utils
-
-
-capitalize : String -> String
-capitalize s =
-    String.concat
-        [ String.toUpper (String.left 1 s)
-        , String.toLower (String.dropLeft 1 s)
-        ]
 
 
 pluralize : String -> Int -> String

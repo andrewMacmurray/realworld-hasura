@@ -17,18 +17,18 @@ import Element.Anchor as Anchor
 import Element.Avatar as Avatar
 import Element.Background as Background
 import Element.Button as Button
-import Element.Divider as Divider
 import Element.Font as Font
 import Element.Layout as Layout exposing (Layout)
 import Element.Layout.Block as Block
 import Element.Palette as Palette
-import Element.Scale as Scale
+import Element.Scale as Scale exposing (edges)
 import Element.Text as Text
 import Form.Field as Field
 import Form.View.Field as Field
 import Route
 import Tag exposing (Tag)
 import User exposing (User(..))
+import User.Element as Element
 import Utils.String as String
 
 
@@ -229,10 +229,8 @@ showArticleBody user model article =
     column [ spacing Scale.large, width fill, height fill ]
         [ paragraph [] [ Text.title [] (Article.about article) ]
         , paragraph [ Font.color Palette.black ] [ Text.text [] (Article.content article) ]
-        , column [ width fill, spacing Scale.extraLarge ]
-            [ Divider.divider
-            , comments user model article
-            ]
+        , el [ width fill, paddingEach { edges | top = Scale.extraLarge } ]
+            (comments user model article)
         ]
 
 
@@ -250,20 +248,15 @@ comments user model article =
             , Anchor.description "comments"
             ]
             [ Text.title [ Text.green ] (commentsTitle (Article.comments article))
-            , newComment user article model
+            , newComment article model user
             , column [ spacing Scale.large ] (List.map showComment (Article.comments article))
             ]
         )
 
 
-newComment : User -> Article -> Model -> Element Msg
-newComment user article model =
-    case user of
-        User.Guest ->
-            none
-
-        Author _ ->
-            newComment_ article model
+newComment : Article -> Model -> User -> Element Msg
+newComment article model =
+    Element.showIfLoggedIn (newComment_ article model)
 
 
 newComment_ : Article -> Model -> Element Msg

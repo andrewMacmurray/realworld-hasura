@@ -4,12 +4,12 @@ module Element.Button exposing
     , decorative
     , description
     , disabled
+    , edit
     , follow
     , like
     , link
     , post
     , primary
-    , secondary
     , solid
     , toElement
     )
@@ -21,6 +21,7 @@ import Element.Border as Border
 import Element.Font as Font
 import Element.Icon as Icon
 import Element.Icon.Heart as Heart
+import Element.Icon.Pencil as Pencil
 import Element.Icon.Plane as Plane
 import Element.Icon.Plus as Plus
 import Element.Input as Input
@@ -84,6 +85,7 @@ type Icon
     = Heart
     | Plus
     | Plane
+    | Pencil
 
 
 
@@ -138,9 +140,12 @@ primary =
     identity
 
 
-secondary : Button msg -> Button msg
-secondary =
-    red >> hollow
+edit : Button msg -> Button msg
+edit =
+    borderless
+        >> withIcon_ Pencil
+        >> small
+        >> grey
 
 
 post : Button msg -> Button msg
@@ -419,6 +424,9 @@ icon icon_ options =
 
         Plane ->
             Plane.icon (iconColor options)
+
+        Pencil ->
+            Pencil.icon (iconColor options)
 
 
 iconColor : Options msg -> Element.Color
