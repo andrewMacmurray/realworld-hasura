@@ -135,14 +135,17 @@ updateButton profile model =
         }
 
 
+email : User.Profile -> Inputs -> Element Msg
 email profile =
     textField profile Field.small email_
 
 
+username : User.Profile -> Inputs -> Element Msg
 username profile =
     textField profile Field.small username_
 
 
+profileImage : User.Profile -> Inputs -> Element Msg
 profileImage profile =
     textField profile Field.small profileImage_
 
@@ -152,6 +155,7 @@ bio profile =
     textField profile Field.area bio_
 
 
+textField : User.Profile -> (field -> Field.View Inputs SettingsUpdate) -> field -> Inputs -> Element Msg
 textField profile style field =
     style field
         |> Field.validateWith (validation profile)

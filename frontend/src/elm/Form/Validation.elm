@@ -93,10 +93,10 @@ nonEmpty field (Validation toOutput) =
                     toOutput inputs_
             in
             case String.toNonEmpty (Field.value field inputs_) of
-                Just s ->
+                Just value ->
                     case result of
                         Success toOutput_ ->
-                            Success (toOutput_ s)
+                            Success (toOutput_ value)
 
                         Failure err ->
                             Failure err
@@ -111,12 +111,12 @@ optional field (Validation toOutput) =
     Validation
         (\inputs_ ->
             let
-                val =
+                value =
                     String.toOptional (Field.value field inputs_)
             in
             case toOutput inputs_ of
                 Success toOutput_ ->
-                    Success (toOutput_ val)
+                    Success (toOutput_ value)
 
                 Failure err ->
                     Failure err

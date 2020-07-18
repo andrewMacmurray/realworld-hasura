@@ -14,6 +14,7 @@ module Element.Text exposing
     , large
     , link
     , medium
+    , pointer
     , regular
     , small
     , subtitle
@@ -44,6 +45,7 @@ type alias Properties_ =
     , scale : Scale
     , weight : Weight
     , isLink : Bool
+    , showPointer : Bool
     , description : Maybe String
     , font : Font
     }
@@ -94,6 +96,7 @@ defaultProperties =
     , scale = Text
     , weight = Regular
     , isLink = False
+    , showPointer = False
     , description = Nothing
     , font = Body
     }
@@ -126,6 +129,11 @@ black =
 grey : Option
 grey =
     withColor Grey
+
+
+pointer : Option
+pointer properties =
+    { properties | showPointer = True }
 
 
 withSize : Scale -> Option
@@ -226,11 +234,21 @@ toElement properties content =
               , letterSpacing properties
               , fontFamily properties
               ]
+            , showPointer properties
             , anchor properties
             , linkStyles properties
             ]
         )
         (Element.text content)
+
+
+showPointer : Properties_ -> List (Attribute msg)
+showPointer properties =
+    if properties.showPointer then
+        [ Element.pointer ]
+
+    else
+        []
 
 
 anchor : Properties_ -> List (Element.Attribute msg)

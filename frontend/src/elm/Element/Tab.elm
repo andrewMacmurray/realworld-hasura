@@ -42,9 +42,9 @@ link msg text =
 
 subtitleLink : String -> Element msg
 subtitleLink =
-    Text.subtitle []
+    Text.subtitle [ Text.pointer ]
 
 
 greenSubtitle : String -> Element msg
 greenSubtitle =
-    Text.subtitle [ Text.darkGreen ]
+    Text.subtitle [ Text.darkGreen, Text.pointer ]
