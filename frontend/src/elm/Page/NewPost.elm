@@ -14,8 +14,8 @@ import Element exposing (..)
 import Element.Layout as Layout
 import Element.Scale as Scale
 import Element.Text as Text
-import Form
-import Form.Field as Field
+import Form.Button as Button
+import Form.Field as Field exposing (Field)
 import Form.Validation as Validation exposing (Validation)
 import Form.View.Field as Field
 import Tag exposing (Tag)
@@ -28,11 +28,13 @@ import User exposing (User(..))
 
 type alias Model =
     { inputs : Inputs
+    , errorsVisible : Bool
     }
 
 
 type Msg
     = InputsChanged Inputs
+    | PublishClickedWithErrors
     | PublishClicked Article.ToCreate
     | PublishResponseReceived (Api.Response ())
 
@@ -56,7 +58,9 @@ init =
 
 initialModel : Model
 initialModel =
-    { inputs = emptyInputs }
+    { inputs = emptyInputs
+    , errorsVisible = False
+    }
 
 
 emptyInputs : Inputs
@@ -87,6 +91,9 @@ update msg model =
         PublishResponseReceived (Err _) ->
             ( model, Effect.none )
 
+        PublishClickedWithErrors ->
+            ( { model | errorsVisible = True }, Effect.none )
+
 
 publishArticle : Article.ToCreate -> Effect Msg
 publishArticle =
@@ -107,9 +114,9 @@ view user model =
                 , spacing Scale.medium
                 , paddingXY 0 Scale.large
                 ]
-                [ title model.inputs
-                , about model.inputs
-                , content model.inputs
+                [ title model
+                , about model
+                , content model
                 , tags model.inputs
                 , showTags model.inputs.tags
                 , publishButton model
@@ -119,16 +126,18 @@ view user model =
 
 publishButton : Model -> Element Msg
 publishButton model =
-    el [ alignRight ] (publishButton2 model)
+    el [ alignRight ] (publishButton_ model)
 
 
-publishButton2 : Model -> Element Msg
-publishButton2 model =
-    Form.button
+publishButton_ : Model -> Element Msg
+publishButton_ model =
+    Button.validateOnSubmit
         { label = "Publish Article"
         , validation = validation model.inputs
         , inputs = model.inputs
+        , showError = model.errorsVisible
         , onSubmit = PublishClicked
+        , onError = PublishClickedWithErrors
         }
 
 
@@ -153,13 +162,47 @@ showTag tag_ =
     Text.text [ Text.green, Text.description "visible-tag" ] ("#" ++ Tag.value tag_)
 
 
-title : Inputs -> Element Msg
-title =
+title : Model -> Element Msg
+title model =
     title_
         |> Field.large
-        |> textInput
+        |> validate model
+        |> textInput model.inputs
 
 
+about : Model -> Element Msg
+about model =
+    about_
+        |> Field.small
+        |> validate model
+        |> textInput model.inputs
+
+
+content : Model -> Element Msg
+content model =
+    content_
+        |> Field.area
+        |> validate model
+        |> textInput model.inputs
+
+
+tags : Inputs -> Element Msg
+tags inputs =
+    tags_
+        |> Field.small
+        |> textInput inputs
+
+
+validate : Model -> Field.View Inputs Article.ToCreate -> Field.View Inputs Article.ToCreate
+validate model =
+    Field.validateWith (validation model.inputs) >> Field.showErrorsIf model.errorsVisible
+
+
+
+-- Fields
+
+
+title_ : Field Inputs
 title_ =
     Field.field
         { value = .title
@@ -168,13 +211,7 @@ title_ =
         }
 
 
-about : Inputs -> Element Msg
-about =
-    about_
-        |> Field.small
-        |> textInput
-
-
+about_ : Field Inputs
 about_ =
     Field.field
         { value = .about
@@ -183,13 +220,7 @@ about_ =
         }
 
 
-content : Inputs -> Element Msg
-content =
-    content_
-        |> Field.area
-        |> textInput
-
-
+content_ : Field Inputs
 content_ =
     Field.field
         { value = .content
@@ -198,17 +229,15 @@ content_ =
         }
 
 
-tags : Inputs -> Element Msg
-tags =
+tags_ : Field Inputs
+tags_ =
     Field.field
         { value = .tags
         , update = \i v -> { i | tags = v }
         , label = "Enter tags"
         }
-        |> Field.small
-        |> textInput
 
 
-textInput : Field.View Inputs outputs -> Inputs -> Element Msg
-textInput =
-    Field.toElement InputsChanged
+textInput : Inputs -> Field.View Inputs outputs -> Element Msg
+textInput inputs view_ =
+    Field.toElement InputsChanged view_ inputs

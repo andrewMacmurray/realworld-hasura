@@ -5,6 +5,7 @@ module Form.View.Field exposing
     , borderless
     , large
     , medium
+    , showErrorsIf
     , small
     , toElement
     , validateWith
@@ -31,6 +32,7 @@ type alias View inputs output =
     { style : Style
     , validation : Maybe (Validation inputs output)
     , field : Field inputs
+    , errorsVisible : Bool
     }
 
 
@@ -80,6 +82,7 @@ defaults_ style field =
     { style = style
     , validation = Nothing
     , field = field
+    , errorsVisible = True
     }
 
 
@@ -92,19 +95,24 @@ validateWith validation options =
     { options | validation = Just validation }
 
 
+showErrorsIf : Bool -> View inputs output -> View inputs output
+showErrorsIf errorsVisible options =
+    { options | errorsVisible = errorsVisible }
+
+
 
 -- Render
 
 
 toElement : (inputs -> msg) -> View inputs output -> inputs -> Element msg
-toElement msg { field, style, validation } inputs =
+toElement msg ({ field, style, validation } as options) inputs =
     let
         commonAttributes =
             List.concat
                 [ [ Anchor.description (Field.label field)
                   , padding Scale.small
                   ]
-                , errorAttributes validation field inputs
+                , errorAttributes options inputs
                 ]
 
         config_ =
@@ -140,11 +148,15 @@ toElement msg { field, style, validation } inputs =
                 }
 
 
-errorAttributes : Maybe (Validation inputs output) -> Field inputs -> inputs -> List (Attribute msg)
-errorAttributes validation field inputs =
-    validation
-        |> Maybe.map (Error.attributes field inputs)
-        |> Maybe.withDefault []
+errorAttributes : View inputs output -> inputs -> List (Attribute msg)
+errorAttributes { validation, field, errorsVisible } inputs =
+    if errorsVisible then
+        validation
+            |> Maybe.map (Error.attributes field inputs)
+            |> Maybe.withDefault []
+
+    else
+        []
 
 
 toAreaStyle : Border -> List (Attribute msg)

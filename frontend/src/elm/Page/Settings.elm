@@ -14,7 +14,7 @@ import Element.Divider as Divider
 import Element.Layout as Layout
 import Element.Scale as Scale
 import Element.Text as Text
-import Form
+import Form.Button as Button
 import Form.Field as Field exposing (Field)
 import Form.Validation as Validation exposing (Validation)
 import Form.View.Field as Field
@@ -127,7 +127,7 @@ settingsFields profile model =
 
 updateButton : User.Profile -> Model -> Element Msg
 updateButton profile model =
-    Form.button
+    Button.validateOnInput
         { label = "Update Settings"
         , validation = validation profile
         , inputs = model.inputs
