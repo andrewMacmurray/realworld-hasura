@@ -173,16 +173,16 @@ bannerContent user author =
                     , Text.headline [ Text.white ] (Author.username author_)
                     ]
                 , followButton user author_
-                , newPostButton user
+                , newPostButton user author_
                 ]
 
         _ ->
             none
 
 
-newPostButton : User -> Element msg
+newPostButton : User -> Author -> Element msg
 newPostButton =
-    Element.showIfLoggedIn
+    Element.showIfMe
         (row [ spacing Scale.extraSmall ]
             [ Route.button Route.NewPost "New Post"
                 |> Button.follow

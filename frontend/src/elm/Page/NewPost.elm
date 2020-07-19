@@ -11,11 +11,12 @@ import Api.Articles
 import Article
 import Effect exposing (Effect)
 import Element exposing (..)
-import Element.Button as Button
 import Element.Layout as Layout
 import Element.Scale as Scale
 import Element.Text as Text
+import Form
 import Form.Field as Field
+import Form.Validation as Validation exposing (Validation)
 import Form.View.Field as Field
 import Tag exposing (Tag)
 import User exposing (User(..))
@@ -32,7 +33,7 @@ type alias Model =
 
 type Msg
     = InputsChanged Inputs
-    | PublishClicked
+    | PublishClicked Article.ToCreate
     | PublishResponseReceived (Api.Response ())
 
 
@@ -77,8 +78,8 @@ update msg model =
         InputsChanged inputs ->
             ( { model | inputs = inputs }, Effect.none )
 
-        PublishClicked ->
-            ( model, publishArticle model.inputs )
+        PublishClicked toCreate ->
+            ( model, publishArticle toCreate )
 
         PublishResponseReceived (Ok _) ->
             ( model, Effect.redirectHome )
@@ -87,9 +88,9 @@ update msg model =
             ( model, Effect.none )
 
 
-publishArticle : Inputs -> Effect Msg
+publishArticle : Article.ToCreate -> Effect Msg
 publishArticle =
-    Article.toCreate >> Api.Articles.publish PublishResponseReceived
+    Api.Articles.publish PublishResponseReceived
 
 
 
@@ -111,18 +112,33 @@ view user model =
                 , content model.inputs
                 , tags model.inputs
                 , showTags model.inputs.tags
-                , publishButton
+                , publishButton model
                 ]
             )
 
 
-publishButton : Element Msg
-publishButton =
-    el [ alignRight ]
-        (Button.button PublishClicked "Publish Article"
-            |> Button.primary
-            |> Button.toElement
-        )
+publishButton : Model -> Element Msg
+publishButton model =
+    el [ alignRight ] (publishButton2 model)
+
+
+publishButton2 : Model -> Element Msg
+publishButton2 model =
+    Form.button
+        { label = "Publish Article"
+        , validation = validation model.inputs
+        , inputs = model.inputs
+        , onSubmit = PublishClicked
+        }
+
+
+validation : Inputs -> Validation Inputs Article.ToCreate
+validation inputs =
+    Validation.build Article.ToCreate
+        |> Validation.nonEmpty title_
+        |> Validation.nonEmpty about_
+        |> Validation.nonEmpty content_
+        |> Validation.constant (Tag.parse inputs.tags)
 
 
 showTags : String -> Element msg
@@ -139,35 +155,47 @@ showTag tag_ =
 
 title : Inputs -> Element Msg
 title =
+    title_
+        |> Field.large
+        |> textInput
+
+
+title_ =
     Field.field
         { value = .title
         , update = \i v -> { i | title = v }
         , label = "Article Title"
         }
-        |> Field.large
-        |> textInput
 
 
 about : Inputs -> Element Msg
 about =
+    about_
+        |> Field.small
+        |> textInput
+
+
+about_ =
     Field.field
         { value = .about
         , update = \i v -> { i | about = v }
         , label = "What's this article about?"
         }
-        |> Field.small
-        |> textInput
 
 
 content : Inputs -> Element Msg
 content =
+    content_
+        |> Field.area
+        |> textInput
+
+
+content_ =
     Field.field
         { value = .content
         , update = \i v -> { i | content = v }
         , label = "Write your article (in markdown)"
         }
-        |> Field.area
-        |> textInput
 
 
 tags : Inputs -> Element Msg

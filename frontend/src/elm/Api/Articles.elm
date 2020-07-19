@@ -220,9 +220,9 @@ toPublishArgs article_ =
     Input.buildArticles_insert_input
         (\args ->
             { args
-                | title = Present article_.title
-                , about = Present article_.about
-                , content = Present article_.content
+                | title = Argument.fromNonEmpty article_.title
+                , about = Argument.fromNonEmpty article_.about
+                , content = Argument.fromNonEmpty article_.content
                 , tags = Present { data = List.map toTagArg article_.tags }
             }
         )
