@@ -1,12 +1,13 @@
 module Program.Selector exposing
     ( el
+    , fieldError
     , filledArea
     , filledField
     )
 
 import Element.Anchor as Anchor
 import Html.Attributes
-import Test.Html.Selector exposing (Selector, attribute, tag)
+import Test.Html.Selector exposing (Selector, all, attribute, tag)
 
 
 el : String -> Selector
@@ -14,9 +15,14 @@ el label =
     Test.Html.Selector.attribute (Anchor.htmlDescription label)
 
 
+fieldError : String -> Selector
+fieldError label =
+    el (label ++ "-error")
+
+
 filledField : String -> Selector
 filledField val =
-    Test.Html.Selector.all
+    all
         [ tag "input"
         , attribute (Html.Attributes.value val)
         ]
@@ -24,7 +30,7 @@ filledField val =
 
 filledArea : String -> Selector
 filledArea val =
-    Test.Html.Selector.all
+    all
         [ tag "textarea"
         , attribute (Html.Attributes.value val)
         ]

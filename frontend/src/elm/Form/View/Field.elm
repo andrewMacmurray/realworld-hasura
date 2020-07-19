@@ -109,9 +109,7 @@ toElement msg ({ field, style, validation } as options) inputs =
     let
         commonAttributes =
             List.concat
-                [ [ Anchor.description (Field.label field)
-                  , padding Scale.small
-                  ]
+                [ [ Anchor.description (Field.label field), padding Scale.small ]
                 , errorAttributes options inputs
                 ]
 
