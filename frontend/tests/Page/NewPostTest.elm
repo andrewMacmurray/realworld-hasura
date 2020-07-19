@@ -3,7 +3,7 @@ module Page.NewPostTest exposing (suite)
 import Expect
 import Program
 import Program.Expect as Expect
-import Program.Selector exposing (el, filledArea, filledField)
+import Program.Selector exposing (el, fieldError, filledArea, filledField)
 import ProgramTest exposing (clickButton, expectView, expectViewHas)
 import Route
 import Test exposing (..)
@@ -44,6 +44,17 @@ suite =
                     |> Program.fillField "enter-tags" "tag"
                     |> clickButton "Publish Article"
                     |> Expect.redirectHome
+        , test "User sees errors if submitting an incomplete article" <|
+            \_ ->
+                Program.withPage Route.NewPost
+                    |> Program.withLoggedInUser
+                    |> Program.start
+                    |> Program.fillField "article-title" "Title"
+                    |> clickButton "Publish Article"
+                    |> expectViewHas
+                        [ fieldError "what's-this-article-about?"
+                        , fieldError "write-your-article-(in-markdown)"
+                        ]
         ]
 
 

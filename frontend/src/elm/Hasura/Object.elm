@@ -103,3 +103,7 @@ type UnlikeResponse
 
 type Users
     = Users
+
+
+type Users_mutation_response
+    = Users_mutation_response

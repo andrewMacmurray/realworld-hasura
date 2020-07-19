@@ -3,6 +3,7 @@ module Element.Text exposing
     , asLink
     , black
     , bold
+    , darkGreen
     , date
     , description
     , error
@@ -13,6 +14,7 @@ module Element.Text exposing
     , large
     , link
     , medium
+    , pointer
     , regular
     , small
     , subtitle
@@ -23,7 +25,7 @@ module Element.Text exposing
     )
 
 import Date exposing (Date)
-import Element exposing (Element)
+import Element exposing (Attribute, Element)
 import Element.Anchor as Anchor
 import Element.Font as Font
 import Element.Palette as Palette
@@ -40,10 +42,12 @@ type alias Option =
 
 type alias Properties_ =
     { color : Color
-    , size : Size
+    , scale : Scale
     , weight : Weight
     , isLink : Bool
+    , showPointer : Bool
     , description : Maybe String
+    , font : Font
     }
 
 
@@ -52,10 +56,11 @@ type Weight
     | Bold
 
 
-type Size
+type Scale
     = Label
-    | Body
+    | Text
     | Subtitle
+    | TertiaryTitle
     | Title
     | Headline
 
@@ -64,8 +69,14 @@ type Color
     = Black
     | Grey
     | Green
+    | DarkGreen
     | Red
     | White
+
+
+type Font
+    = Heading
+    | Body
 
 
 
@@ -82,10 +93,12 @@ text_ base extras =
 defaultProperties : Properties_
 defaultProperties =
     { color = Grey
-    , size = Body
+    , scale = Text
     , weight = Regular
     , isLink = False
+    , showPointer = False
     , description = Nothing
+    , font = Body
     }
 
 
@@ -96,6 +109,11 @@ defaultProperties =
 green : Option
 green =
     withColor Green
+
+
+darkGreen : Option
+darkGreen =
+    withColor DarkGreen
 
 
 white : Option
@@ -113,14 +131,29 @@ grey =
     withColor Grey
 
 
-withSize : Size -> Option
+pointer : Option
+pointer properties =
+    { properties | showPointer = True }
+
+
+withSize : Scale -> Option
 withSize size_ properties =
-    { properties | size = size_ }
+    { properties | scale = size_ }
 
 
 withColor : Color -> Option
 withColor color properties =
     { properties | color = color }
+
+
+headingFont : Option
+headingFont properties =
+    { properties | font = Heading }
+
+
+bodyFont : Option
+bodyFont properties =
+    { properties | font = Body }
 
 
 bold : Option
@@ -149,37 +182,37 @@ description d properties =
 
 headline : List Option -> String -> Element msg
 headline =
-    text_ [ withSize Headline ]
+    text_ [ withSize Headline, headingFont ]
 
 
 title : List Option -> String -> Element msg
 title =
-    text_ [ withSize Title, withColor Black ]
+    text_ [ withSize Title, withColor Black, headingFont ]
 
 
 subtitle : List Option -> String -> Element msg
 subtitle =
-    text_ [ withSize Subtitle, withColor Black, bold ]
+    text_ [ withSize Subtitle, withColor Black, bold, headingFont ]
 
 
 text : List Option -> String -> Element msg
 text =
-    text_ []
+    text_ [ bodyFont ]
 
 
 label : List Option -> String -> Element msg
 label options =
-    text_ [ withSize Label ] options << String.toUpper
+    text_ [ withSize Label, headingFont ] options << String.toUpper
 
 
 error : List Option -> String -> Element msg
 error =
-    text_ [ withColor Red ]
+    text_ [ withColor Red, bodyFont ]
 
 
 link : List Option -> String -> Element msg
 link =
-    text_ [ withColor Grey, asLink ]
+    text_ [ withColor Grey, asLink, bodyFont ]
 
 
 date : List Option -> Date -> Element msg
@@ -199,12 +232,23 @@ toElement properties content =
               , size properties
               , weight properties
               , letterSpacing properties
+              , fontFamily properties
               ]
+            , showPointer properties
             , anchor properties
             , linkStyles properties
             ]
         )
         (Element.text content)
+
+
+showPointer : Properties_ -> List (Attribute msg)
+showPointer properties =
+    if properties.showPointer then
+        [ Element.pointer ]
+
+    else
+        []
 
 
 anchor : Properties_ -> List (Element.Attribute msg)
@@ -229,6 +273,9 @@ fontColor properties =
         Green ->
             Font.color Palette.green
 
+        DarkGreen ->
+            Font.color Palette.darkGreen
+
         Red ->
             Font.color Palette.red
 
@@ -236,14 +283,27 @@ fontColor properties =
             Font.color Palette.white
 
 
+fontFamily : Properties_ -> Attribute msg
+fontFamily properties =
+    case properties.font of
+        Heading ->
+            openSans
+
+        Body ->
+            abeezee
+
+
 size : Properties_ -> Element.Attr decorative msg
 size properties =
-    case properties.size of
+    case properties.scale of
         Label ->
             Font.size extraSmall
 
-        Body ->
+        Text ->
             Font.size small
+
+        TertiaryTitle ->
+            Font.size medium
 
         Subtitle ->
             Font.size medium
@@ -267,7 +327,7 @@ weight properties =
 
 letterSpacing : Properties_ -> Element.Attribute msg
 letterSpacing properties =
-    case properties.size of
+    case properties.scale of
         Label ->
             Font.letterSpacing 0.6
 
@@ -298,6 +358,9 @@ hoverColors properties =
 
         Green ->
             Font.color Palette.darkGreen
+
+        DarkGreen ->
+            Font.color Palette.green
 
         Red ->
             Font.color Palette.darkRed
@@ -339,3 +402,19 @@ small =
 extraSmall : number
 extraSmall =
     10
+
+
+abeezee : Attribute msg
+abeezee =
+    Font.family
+        [ Font.typeface "ABeeZee"
+        , Font.sansSerif
+        ]
+
+
+openSans : Attribute msg
+openSans =
+    Font.family
+        [ Font.typeface "Open Sans"
+        , Font.sansSerif
+        ]

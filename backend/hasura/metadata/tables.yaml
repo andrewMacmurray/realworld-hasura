@@ -245,6 +245,7 @@
   configuration:
     custom_root_fields:
       select_by_pk: user
+      update_by_pk: update_user
     custom_column_names: {}
   array_relationships:
   - name: articles
@@ -276,3 +277,15 @@
       - profile_image
       - username
       filter: {}
+  update_permissions:
+  - role: user
+    permission:
+      columns:
+      - bio
+      - email
+      - profile_image
+      - username
+      filter:
+        id:
+          _eq: X-Hasura-User-Id
+      check: null

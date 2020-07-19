@@ -24,6 +24,7 @@ import Element.Tab as Tab
 import Element.Text as Text
 import Route
 import User exposing (User)
+import User.Element as Element
 
 
 
@@ -50,11 +51,11 @@ type Tab
     | LikedArticles
 
 
-type LoadStatus a
+type LoadStatus data
     = Loading
     | Failed
     | NotFound
-    | Loaded a
+    | Loaded data
 
 
 
@@ -172,23 +173,25 @@ bannerContent user author =
                     , Text.headline [ Text.white ] (Author.username author_)
                     ]
                 , followButton user author_
-                , newPostButton user
+                , newPostButton user author_
                 ]
 
         _ ->
             none
 
 
-newPostButton : User -> Element msg
-newPostButton user =
-    case user of
-        User.Guest ->
-            none
-
-        User.Author _ ->
-            Route.button Route.NewPost "New Post"
+newPostButton : User -> Author -> Element msg
+newPostButton =
+    Element.showIfMe
+        (row [ spacing Scale.extraSmall ]
+            [ Route.button Route.NewPost "New Post"
                 |> Button.follow
                 |> Button.toElement
+            , Route.button Route.Settings "Edit Settings"
+                |> Button.edit
+                |> Button.toElement
+            ]
+        )
 
 
 followButton : User -> Author -> Element Msg
@@ -217,14 +220,14 @@ tabs activeTab =
     case activeTab of
         AuthoredArticles ->
             Tab.tabs
-                [ Tab.active "By Author"
-                , Tab.link LikedArticlesClicked "Liked"
+                [ Tab.active "by author"
+                , Tab.link LikedArticlesClicked "liked"
                 ]
 
         LikedArticles ->
             Tab.tabs
-                [ Tab.link AuthoredArticlesClicked "By Author"
-                , Tab.active "Liked"
+                [ Tab.link AuthoredArticlesClicked "by author"
+                , Tab.active "liked"
                 ]
 
 

@@ -23,7 +23,6 @@ import Element.Text as Text
 import Route
 import Tag exposing (Tag)
 import User exposing (User(..))
-import Utils.String as String
 import WebData exposing (WebData)
 
 
@@ -162,7 +161,7 @@ banner =
 
 whiteSubtitle : String -> Element msg
 whiteSubtitle =
-    Text.subtitle [ Text.regular, Text.white ]
+    Text.text [ Text.regular, Text.white ]
 
 
 whiteHeadline : String -> Element msg
@@ -188,18 +187,18 @@ userTabs : User.Profile -> Tab -> List (Element Msg)
 userTabs profile_ tab =
     case tab of
         Global ->
-            [ Tab.active "Global Feed"
-            , Tab.link (YourFeedClicked profile_) "Your Feed"
+            [ Tab.active "global feed"
+            , Tab.link (YourFeedClicked profile_) "your feed"
             ]
 
         YourFeed ->
-            [ Tab.link GlobalFeedClicked "Global Feed"
-            , Tab.active "Your Feed"
+            [ Tab.link GlobalFeedClicked "global feed"
+            , Tab.active "your feed"
             ]
 
         TagFeed tag_ ->
-            [ Tab.link GlobalFeedClicked "Global Feed"
-            , Tab.link (YourFeedClicked profile_) "Your Feed"
+            [ Tab.link GlobalFeedClicked "global feed"
+            , Tab.link (YourFeedClicked profile_) "your feed"
             , tagTab tag_
             ]
 
@@ -222,7 +221,7 @@ guestTabs tab =
 
 tagTab : Tag -> Element msg
 tagTab tag =
-    Tab.active ("#" ++ String.capitalize (Tag.value tag))
+    Tab.active ("#" ++ String.toLower (Tag.value tag))
 
 
 
@@ -232,17 +231,14 @@ tagTab tag =
 pageContents : User -> Model -> Element Msg
 pageContents user model =
     row [ width fill, spacing Scale.large ]
-        [ column
-            [ width fill
-            , spacing Scale.large
-            ]
+        [ column [ width fill, alignTop, spacing Scale.large ]
             [ tabs user model.activeTab
             , viewFeed user model.feed
             ]
         , column
             [ Anchor.description "popular-tags"
             , alignTop
-            , spacing Scale.large
+            , spacing Scale.extraLarge
             , width (fill |> maximum 300)
             ]
             [ Text.title [] "Popular Tags"

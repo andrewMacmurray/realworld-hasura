@@ -3,6 +3,7 @@ module Api.Users exposing
     , signIn
     , signUp
     , unfollow
+    , update
     )
 
 import Api
@@ -13,7 +14,7 @@ import Effect exposing (Effect)
 import Graphql.OptionalArgument exposing (OptionalArgument(..))
 import Graphql.SelectionSet as SelectionSet exposing (SelectionSet(..), with)
 import Hasura.InputObject as Input
-import Hasura.Mutation exposing (LoginRequiredArguments, SignupRequiredArguments)
+import Hasura.Mutation exposing (LoginRequiredArguments, SignupRequiredArguments, UpdateUserOptionalArguments)
 import Hasura.Object
 import Hasura.Object.Follows as Follows
 import Hasura.Object.Follows_mutation_response as FollowsResponse
@@ -83,6 +84,31 @@ equalsAuthor author =
             (following_id Input.buildInt_comparison_exp)
             (eq_ (Author.id author))
         )
+
+
+
+-- Update
+
+
+update : User.SettingsUpdate -> (Api.Response () -> msg) -> Effect msg
+update settings msg =
+    Hasura.Mutation.update_user (updateUserArgs settings) { pk_columns = { id = settings.id } } SelectionSet.empty
+        |> SelectionSet.failOnNothing
+        |> Api.mutation msg
+        |> Effect.mutateSettings
+
+
+updateUserArgs : User.SettingsUpdate -> UpdateUserOptionalArguments -> UpdateUserOptionalArguments
+updateUserArgs settings args =
+    { args
+        | set_ =
+            Present
+                { username = Argument.fromNonEmpty settings.username
+                , email = Argument.fromNonEmpty settings.email
+                , bio = Argument.fromOptional settings.bio
+                , profile_image = Argument.fromOptional settings.profileImage
+                }
+    }
 
 
 

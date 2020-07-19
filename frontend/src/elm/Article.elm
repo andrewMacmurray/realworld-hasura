@@ -19,13 +19,13 @@ module Article exposing
     , replace
     , tags
     , title
-    , toCreate
     )
 
 import Article.Author as Author exposing (Author)
 import Date exposing (Date)
 import Tag exposing (Tag)
 import User exposing (User)
+import Utils.String as String
 
 
 
@@ -55,9 +55,9 @@ type alias Id =
 
 
 type alias ToCreate =
-    { title : String
-    , about : String
-    , content : String
+    { title : String.NonEmpty
+    , about : String.NonEmpty
+    , content : String.NonEmpty
     , tags : List Tag
     }
 
@@ -77,19 +77,6 @@ type alias Comment =
 type alias Feed =
     { articles : List Article
     , popularTags : List Tag.Popular
-    }
-
-
-
--- Create
-
-
-toCreate : { i | title : String, about : String, content : String, tags : String } -> ToCreate
-toCreate i =
-    { title = i.title
-    , about = i.about
-    , content = i.content
-    , tags = Tag.parse i.tags
     }
 
 

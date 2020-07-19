@@ -12,6 +12,8 @@ import Graphql.SelectionSet exposing (SelectionSet)
 import Hasura.Enum.Articles_constraint
 import Hasura.Enum.Articles_update_column
 import Hasura.Enum.Order_by
+import Hasura.Enum.Users_constraint
+import Hasura.Enum.Users_update_column
 import Hasura.Interface
 import Hasura.Object
 import Hasura.Scalar
@@ -1780,6 +1782,52 @@ encodeUsers_bool_exp (Users_bool_exp input) =
         [ ( "_and", (encodeUsers_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.and_ ), ( "_not", encodeUsers_bool_exp |> Encode.optional input.not_ ), ( "_or", (encodeUsers_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.or_ ), ( "articles", encodeArticles_bool_exp |> Encode.optional input.articles ), ( "follows", encodeFollows_bool_exp |> Encode.optional input.follows ), ( "id", encodeInt_comparison_exp |> Encode.optional input.id ), ( "profile_image", encodeString_comparison_exp |> Encode.optional input.profile_image ), ( "username", encodeString_comparison_exp |> Encode.optional input.username ) ]
 
 
+buildUsers_on_conflict : Users_on_conflictRequiredFields -> (Users_on_conflictOptionalFields -> Users_on_conflictOptionalFields) -> Users_on_conflict
+buildUsers_on_conflict required fillOptionals =
+    let
+        optionals =
+            fillOptionals
+                { where_ = Absent }
+    in
+    Users_on_conflict { constraint = required.constraint, update_columns = required.update_columns, where_ = optionals.where_ }
+
+
+type alias Users_on_conflictRequiredFields =
+    { constraint : Hasura.Enum.Users_constraint.Users_constraint
+    , update_columns : List Hasura.Enum.Users_update_column.Users_update_column
+    }
+
+
+type alias Users_on_conflictOptionalFields =
+    { where_ : OptionalArgument Users_bool_exp }
+
+
+{-| Type alias for the `Users_on_conflict` attributes. Note that this type
+needs to use the `Users_on_conflict` type (not just a plain type alias) because it has
+references to itself either directly (recursive) or indirectly (circular). See
+<https://github.com/dillonkearns/elm-graphql/issues/33>.
+-}
+type alias Users_on_conflictRaw =
+    { constraint : Hasura.Enum.Users_constraint.Users_constraint
+    , update_columns : List Hasura.Enum.Users_update_column.Users_update_column
+    , where_ : OptionalArgument Users_bool_exp
+    }
+
+
+{-| Type for the Users\_on\_conflict input object.
+-}
+type Users_on_conflict
+    = Users_on_conflict Users_on_conflictRaw
+
+
+{-| Encode a Users\_on\_conflict into a value that can be used as an argument.
+-}
+encodeUsers_on_conflict : Users_on_conflict -> Value
+encodeUsers_on_conflict (Users_on_conflict input) =
+    Encode.maybeObject
+        [ ( "constraint", Encode.enum Hasura.Enum.Users_constraint.toString input.constraint |> Just ), ( "update_columns", (Encode.enum Hasura.Enum.Users_update_column.toString |> Encode.list) input.update_columns |> Just ), ( "where", encodeUsers_bool_exp |> Encode.optional input.where_ ) ]
+
+
 buildUsers_order_by : (Users_order_byOptionalFields -> Users_order_byOptionalFields) -> Users_order_by
 buildUsers_order_by fillOptionals =
     let
@@ -1835,3 +1883,39 @@ encodeUsers_pk_columns_input : Users_pk_columns_input -> Value
 encodeUsers_pk_columns_input input =
     Encode.maybeObject
         [ ( "id", Encode.int input.id |> Just ) ]
+
+
+buildUsers_set_input : (Users_set_inputOptionalFields -> Users_set_inputOptionalFields) -> Users_set_input
+buildUsers_set_input fillOptionals =
+    let
+        optionals =
+            fillOptionals
+                { bio = Absent, email = Absent, profile_image = Absent, username = Absent }
+    in
+    { bio = optionals.bio, email = optionals.email, profile_image = optionals.profile_image, username = optionals.username }
+
+
+type alias Users_set_inputOptionalFields =
+    { bio : OptionalArgument String
+    , email : OptionalArgument String
+    , profile_image : OptionalArgument String
+    , username : OptionalArgument String
+    }
+
+
+{-| Type for the Users\_set\_input input object.
+-}
+type alias Users_set_input =
+    { bio : OptionalArgument String
+    , email : OptionalArgument String
+    , profile_image : OptionalArgument String
+    , username : OptionalArgument String
+    }
+
+
+{-| Encode a Users\_set\_input into a value that can be used as an argument.
+-}
+encodeUsers_set_input : Users_set_input -> Value
+encodeUsers_set_input input =
+    Encode.maybeObject
+        [ ( "bio", Encode.string |> Encode.optional input.bio ), ( "email", Encode.string |> Encode.optional input.email ), ( "profile_image", Encode.string |> Encode.optional input.profile_image ), ( "username", Encode.string |> Encode.optional input.username ) ]

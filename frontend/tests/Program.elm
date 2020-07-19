@@ -55,6 +55,7 @@ type alias Options =
     , article : Api.Response (Maybe Article)
     , articles : Api.Response (List Article)
     , authorFeed : Api.Response (Maybe Author.Feed)
+    , settingsUpdate : Api.Response ()
     , route : Route
     , user : Maybe Ports.User
     }
@@ -136,6 +137,7 @@ defaultOptions route =
     , authorFeed = Ok Nothing
     , article = Ok Nothing
     , user = Nothing
+    , settingsUpdate = Ok ()
     }
 
 
@@ -251,7 +253,7 @@ simulateEffects options eff =
         LoadAuthorFeed query ->
             simulateResponse query options.authorFeed
 
-        PublishArticle mutation ->
+        MutateWithEmptyResponse mutation ->
             simulateResponse mutation (Ok ())
 
         MutateArticle mutation ->
@@ -265,6 +267,12 @@ simulateEffects options eff =
 
         MutateAuthor mutation ->
             simulateResponse mutation (Ok 1)
+
+        MutateSettings mutation ->
+            simulateResponse mutation (Ok ())
+
+        UpdateSettings _ ->
+            SimulatedEffect.Cmd.none
 
 
 simulateResponse : { m | msg : Api.Response a -> msg } -> Api.Response a -> SimulatedEffect msg
