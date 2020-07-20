@@ -16,7 +16,7 @@ import Element exposing (..)
 import Element.Anchor as Anchor
 import Element.Avatar as Avatar
 import Element.Background as Background
-import Element.Button as Button
+import Element.Button as Button exposing (Button)
 import Element.Font as Font
 import Element.Layout as Layout exposing (Layout)
 import Element.Layout.Block as Block
@@ -38,7 +38,8 @@ import Utils.String as String
 
 type alias Model =
     { article : LoadStatus Article
-    , comment : String
+    , newComment : String
+    , commentEdit : CommentEdit
     }
 
 
@@ -50,6 +51,7 @@ type Msg
     | PostCommentResponseReceived (Api.Response Article)
     | DeleteCommentClicked Article.Comment
     | DeleteCommentResponseReceived (Api.Response Article)
+    | DeleteAreYouSureClicked Article.Comment
 
 
 type LoadStatus a
@@ -57,6 +59,12 @@ type LoadStatus a
     | Loaded a
     | NotFound
     | FailedToLoad
+
+
+type CommentEdit
+    = None
+    | ConfirmDelete Article.Comment
+    | Deleting Article.Comment
 
 
 
@@ -76,7 +84,8 @@ loadArticle id =
 initialModel : Model
 initialModel =
     { article = Loading
-    , comment = ""
+    , newComment = ""
+    , commentEdit = None
     }
 
 
@@ -100,25 +109,33 @@ update msg model =
             ( model, handleFollowEffect msg_ )
 
         CommentTyped comment ->
-            ( { model | comment = comment }, Effect.none )
+            ( { model | newComment = comment, commentEdit = None }, Effect.none )
 
         PostCommentClicked article ->
-            ( model, postComment article model.comment )
+            ( model, postComment article model.newComment )
 
         PostCommentResponseReceived (Ok article) ->
-            ( { model | article = Loaded article, comment = "" }, Effect.none )
+            ( resetComments { model | article = Loaded article }, Effect.none )
 
         PostCommentResponseReceived (Err _) ->
             ( model, Effect.none )
 
         DeleteCommentClicked comment ->
-            ( model, deleteComment comment )
+            ( { model | commentEdit = ConfirmDelete comment }, Effect.none )
+
+        DeleteAreYouSureClicked comment ->
+            ( { model | commentEdit = Deleting comment }, deleteComment comment )
 
         DeleteCommentResponseReceived (Ok article) ->
-            ( { model | article = Loaded article, comment = "" }, Effect.none )
+            ( resetComments { model | article = Loaded article }, Effect.none )
 
         DeleteCommentResponseReceived (Err _) ->
-            ( model, Effect.none )
+            ( resetComments model, Effect.none )
+
+
+resetComments : Model -> Model
+resetComments model =
+    { model | newComment = "", commentEdit = None }
 
 
 handleFollowEffect : Follow.Msg -> Effect Msg
@@ -266,7 +283,7 @@ comments user model article =
             [ Text.title [ Text.green ] (commentsTitle (Article.comments article))
             , newComment article model user
             , column [ spacing Scale.large, width fill ]
-                (List.map (showComment user)
+                (List.map (showComment model.commentEdit user)
                     (Article.comments article)
                 )
             ]
@@ -286,7 +303,7 @@ newComment_ article model =
         , height fill
         , onRight (el [ alignBottom, moveRight Scale.small ] (postCommentButton article))
         ]
-        [ commentInput model.comment
+        [ commentInput model.newComment
         ]
 
 
@@ -314,11 +331,11 @@ commentsTitle comments_ =
     String.pluralize "Comment" (List.length comments_)
 
 
-showComment : User -> Article.Comment -> Element Msg
-showComment user comment =
+showComment : CommentEdit -> User -> Article.Comment -> Element Msg
+showComment edit user comment =
     row
         [ spacing Scale.extraLarge
-        , onRight (commentActions comment user)
+        , onRight (commentActions edit comment user)
         , width fill
         ]
         [ el [ alignTop ] (commentAuthor comment)
@@ -326,16 +343,38 @@ showComment user comment =
         ]
 
 
-commentActions : Article.Comment -> User -> Element Msg
-commentActions comment user =
+commentActions : CommentEdit -> Article.Comment -> User -> Element Msg
+commentActions edit comment user =
     Element.showIfMe
-        (Button.button (DeleteCommentClicked comment) "Delete"
-            |> Button.delete
-            |> Button.toElement
-            |> el [ moveRight Scale.small ]
-        )
+        (toDeleteButton (deleteAction edit comment))
         user
         comment.by
+
+
+toDeleteButton : Button msg -> Element msg
+toDeleteButton =
+    Button.delete >> Button.toElement >> el [ moveRight Scale.small ]
+
+
+deleteAction : CommentEdit -> Article.Comment -> Button Msg
+deleteAction edit comment =
+    case edit of
+        None ->
+            Button.button (DeleteCommentClicked comment) "Delete"
+
+        ConfirmDelete comment_ ->
+            if Article.commentEquals comment comment_ then
+                Button.button (DeleteAreYouSureClicked comment_) "Are you Sure?"
+
+            else
+                Button.button (DeleteCommentClicked comment) "Delete"
+
+        Deleting comment_ ->
+            if Article.commentEquals comment comment_ then
+                Button.disabled "Deleting..."
+
+            else
+                Button.disabled "Delete"
 
 
 commentAuthor : Article.Comment -> Element msg

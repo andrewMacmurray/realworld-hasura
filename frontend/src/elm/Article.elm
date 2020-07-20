@@ -9,6 +9,7 @@ module Article exposing
     , author
     , authorUsername
     , build
+    , commentEquals
     , comments
     , content
     , createdAt
@@ -163,6 +164,15 @@ profileImage =
 equals : Article -> Article -> Bool
 equals a b =
     id a == id b
+
+
+
+-- Comment
+
+
+commentEquals : Comment -> Comment -> Bool
+commentEquals c1 c2 =
+    c1.id == c2.id
 
 
 
