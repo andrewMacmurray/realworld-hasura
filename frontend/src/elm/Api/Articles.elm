@@ -2,6 +2,7 @@ module Api.Articles exposing
     ( all
     , articleSelection
     , byTag
+    , deleteComment
     , followedByAuthor
     , like
     , load
@@ -27,7 +28,7 @@ import Hasura.Enum.Tags_select_column as Tags_select_column
 import Hasura.InputObject as Input exposing (Articles_insert_input, Articles_order_byOptionalFields)
 import Hasura.Mutation
 import Hasura.Object exposing (Articles)
-import Hasura.Object.Articles as Articles
+import Hasura.Object.Articles as Articles exposing (CommentsOptionalArguments)
 import Hasura.Object.Comments as Comments
 import Hasura.Object.Likes as Likes
 import Hasura.Object.Likes_aggregate as LikesAggregate
@@ -156,8 +157,15 @@ articleSelection =
             |> with (Articles.tags identity tagSelection)
             |> with (Articles.likes_aggregate identity likesCountSelection)
             |> with (Articles.likes identity likedBySelection)
-            |> with (Articles.comments identity commentSelection)
+            |> with (Articles.comments newestCommentsFirst commentSelection)
         )
+
+
+newestCommentsFirst : CommentsOptionalArguments -> CommentsOptionalArguments
+newestCommentsFirst =
+    Argument.combine2
+        (order_by Input.buildComments_order_by)
+        (created_at Desc)
 
 
 commentSelection : SelectionSet Article.Comment Hasura.Object.Comments
@@ -268,14 +276,14 @@ unlike article msg =
 
 postComment : (Api.Response Article -> msg) -> Article -> String -> Effect msg
 postComment msg article comment =
-    Hasura.Mutation.post_comment { object = postCommentArgs article comment } postCommentSelection
+    Hasura.Mutation.post_comment { object = postCommentArgs article comment } mutateCommentsSelection
         |> SelectionSet.failOnNothing
         |> Api.mutation msg
         |> Effect.postComment
 
 
-postCommentSelection : SelectionSet Article Hasura.Object.Comments
-postCommentSelection =
+mutateCommentsSelection : SelectionSet Article Hasura.Object.Comments
+mutateCommentsSelection =
     Comments.article articleSelection
 
 
@@ -288,3 +296,15 @@ postCommentArgs article comment =
                 , comment = Present comment
             }
         )
+
+
+
+-- Delete Comment
+
+
+deleteComment : (Api.Response Article -> msg) -> Article.Comment -> Effect msg
+deleteComment msg comment =
+    Hasura.Mutation.delete_comments_by_pk { id = comment.id } mutateCommentsSelection
+        |> SelectionSet.failOnNothing
+        |> Api.mutation msg
+        |> Effect.deleteComment

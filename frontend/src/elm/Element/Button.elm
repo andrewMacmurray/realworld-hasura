@@ -2,6 +2,7 @@ module Element.Button exposing
     ( Button
     , button
     , decorative
+    , delete
     , description
     , disabled
     , edit
@@ -20,6 +21,7 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Element.Icon as Icon
+import Element.Icon.Bin as Bin
 import Element.Icon.Heart as Heart
 import Element.Icon.Pencil as Pencil
 import Element.Icon.Plane as Plane
@@ -86,6 +88,7 @@ type Icon
     | Plus
     | Plane
     | Pencil
+    | Bin
 
 
 
@@ -112,13 +115,13 @@ defaults action text =
 
 
 decorative : String -> Button msg
-decorative text =
-    defaults None text |> noHover
+decorative =
+    defaults None >> noHover
 
 
 button : msg -> String -> Button msg
-button msg text =
-    defaults (Msg msg) text
+button msg =
+    defaults (Msg msg)
 
 
 link : { href : String, text : String } -> Button msg
@@ -169,6 +172,14 @@ follow =
         >> withIcon_ Plus
         >> grey
         >> small
+
+
+delete : Button msg -> Button msg
+delete =
+    borderless
+        >> withIcon_ Bin
+        >> small
+        >> red
 
 
 red : Button msg -> Button msg
@@ -427,6 +438,9 @@ icon icon_ options =
 
         Pencil ->
             Pencil.icon (iconColor options)
+
+        Bin ->
+            Bin.icon (iconColor options)
 
 
 iconColor : Options msg -> Element.Color

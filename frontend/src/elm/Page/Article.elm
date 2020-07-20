@@ -48,6 +48,8 @@ type Msg
     | CommentTyped String
     | PostCommentClicked Article
     | PostCommentResponseReceived (Api.Response Article)
+    | DeleteCommentClicked Article.Comment
+    | DeleteCommentResponseReceived (Api.Response Article)
 
 
 type LoadStatus a
@@ -109,6 +111,15 @@ update msg model =
         PostCommentResponseReceived (Err _) ->
             ( model, Effect.none )
 
+        DeleteCommentClicked comment ->
+            ( model, deleteComment comment )
+
+        DeleteCommentResponseReceived (Ok article) ->
+            ( { model | article = Loaded article, comment = "" }, Effect.none )
+
+        DeleteCommentResponseReceived (Err _) ->
+            ( model, Effect.none )
+
 
 handleFollowEffect : Follow.Msg -> Effect Msg
 handleFollowEffect =
@@ -118,6 +129,11 @@ handleFollowEffect =
 postComment : Article -> String -> Effect Msg
 postComment =
     Api.Articles.postComment PostCommentResponseReceived
+
+
+deleteComment : Article.Comment -> Effect Msg
+deleteComment =
+    Api.Articles.deleteComment DeleteCommentResponseReceived
 
 
 
@@ -249,7 +265,10 @@ comments user model article =
             ]
             [ Text.title [ Text.green ] (commentsTitle (Article.comments article))
             , newComment article model user
-            , column [ spacing Scale.large ] (List.map showComment (Article.comments article))
+            , column [ spacing Scale.large, width fill ]
+                (List.map (showComment user)
+                    (Article.comments article)
+                )
             ]
         )
 
@@ -265,9 +284,9 @@ newComment_ article model =
         [ width fill
         , spacing Scale.medium
         , height fill
+        , onRight (el [ alignBottom, moveRight Scale.small ] (postCommentButton article))
         ]
         [ commentInput model.comment
-        , el [ alignBottom ] (postCommentButton article)
         ]
 
 
@@ -295,12 +314,28 @@ commentsTitle comments_ =
     String.pluralize "Comment" (List.length comments_)
 
 
-showComment : Article.Comment -> Element msg
-showComment comment =
-    row [ spacing Scale.extraLarge ]
+showComment : User -> Article.Comment -> Element Msg
+showComment user comment =
+    row
+        [ spacing Scale.extraLarge
+        , onRight (commentActions comment user)
+        , width fill
+        ]
         [ el [ alignTop ] (commentAuthor comment)
         , paragraph [] [ Text.text [] comment.comment ]
         ]
+
+
+commentActions : Article.Comment -> User -> Element Msg
+commentActions comment user =
+    Element.showIfMe
+        (Button.button (DeleteCommentClicked comment) "Delete"
+            |> Button.delete
+            |> Button.toElement
+            |> el [ moveRight Scale.small ]
+        )
+        user
+        comment.by
 
 
 commentAuthor : Article.Comment -> Element msg
