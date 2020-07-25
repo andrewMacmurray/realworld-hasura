@@ -2,6 +2,7 @@ module Api.Argument exposing
     ( author
     , combine2
     , combine4
+    , comment_
     , created_at
     , eq_
     , field
@@ -13,6 +14,7 @@ module Api.Argument exposing
     , likes
     , order_by
     , prop
+    , set_
     , tag
     , tags
     , user_id
@@ -125,6 +127,14 @@ user_id =
 
 where_ =
     field (\val args -> { args | where_ = Present val })
+
+
+set_ =
+    field (\val args -> { args | set_ = Present val })
+
+
+comment_ =
+    prop (\val args -> { args | comment = Present val })
 
 
 

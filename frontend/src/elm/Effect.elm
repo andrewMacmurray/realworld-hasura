@@ -25,6 +25,7 @@ module Effect exposing
     , signUp
     , unfollowAuthor
     , unlikeArticle
+    , updateComment
     , updateSettings
     )
 
@@ -157,6 +158,11 @@ postComment =
 
 deleteComment : Api.Mutation Article msg -> Effect msg
 deleteComment =
+    MutationReturningArticle
+
+
+updateComment : Api.Mutation Article msg -> Effect msg
+updateComment =
     MutationReturningArticle
 
 

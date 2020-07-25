@@ -19,6 +19,17 @@ import Hasura.Union
 import Json.Decode as Decode exposing (Decoder)
 
 
+type alias DeleteCommentRequiredArguments =
+    { id : Int }
+
+
+{-| delete single row from the table: "comments"
+-}
+delete_comment : DeleteCommentRequiredArguments -> SelectionSet decodesTo Hasura.Object.Comments -> SelectionSet (Maybe decodesTo) RootMutation
+delete_comment requiredArgs object_ =
+    Object.selectionForCompositeField "delete_comment" [ Argument.required "id" requiredArgs.id Encode.int ] object_ (identity >> Decode.nullable)
+
+
 type alias DeleteCommentsRequiredArguments =
     { where_ : Hasura.InputObject.Comments_bool_exp }
 
@@ -31,17 +42,6 @@ type alias DeleteCommentsRequiredArguments =
 delete_comments : DeleteCommentsRequiredArguments -> SelectionSet decodesTo Hasura.Object.Comments_mutation_response -> SelectionSet (Maybe decodesTo) RootMutation
 delete_comments requiredArgs object_ =
     Object.selectionForCompositeField "delete_comments" [ Argument.required "where" requiredArgs.where_ Hasura.InputObject.encodeComments_bool_exp ] object_ (identity >> Decode.nullable)
-
-
-type alias DeleteCommentsByPkRequiredArguments =
-    { id : Int }
-
-
-{-| delete single row from the table: "comments"
--}
-delete_comments_by_pk : DeleteCommentsByPkRequiredArguments -> SelectionSet decodesTo Hasura.Object.Comments -> SelectionSet (Maybe decodesTo) RootMutation
-delete_comments_by_pk requiredArgs object_ =
-    Object.selectionForCompositeField "delete_comments_by_pk" [ Argument.required "id" requiredArgs.id Encode.int ] object_ (identity >> Decode.nullable)
 
 
 type alias DeleteFollowsByPkRequiredArguments =
@@ -83,6 +83,10 @@ follow_authors requiredArgs object_ =
     Object.selectionForCompositeField "follow_authors" [ Argument.required "objects" requiredArgs.objects (Hasura.InputObject.encodeFollows_insert_input |> Encode.list) ] object_ (identity >> Decode.nullable)
 
 
+type alias InsertCommentsOptionalArguments =
+    { on_conflict : OptionalArgument Hasura.InputObject.Comments_on_conflict }
+
+
 type alias InsertCommentsRequiredArguments =
     { objects : List Hasura.InputObject.Comments_insert_input }
 
@@ -90,11 +94,20 @@ type alias InsertCommentsRequiredArguments =
 {-| insert data into the table: "comments"
 
   - objects - the rows to be inserted
+  - on\_conflict - on conflict condition
 
 -}
-insert_comments : InsertCommentsRequiredArguments -> SelectionSet decodesTo Hasura.Object.Comments_mutation_response -> SelectionSet (Maybe decodesTo) RootMutation
-insert_comments requiredArgs object_ =
-    Object.selectionForCompositeField "insert_comments" [ Argument.required "objects" requiredArgs.objects (Hasura.InputObject.encodeComments_insert_input |> Encode.list) ] object_ (identity >> Decode.nullable)
+insert_comments : (InsertCommentsOptionalArguments -> InsertCommentsOptionalArguments) -> InsertCommentsRequiredArguments -> SelectionSet decodesTo Hasura.Object.Comments_mutation_response -> SelectionSet (Maybe decodesTo) RootMutation
+insert_comments fillInOptionals requiredArgs object_ =
+    let
+        filledInOptionals =
+            fillInOptionals { on_conflict = Absent }
+
+        optionalArgs =
+            [ Argument.optional "on_conflict" filledInOptionals.on_conflict Hasura.InputObject.encodeComments_on_conflict ]
+                |> List.filterMap identity
+    in
+    Object.selectionForCompositeField "insert_comments" (optionalArgs ++ [ Argument.required "objects" requiredArgs.objects (Hasura.InputObject.encodeComments_insert_input |> Encode.list) ]) object_ (identity >> Decode.nullable)
 
 
 type alias InsertTagRequiredArguments =
@@ -166,6 +179,10 @@ login requiredArgs object_ =
     Object.selectionForCompositeField "login" [ Argument.required "password" requiredArgs.password Encode.string, Argument.required "username" requiredArgs.username Encode.string ] object_ identity
 
 
+type alias PostCommentOptionalArguments =
+    { on_conflict : OptionalArgument Hasura.InputObject.Comments_on_conflict }
+
+
 type alias PostCommentRequiredArguments =
     { object : Hasura.InputObject.Comments_insert_input }
 
@@ -173,11 +190,20 @@ type alias PostCommentRequiredArguments =
 {-| insert a single row into the table: "comments"
 
   - object - the row to be inserted
+  - on\_conflict - on conflict condition
 
 -}
-post_comment : PostCommentRequiredArguments -> SelectionSet decodesTo Hasura.Object.Comments -> SelectionSet (Maybe decodesTo) RootMutation
-post_comment requiredArgs object_ =
-    Object.selectionForCompositeField "post_comment" [ Argument.required "object" requiredArgs.object Hasura.InputObject.encodeComments_insert_input ] object_ (identity >> Decode.nullable)
+post_comment : (PostCommentOptionalArguments -> PostCommentOptionalArguments) -> PostCommentRequiredArguments -> SelectionSet decodesTo Hasura.Object.Comments -> SelectionSet (Maybe decodesTo) RootMutation
+post_comment fillInOptionals requiredArgs object_ =
+    let
+        filledInOptionals =
+            fillInOptionals { on_conflict = Absent }
+
+        optionalArgs =
+            [ Argument.optional "on_conflict" filledInOptionals.on_conflict Hasura.InputObject.encodeComments_on_conflict ]
+                |> List.filterMap identity
+    in
+    Object.selectionForCompositeField "post_comment" (optionalArgs ++ [ Argument.required "object" requiredArgs.object Hasura.InputObject.encodeComments_insert_input ]) object_ (identity >> Decode.nullable)
 
 
 type alias PublishArticleOptionalArguments =
@@ -324,6 +350,59 @@ update_articles_by_pk fillInOptionals requiredArgs object_ =
                 |> List.filterMap identity
     in
     Object.selectionForCompositeField "update_articles_by_pk" (optionalArgs ++ [ Argument.required "pk_columns" requiredArgs.pk_columns Hasura.InputObject.encodeArticles_pk_columns_input ]) object_ (identity >> Decode.nullable)
+
+
+type alias UpdateCommentOptionalArguments =
+    { set_ : OptionalArgument Hasura.InputObject.Comments_set_input }
+
+
+type alias UpdateCommentRequiredArguments =
+    { pk_columns : Hasura.InputObject.Comments_pk_columns_input }
+
+
+{-| update single row of the table: "comments"
+
+  - set\_ - sets the columns of the filtered rows to the given values
+
+-}
+update_comment : (UpdateCommentOptionalArguments -> UpdateCommentOptionalArguments) -> UpdateCommentRequiredArguments -> SelectionSet decodesTo Hasura.Object.Comments -> SelectionSet (Maybe decodesTo) RootMutation
+update_comment fillInOptionals requiredArgs object_ =
+    let
+        filledInOptionals =
+            fillInOptionals { set_ = Absent }
+
+        optionalArgs =
+            [ Argument.optional "_set" filledInOptionals.set_ Hasura.InputObject.encodeComments_set_input ]
+                |> List.filterMap identity
+    in
+    Object.selectionForCompositeField "update_comment" (optionalArgs ++ [ Argument.required "pk_columns" requiredArgs.pk_columns Hasura.InputObject.encodeComments_pk_columns_input ]) object_ (identity >> Decode.nullable)
+
+
+type alias UpdateCommentsOptionalArguments =
+    { set_ : OptionalArgument Hasura.InputObject.Comments_set_input }
+
+
+type alias UpdateCommentsRequiredArguments =
+    { where_ : Hasura.InputObject.Comments_bool_exp }
+
+
+{-| update data of the table: "comments"
+
+  - set\_ - sets the columns of the filtered rows to the given values
+  - where\_ - filter the rows which have to be updated
+
+-}
+update_comments : (UpdateCommentsOptionalArguments -> UpdateCommentsOptionalArguments) -> UpdateCommentsRequiredArguments -> SelectionSet decodesTo Hasura.Object.Comments_mutation_response -> SelectionSet (Maybe decodesTo) RootMutation
+update_comments fillInOptionals requiredArgs object_ =
+    let
+        filledInOptionals =
+            fillInOptionals { set_ = Absent }
+
+        optionalArgs =
+            [ Argument.optional "_set" filledInOptionals.set_ Hasura.InputObject.encodeComments_set_input ]
+                |> List.filterMap identity
+    in
+    Object.selectionForCompositeField "update_comments" (optionalArgs ++ [ Argument.required "where" requiredArgs.where_ Hasura.InputObject.encodeComments_bool_exp ]) object_ (identity >> Decode.nullable)
 
 
 type alias UpdateUserOptionalArguments =

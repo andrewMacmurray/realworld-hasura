@@ -11,6 +11,8 @@ import Graphql.OptionalArgument exposing (OptionalArgument(..))
 import Graphql.SelectionSet exposing (SelectionSet)
 import Hasura.Enum.Articles_constraint
 import Hasura.Enum.Articles_update_column
+import Hasura.Enum.Comments_constraint
+import Hasura.Enum.Comments_update_column
 import Hasura.Enum.Order_by
 import Hasura.Enum.Users_constraint
 import Hasura.Enum.Users_update_column
@@ -363,13 +365,22 @@ encodeArticles_set_input input =
         [ ( "about", Encode.string |> Encode.optional input.about ), ( "content", Encode.string |> Encode.optional input.content ), ( "title", Encode.string |> Encode.optional input.title ) ]
 
 
-buildComments_arr_rel_insert_input : Comments_arr_rel_insert_inputRequiredFields -> Comments_arr_rel_insert_input
-buildComments_arr_rel_insert_input required =
-    Comments_arr_rel_insert_input { data = required.data }
+buildComments_arr_rel_insert_input : Comments_arr_rel_insert_inputRequiredFields -> (Comments_arr_rel_insert_inputOptionalFields -> Comments_arr_rel_insert_inputOptionalFields) -> Comments_arr_rel_insert_input
+buildComments_arr_rel_insert_input required fillOptionals =
+    let
+        optionals =
+            fillOptionals
+                { on_conflict = Absent }
+    in
+    Comments_arr_rel_insert_input { data = required.data, on_conflict = optionals.on_conflict }
 
 
 type alias Comments_arr_rel_insert_inputRequiredFields =
     { data : List Comments_insert_input }
+
+
+type alias Comments_arr_rel_insert_inputOptionalFields =
+    { on_conflict : OptionalArgument Comments_on_conflict }
 
 
 {-| Type alias for the `Comments_arr_rel_insert_input` attributes. Note that this type
@@ -378,7 +389,9 @@ references to itself either directly (recursive) or indirectly (circular). See
 <https://github.com/dillonkearns/elm-graphql/issues/33>.
 -}
 type alias Comments_arr_rel_insert_inputRaw =
-    { data : List Comments_insert_input }
+    { data : List Comments_insert_input
+    , on_conflict : OptionalArgument Comments_on_conflict
+    }
 
 
 {-| Type for the Comments\_arr\_rel\_insert\_input input object.
@@ -392,7 +405,7 @@ type Comments_arr_rel_insert_input
 encodeComments_arr_rel_insert_input : Comments_arr_rel_insert_input -> Value
 encodeComments_arr_rel_insert_input (Comments_arr_rel_insert_input input) =
     Encode.maybeObject
-        [ ( "data", (encodeComments_insert_input |> Encode.list) input.data |> Just ) ]
+        [ ( "data", (encodeComments_insert_input |> Encode.list) input.data |> Just ), ( "on_conflict", encodeComments_on_conflict |> Encode.optional input.on_conflict ) ]
 
 
 buildComments_bool_exp : (Comments_bool_expOptionalFields -> Comments_bool_expOptionalFields) -> Comments_bool_exp
@@ -491,13 +504,22 @@ encodeComments_insert_input (Comments_insert_input input) =
         [ ( "article", encodeArticles_obj_rel_insert_input |> Encode.optional input.article ), ( "article_id", Encode.int |> Encode.optional input.article_id ), ( "comment", Encode.string |> Encode.optional input.comment ) ]
 
 
-buildComments_obj_rel_insert_input : Comments_obj_rel_insert_inputRequiredFields -> Comments_obj_rel_insert_input
-buildComments_obj_rel_insert_input required =
-    Comments_obj_rel_insert_input { data = required.data }
+buildComments_obj_rel_insert_input : Comments_obj_rel_insert_inputRequiredFields -> (Comments_obj_rel_insert_inputOptionalFields -> Comments_obj_rel_insert_inputOptionalFields) -> Comments_obj_rel_insert_input
+buildComments_obj_rel_insert_input required fillOptionals =
+    let
+        optionals =
+            fillOptionals
+                { on_conflict = Absent }
+    in
+    Comments_obj_rel_insert_input { data = required.data, on_conflict = optionals.on_conflict }
 
 
 type alias Comments_obj_rel_insert_inputRequiredFields =
     { data : Comments_insert_input }
+
+
+type alias Comments_obj_rel_insert_inputOptionalFields =
+    { on_conflict : OptionalArgument Comments_on_conflict }
 
 
 {-| Type alias for the `Comments_obj_rel_insert_input` attributes. Note that this type
@@ -506,7 +528,9 @@ references to itself either directly (recursive) or indirectly (circular). See
 <https://github.com/dillonkearns/elm-graphql/issues/33>.
 -}
 type alias Comments_obj_rel_insert_inputRaw =
-    { data : Comments_insert_input }
+    { data : Comments_insert_input
+    , on_conflict : OptionalArgument Comments_on_conflict
+    }
 
 
 {-| Type for the Comments\_obj\_rel\_insert\_input input object.
@@ -520,7 +544,53 @@ type Comments_obj_rel_insert_input
 encodeComments_obj_rel_insert_input : Comments_obj_rel_insert_input -> Value
 encodeComments_obj_rel_insert_input (Comments_obj_rel_insert_input input) =
     Encode.maybeObject
-        [ ( "data", encodeComments_insert_input input.data |> Just ) ]
+        [ ( "data", encodeComments_insert_input input.data |> Just ), ( "on_conflict", encodeComments_on_conflict |> Encode.optional input.on_conflict ) ]
+
+
+buildComments_on_conflict : Comments_on_conflictRequiredFields -> (Comments_on_conflictOptionalFields -> Comments_on_conflictOptionalFields) -> Comments_on_conflict
+buildComments_on_conflict required fillOptionals =
+    let
+        optionals =
+            fillOptionals
+                { where_ = Absent }
+    in
+    Comments_on_conflict { constraint = required.constraint, update_columns = required.update_columns, where_ = optionals.where_ }
+
+
+type alias Comments_on_conflictRequiredFields =
+    { constraint : Hasura.Enum.Comments_constraint.Comments_constraint
+    , update_columns : List Hasura.Enum.Comments_update_column.Comments_update_column
+    }
+
+
+type alias Comments_on_conflictOptionalFields =
+    { where_ : OptionalArgument Comments_bool_exp }
+
+
+{-| Type alias for the `Comments_on_conflict` attributes. Note that this type
+needs to use the `Comments_on_conflict` type (not just a plain type alias) because it has
+references to itself either directly (recursive) or indirectly (circular). See
+<https://github.com/dillonkearns/elm-graphql/issues/33>.
+-}
+type alias Comments_on_conflictRaw =
+    { constraint : Hasura.Enum.Comments_constraint.Comments_constraint
+    , update_columns : List Hasura.Enum.Comments_update_column.Comments_update_column
+    , where_ : OptionalArgument Comments_bool_exp
+    }
+
+
+{-| Type for the Comments\_on\_conflict input object.
+-}
+type Comments_on_conflict
+    = Comments_on_conflict Comments_on_conflictRaw
+
+
+{-| Encode a Comments\_on\_conflict into a value that can be used as an argument.
+-}
+encodeComments_on_conflict : Comments_on_conflict -> Value
+encodeComments_on_conflict (Comments_on_conflict input) =
+    Encode.maybeObject
+        [ ( "constraint", Encode.enum Hasura.Enum.Comments_constraint.toString input.constraint |> Just ), ( "update_columns", (Encode.enum Hasura.Enum.Comments_update_column.toString |> Encode.list) input.update_columns |> Just ), ( "where", encodeComments_bool_exp |> Encode.optional input.where_ ) ]
 
 
 buildComments_order_by : (Comments_order_byOptionalFields -> Comments_order_byOptionalFields) -> Comments_order_by
@@ -591,6 +661,34 @@ encodeComments_pk_columns_input : Comments_pk_columns_input -> Value
 encodeComments_pk_columns_input input =
     Encode.maybeObject
         [ ( "id", Encode.int input.id |> Just ) ]
+
+
+buildComments_set_input : (Comments_set_inputOptionalFields -> Comments_set_inputOptionalFields) -> Comments_set_input
+buildComments_set_input fillOptionals =
+    let
+        optionals =
+            fillOptionals
+                { comment = Absent }
+    in
+    { comment = optionals.comment }
+
+
+type alias Comments_set_inputOptionalFields =
+    { comment : OptionalArgument String }
+
+
+{-| Type for the Comments\_set\_input input object.
+-}
+type alias Comments_set_input =
+    { comment : OptionalArgument String }
+
+
+{-| Encode a Comments\_set\_input into a value that can be used as an argument.
+-}
+encodeComments_set_input : Comments_set_input -> Value
+encodeComments_set_input input =
+    Encode.maybeObject
+        [ ( "comment", Encode.string |> Encode.optional input.comment ) ]
 
 
 buildFollows_arr_rel_insert_input : Follows_arr_rel_insert_inputRequiredFields -> Follows_arr_rel_insert_input

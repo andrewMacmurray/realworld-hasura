@@ -12,10 +12,11 @@ module Api.Articles exposing
     , postComment
     , publish
     , unlike
+    , updateComment
     )
 
 import Api
-import Api.Argument as Argument exposing (author, created_at, eq_, id, in_, order_by, tag, tags, where_)
+import Api.Argument as Argument exposing (..)
 import Api.Date as Date
 import Article exposing (Article)
 import Article.Author as Author exposing (Author)
@@ -26,7 +27,7 @@ import Graphql.SelectionSet as SelectionSet exposing (SelectionSet, with)
 import Hasura.Enum.Order_by exposing (Order_by(..))
 import Hasura.Enum.Tags_select_column as Tags_select_column
 import Hasura.InputObject as Input exposing (Articles_insert_input, Articles_order_byOptionalFields)
-import Hasura.Mutation
+import Hasura.Mutation exposing (UpdateCommentOptionalArguments)
 import Hasura.Object exposing (Articles)
 import Hasura.Object.Articles as Articles exposing (CommentsOptionalArguments)
 import Hasura.Object.Comments as Comments
@@ -276,7 +277,7 @@ unlike article msg =
 
 postComment : (Api.Response Article -> msg) -> Article -> String -> Effect msg
 postComment msg article comment =
-    Hasura.Mutation.post_comment { object = postCommentArgs article comment } mutateCommentsSelection
+    Hasura.Mutation.post_comment identity { object = postCommentArgs article comment } mutateCommentsSelection
         |> SelectionSet.failOnNothing
         |> Api.mutation msg
         |> Effect.postComment
@@ -304,7 +305,26 @@ postCommentArgs article comment =
 
 deleteComment : (Api.Response Article -> msg) -> Article.Comment -> Effect msg
 deleteComment msg comment =
-    Hasura.Mutation.delete_comments_by_pk { id = comment.id } mutateCommentsSelection
+    Hasura.Mutation.delete_comment { id = comment.id } mutateCommentsSelection
         |> SelectionSet.failOnNothing
         |> Api.mutation msg
         |> Effect.deleteComment
+
+
+
+-- Update Comment
+
+
+updateComment : (Api.Response Article -> msg) -> Article.Comment -> Effect msg
+updateComment msg comment =
+    Hasura.Mutation.update_comment (updateCommentArgs comment) { pk_columns = { id = comment.id } } mutateCommentsSelection
+        |> SelectionSet.failOnNothing
+        |> Api.mutation msg
+        |> Effect.updateComment
+
+
+updateCommentArgs : Article.Comment -> UpdateCommentOptionalArguments -> UpdateCommentOptionalArguments
+updateCommentArgs comment =
+    Argument.combine2
+        (set_ Input.buildComments_set_input)
+        (comment_ comment.comment)

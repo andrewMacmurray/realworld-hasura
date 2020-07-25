@@ -52,6 +52,10 @@ type Msg
     | DeleteCommentClicked Article.Comment
     | DeleteCommentResponseReceived (Api.Response Article)
     | DeleteAreYouSureClicked Article.Comment
+    | EditCommentClicked Article.Comment
+    | CommentEdited Article.Comment
+    | SubmitEditClicked Article.Comment
+    | UpdateCommentResponseReceived (Api.Response Article)
 
 
 type LoadStatus a
@@ -63,8 +67,9 @@ type LoadStatus a
 
 type CommentEdit
     = None
+    | Editing Article.Comment
     | ConfirmDelete Article.Comment
-    | Deleting Article.Comment
+    | Updating Article.Comment
 
 
 
@@ -124,12 +129,27 @@ update msg model =
             ( { model | commentEdit = ConfirmDelete comment }, Effect.none )
 
         DeleteAreYouSureClicked comment ->
-            ( { model | commentEdit = Deleting comment }, deleteComment comment )
+            ( { model | commentEdit = Updating comment }, deleteComment comment )
 
         DeleteCommentResponseReceived (Ok article) ->
             ( resetComments { model | article = Loaded article }, Effect.none )
 
         DeleteCommentResponseReceived (Err _) ->
+            ( resetComments model, Effect.none )
+
+        EditCommentClicked comment ->
+            ( { model | commentEdit = Editing comment }, Effect.none )
+
+        CommentEdited comment ->
+            ( { model | commentEdit = Editing comment }, Effect.none )
+
+        SubmitEditClicked comment ->
+            ( { model | commentEdit = Updating comment }, updateComment comment )
+
+        UpdateCommentResponseReceived (Ok article) ->
+            ( resetComments { model | article = Loaded article }, Effect.none )
+
+        UpdateCommentResponseReceived (Err _) ->
             ( resetComments model, Effect.none )
 
 
@@ -151,6 +171,11 @@ postComment =
 deleteComment : Article.Comment -> Effect Msg
 deleteComment =
     Api.Articles.deleteComment DeleteCommentResponseReceived
+
+
+updateComment : Article.Comment -> Effect Msg
+updateComment =
+    Api.Articles.updateComment UpdateCommentResponseReceived
 
 
 
@@ -339,21 +364,82 @@ showComment edit user comment =
         , width fill
         ]
         [ el [ alignTop ] (commentAuthor comment)
-        , paragraph [] [ Text.text [] comment.comment ]
+        , toCommentText edit comment
         ]
+
+
+toCommentText : CommentEdit -> Article.Comment -> Element Msg
+toCommentText edit comment =
+    case edit of
+        None ->
+            paragraph [] [ Text.text [] comment.comment ]
+
+        Editing comment_ ->
+            if Article.commentEquals comment comment_ then
+                editCommentField comment_
+
+            else
+                paragraph [] [ Text.text [] comment.comment ]
+
+        ConfirmDelete _ ->
+            paragraph [] [ Text.text [] comment.comment ]
+
+        Updating _ ->
+            paragraph [] [ Text.text [] comment.comment ]
+
+
+editCommentField =
+    Field.field
+        { label = "Edit comment"
+        , value = .comment
+        , update = \c v -> { c | comment = v }
+        }
+        |> Field.borderless
+        |> Field.toElement CommentEdited
 
 
 commentActions : CommentEdit -> Article.Comment -> User -> Element Msg
 commentActions edit comment user =
-    Element.showIfMe
-        (toDeleteButton (deleteAction edit comment))
-        user
-        comment.by
+    Element.showIfMe (commentButtons edit comment) user comment.by
+
+
+commentButtons edit comment =
+    row [ width fill, spacing Scale.extraSmall, moveRight Scale.small ]
+        [ toEditButton (editAction edit comment)
+        , toDeleteButton (deleteAction edit comment)
+        ]
+
+
+toEditButton =
+    Button.toElement
 
 
 toDeleteButton : Button msg -> Element msg
 toDeleteButton =
-    Button.delete >> Button.toElement >> el [ moveRight Scale.small ]
+    Button.delete >> Button.toElement
+
+
+editAction edit comment =
+    let
+        active =
+            Button.button (EditCommentClicked comment) "Edit" |> Button.edit
+    in
+    case edit of
+        None ->
+            active
+
+        ConfirmDelete _ ->
+            active
+
+        Updating _ ->
+            Button.disabled "Edit" |> Button.edit
+
+        Editing comment_ ->
+            if Article.commentEquals comment comment_ then
+                Button.button (SubmitEditClicked comment_) "Submit" |> Button.edit
+
+            else
+                active
 
 
 deleteAction : CommentEdit -> Article.Comment -> Button Msg
@@ -369,12 +455,11 @@ deleteAction edit comment =
             else
                 Button.button (DeleteCommentClicked comment) "Delete"
 
-        Deleting comment_ ->
-            if Article.commentEquals comment comment_ then
-                Button.disabled "Deleting..."
+        Updating _ ->
+            Button.disabled "Delete"
 
-            else
-                Button.disabled "Delete"
+        Editing _ ->
+            Button.button (DeleteCommentClicked comment) "Delete"
 
 
 commentAuthor : Article.Comment -> Element msg
