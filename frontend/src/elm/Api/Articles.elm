@@ -20,6 +20,7 @@ import Api.Argument as Argument exposing (..)
 import Api.Date as Date
 import Article exposing (Article)
 import Article.Author as Author exposing (Author)
+import Article.Comment as Comment exposing (Comment, Comment_)
 import Effect exposing (Effect)
 import Graphql.Operation exposing (RootQuery)
 import Graphql.OptionalArgument exposing (OptionalArgument(..))
@@ -169,13 +170,15 @@ newestCommentsFirst =
         (created_at Desc)
 
 
-commentSelection : SelectionSet Article.Comment Hasura.Object.Comments
+commentSelection : SelectionSet Comment Hasura.Object.Comments
 commentSelection =
-    SelectionSet.succeed Article.Comment
-        |> with Comments.id
-        |> with Comments.comment
-        |> with (Date.fromScalar Comments.created_at)
-        |> with (Comments.user authorSelection)
+    SelectionSet.map Comment.build
+        (SelectionSet.succeed Comment_
+            |> with Comments.id
+            |> with Comments.comment
+            |> with (Date.fromScalar Comments.created_at)
+            |> with (Comments.user authorSelection)
+        )
 
 
 authorSelection : SelectionSet Author Hasura.Object.Users
@@ -303,9 +306,9 @@ postCommentArgs article comment =
 -- Delete Comment
 
 
-deleteComment : (Api.Response Article -> msg) -> Article.Comment -> Effect msg
+deleteComment : (Api.Response Article -> msg) -> Comment -> Effect msg
 deleteComment msg comment =
-    Hasura.Mutation.delete_comment { id = comment.id } mutateCommentsSelection
+    Hasura.Mutation.delete_comment { id = Comment.id comment } mutateCommentsSelection
         |> SelectionSet.failOnNothing
         |> Api.mutation msg
         |> Effect.deleteComment
@@ -315,16 +318,16 @@ deleteComment msg comment =
 -- Update Comment
 
 
-updateComment : (Api.Response Article -> msg) -> Article.Comment -> Effect msg
+updateComment : (Api.Response Article -> msg) -> Comment -> Effect msg
 updateComment msg comment =
-    Hasura.Mutation.update_comment (updateCommentArgs comment) { pk_columns = { id = comment.id } } mutateCommentsSelection
+    Hasura.Mutation.update_comment (updateCommentArgs comment) { pk_columns = { id = Comment.id comment } } mutateCommentsSelection
         |> SelectionSet.failOnNothing
         |> Api.mutation msg
         |> Effect.updateComment
 
 
-updateCommentArgs : Article.Comment -> UpdateCommentOptionalArguments -> UpdateCommentOptionalArguments
+updateCommentArgs : Comment -> UpdateCommentOptionalArguments -> UpdateCommentOptionalArguments
 updateCommentArgs comment =
     Argument.combine2
         (set_ Input.buildComments_set_input)
-        (comment_ comment.comment)
+        (comment_ (Comment.value comment))

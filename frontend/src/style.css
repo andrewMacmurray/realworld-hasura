@@ -6,10 +6,14 @@
   border-radius: 100%;
 }
 
-.icon-white-hover-target {
+.icon-hover-target {
   transition: fill 0.2s ease;
 }
 
-.icon-white-hover:hover .icon-white-hover-target {
+.icon-white-hover:hover .icon-hover-target {
   fill: white;
+}
+
+.icon-black-hover:hover .icon-hover-target {
+  fill: black;
 }

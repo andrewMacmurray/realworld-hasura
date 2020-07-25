@@ -1,6 +1,5 @@
 module Article exposing
     ( Article
-    , Comment
     , Details
     , Feed
     , Id
@@ -9,7 +8,6 @@ module Article exposing
     , author
     , authorUsername
     , build
-    , commentEquals
     , comments
     , content
     , createdAt
@@ -23,6 +21,7 @@ module Article exposing
     )
 
 import Article.Author as Author exposing (Author)
+import Article.Comment exposing (Comment)
 import Date exposing (Date)
 import Tag exposing (Tag)
 import User exposing (User)
@@ -60,14 +59,6 @@ type alias ToCreate =
     , about : String.NonEmpty
     , content : String.NonEmpty
     , tags : List Tag
-    }
-
-
-type alias Comment =
-    { id : Int
-    , comment : String
-    , date : Date
-    , by : Author
     }
 
 
@@ -164,15 +155,6 @@ profileImage =
 equals : Article -> Article -> Bool
 equals a b =
     id a == id b
-
-
-
--- Comment
-
-
-commentEquals : Comment -> Comment -> Bool
-commentEquals c1 c2 =
-    c1.id == c2.id
 
 
 
