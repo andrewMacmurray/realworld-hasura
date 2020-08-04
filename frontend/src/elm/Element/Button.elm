@@ -299,7 +299,7 @@ toAttributes : Options msg -> List (Attribute msg)
 toAttributes options =
     List.concat
         [ [ fill_ options
-          , Transition.colors
+          , transition_ options
           , borderColor options
           , fontColor options
           , Border.width 1
@@ -317,6 +317,35 @@ description_ options =
     options.description
         |> Maybe.map (Anchor.description >> List.singleton)
         |> Maybe.withDefault []
+
+
+transition_ : Options msg -> Attribute msg
+transition_ options =
+    case options.fill of
+        Borderless ->
+            Transition.all 0.2
+                [ Transition.background
+                , Transition.color
+                ]
+
+        Solid ->
+            Transition.all 0.2
+                [ Transition.background
+                , Transition.color
+                , Transition.border
+                ]
+
+        Hollow ->
+            Transition.all 0.2
+                [ Transition.background
+                , Transition.color
+                , Transition.border
+                ]
+
+        NoFill ->
+            Transition.all 0.2
+                [ Transition.color
+                ]
 
 
 borderRadius_ : Options msg -> Attribute msg
