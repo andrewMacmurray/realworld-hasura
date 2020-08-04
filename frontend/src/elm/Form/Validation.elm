@@ -71,38 +71,19 @@ map f (Validation toOutput) =
 -- Fields
 
 
-constant : a -> Validation inputs (a -> output) -> Validation inputs output
-constant val (Validation toOutput) =
-    Validation
-        (\inputs ->
-            case toOutput inputs of
-                Success toOutput_ ->
-                    Success (toOutput_ val)
-
-                Failure err ->
-                    Failure err
-        )
+constant : value -> Validation inputs (value -> output) -> Validation inputs output
+constant value =
+    map (\toOutput -> toOutput value)
 
 
 nonEmpty : Field inputs -> Validation inputs (String.NonEmpty -> output) -> Validation inputs output
 nonEmpty field (Validation toOutput) =
     Validation
         (\inputs_ ->
-            let
-                result =
-                    toOutput inputs_
-            in
-            case String.toNonEmpty (Field.value field inputs_) of
-                Just value ->
-                    case result of
-                        Success toOutput_ ->
-                            Success (toOutput_ value)
-
-                        Failure err ->
-                            Failure err
-
-                Nothing ->
-                    addToErrors (Field.id field) result
+            Field.value field inputs_
+                |> String.toNonEmpty
+                |> Maybe.map (mapResult (toOutput inputs_))
+                |> Maybe.withDefault (addToErrors (Field.id field) (toOutput inputs_))
         )
 
 
@@ -110,21 +91,24 @@ optional : Field inputs -> Validation inputs (String.Optional -> output) -> Vali
 optional field (Validation toOutput) =
     Validation
         (\inputs_ ->
-            let
-                value =
-                    String.toOptional (Field.value field inputs_)
-            in
-            case toOutput inputs_ of
-                Success toOutput_ ->
-                    Success (toOutput_ value)
-
-                Failure err ->
-                    Failure err
+            Field.value field inputs_
+                |> String.toOptional
+                |> mapResult (toOutput inputs_)
         )
 
 
+mapResult : Result (value -> output) -> value -> Result output
+mapResult result value =
+    case result of
+        Success toOutput ->
+            Success (toOutput value)
 
--- Run Validation
+        Failure err ->
+            Failure err
+
+
+
+-- Run
 
 
 run : inputs -> Validation inputs output -> Result output
