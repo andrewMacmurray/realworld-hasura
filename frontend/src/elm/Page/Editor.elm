@@ -42,8 +42,8 @@ type Msg
 
 
 type Mode
-    = Edit Article.Id
-    | New
+    = EditArticle Article.Id
+    | NewArticle
 
 
 type alias Inputs =

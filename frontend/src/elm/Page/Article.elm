@@ -39,7 +39,7 @@ import Utils.String as String
 
 
 type alias Model =
-    { article : LoadStatus Article
+    { article : Api.Data Article
     , newComment : String
     , commentEdit : CommentEdit
     }
@@ -59,13 +59,6 @@ type Msg
     | CommentEdited Comment
     | SubmitEditClicked Comment
     | UpdateCommentResponseReceived (Api.Response Article)
-
-
-type LoadStatus a
-    = Loading
-    | Loaded a
-    | NotFound
-    | FailedToLoad
 
 
 type CommentEdit
@@ -91,7 +84,7 @@ loadArticle id =
 
 initialModel : Model
 initialModel =
-    { article = Loading
+    { article = Api.Loading
     , newComment = ""
     , commentEdit = None
     }
@@ -104,14 +97,8 @@ initialModel =
 update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
-        ArticleReceived (Ok (Just article)) ->
-            ( { model | article = Loaded article }, Effect.none )
-
-        ArticleReceived (Ok Nothing) ->
-            ( { model | article = NotFound }, Effect.none )
-
-        ArticleReceived (Err _) ->
-            ( { model | article = FailedToLoad }, Effect.none )
+        ArticleReceived response ->
+            ( { model | article = Api.fromNullableResponse response }, Effect.none )
 
         FollowMsg msg_ ->
             ( model, handleFollowEffect msg_ )
@@ -122,11 +109,8 @@ update msg model =
         PostCommentClicked article ->
             ( model, postComment article model.newComment )
 
-        PostCommentResponseReceived (Ok article) ->
-            ( resetComments { model | article = Loaded article }, Effect.none )
-
-        PostCommentResponseReceived (Err _) ->
-            ( model, Effect.none )
+        PostCommentResponseReceived response ->
+            ( resetComments { model | article = Api.fromResponse response }, Effect.none )
 
         DeleteCommentClicked comment ->
             ( { model | commentEdit = ConfirmDelete comment }, Effect.none )
@@ -134,11 +118,8 @@ update msg model =
         DeleteAreYouSureClicked comment ->
             ( { model | commentEdit = Updating comment }, deleteComment comment )
 
-        DeleteCommentResponseReceived (Ok article) ->
-            ( resetComments { model | article = Loaded article }, Effect.none )
-
-        DeleteCommentResponseReceived (Err _) ->
-            ( resetComments model, Effect.none )
+        DeleteCommentResponseReceived response ->
+            ( resetComments { model | article = Api.fromResponse response }, Effect.none )
 
         EditCommentClicked comment ->
             ( { model | commentEdit = Editing comment }, Effect.none )
@@ -149,11 +130,8 @@ update msg model =
         SubmitEditClicked comment ->
             ( { model | commentEdit = Updating comment }, updateComment comment )
 
-        UpdateCommentResponseReceived (Ok article) ->
-            ( resetComments { model | article = Loaded article }, Effect.none )
-
-        UpdateCommentResponseReceived (Err _) ->
-            ( resetComments model, Effect.none )
+        UpdateCommentResponseReceived response ->
+            ( resetComments { model | article = Api.fromResponse response }, Effect.none )
 
         CommentEditUnfocused ->
             ( { model | commentEdit = None }, Effect.none )
@@ -198,7 +176,7 @@ view user model =
 withBanner : User -> Model -> Layout Msg -> Layout Msg
 withBanner user model layout =
     case model.article of
-        Loaded article ->
+        Api.Success article ->
             bannerConfig (loadedBanner user article) layout
 
         _ ->
@@ -287,16 +265,16 @@ authorLink =
 articleBody : User -> Model -> Element Msg
 articleBody user model =
     case model.article of
-        Loading ->
+        Api.Loading ->
             Text.text [] "Loading..."
 
-        Loaded article ->
+        Api.Success article ->
             showArticleBody user model article
 
-        NotFound ->
+        Api.NotFound ->
             Text.text [ Text.description "not-found-message" ] "Article Not Found"
 
-        FailedToLoad ->
+        Api.Failure ->
             Text.text [ Text.description "error-message" ] "There was an error loading the article"
 
 

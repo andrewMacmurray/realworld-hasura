@@ -17,7 +17,7 @@ import Page.NotFound as NotFound
 import Page.Settings as Settings
 import Page.SignIn as SignIn
 import Page.Signup as SignUp
-import Route
+import Route exposing (Route)
 import Url exposing (Url)
 import User exposing (User)
 import Utils.Update exposing (updateWith)
@@ -59,45 +59,55 @@ init =
 
 changeTo : Url -> User -> Page -> ( Page, Effect Msg )
 changeTo url user page =
-    case Route.fromUrl url of
-        Just (Route.Home tag) ->
+    Route.fromUrl url
+        |> Maybe.map (changeTo_ user page)
+        |> Maybe.withDefault ( NotFound, Effect.none )
+
+
+changeTo_ : User -> Page -> Route -> ( Page, Effect Msg )
+changeTo_ user page route =
+    case route of
+        Route.Home tag ->
             updateWith Home HomeMsg (Home.init user tag)
 
-        Just Route.SignUp ->
+        Route.SignUp ->
             updateWith SignUp SignUpMsg SignUp.init
 
-        Just Route.SignIn ->
+        Route.SignIn ->
             updateWith SignIn SignInMsg SignIn.init
 
-        Just Route.NewArticle ->
-            updateWith Editor EditorMsg (Editor.init Editor.New)
+        Route.NewArticle ->
+            updateWith Editor EditorMsg (Editor.init Editor.NewArticle)
 
-        Just (Route.EditArticle id_) ->
-            updateWith Editor EditorMsg (Editor.init (Editor.Edit id_))
+        Route.EditArticle id_ ->
+            updateWith Editor EditorMsg (Editor.init (Editor.EditArticle id_))
 
-        Just Route.Settings ->
-            initAuthenticated Settings SettingsMsg Settings.init user
+        Route.Settings ->
+            authenticated Settings SettingsMsg Settings.init user
 
-        Just (Route.Article id_) ->
+        Route.Article id_ ->
             updateWith Article ArticleMsg (Article.init id_)
 
-        Just (Route.Author id_) ->
+        Route.Author id_ ->
             updateWith Author AuthorMsg (Author.init id_)
 
-        Just Route.Logout ->
+        Route.Logout ->
             ( page, Effect.logout )
 
-        Nothing ->
-            ( NotFound, Effect.none )
 
-
-initAuthenticated modelF msgF init_ user =
+authenticated :
+    (subModel -> Page)
+    -> (subMsg -> msg)
+    -> (User.Profile -> ( subModel, Effect subMsg ))
+    -> User
+    -> ( Page, Effect msg )
+authenticated toPage toMsg init_ user =
     case user of
         User.Guest ->
             ( NotFound, Effect.none )
 
         User.Author profile ->
-            init_ profile |> updateWith modelF msgF
+            init_ profile |> updateWith toPage toMsg
 
 
 

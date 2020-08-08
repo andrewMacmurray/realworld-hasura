@@ -2,9 +2,9 @@ module Article.Feed exposing
     ( Model
     , Msg
     , embed
-    , failure
+    , fromNullableResponse
+    , fromResponse
     , load
-    , loaded
     , loading
     , update
     , view
@@ -27,7 +27,6 @@ import Route
 import Tag exposing (Tag)
 import User exposing (User)
 import Utils.Update as Update
-import WebData exposing (WebData)
 
 
 
@@ -47,8 +46,7 @@ type alias PageMsg msg =
 
 
 type alias Model =
-    { articles : WebData (List Article)
-    }
+    Api.Data (List Article)
 
 
 type Msg
@@ -62,16 +60,14 @@ type Msg
 -- Init
 
 
-loaded : List Article -> Model
-loaded articles =
-    { articles = WebData.Success articles
-    }
+fromResponse : Api.Response { a | articles : List Article } -> Model
+fromResponse =
+    Api.fromResponse >> Api.mapData .articles
 
 
-failure : Model
-failure =
-    { articles = WebData.Failure
-    }
+fromNullableResponse : Result error (Maybe { a | articles : List Article }) -> Model
+fromNullableResponse =
+    Api.fromNullableResponse >> Api.mapData .articles
 
 
 load : SelectionSet (List Article) RootQuery -> ( Model, Effect Msg )
@@ -81,8 +77,7 @@ load selection =
 
 loading : Model
 loading =
-    { articles = WebData.Loading
-    }
+    Api.Loading
 
 
 
@@ -103,7 +98,7 @@ update_ : Msg -> Model -> ( Model, Effect Msg )
 update_ msg model =
     case msg of
         LoadArticlesResponseReceived response ->
-            ( { model | articles = WebData.fromResult response }, Effect.none )
+            ( Api.fromResponse response, Effect.none )
 
         LikeArticleClicked article ->
             ( model, likeArticle article )
@@ -112,7 +107,7 @@ update_ msg model =
             ( model, unlikeArticle article )
 
         UpdateArticleResponseReceived (Ok article) ->
-            ( { model | articles = WebData.map (Article.replace article) model.articles }, Effect.none )
+            ( Api.mapData (Article.replace article) model, Effect.none )
 
         UpdateArticleResponseReceived (Err _) ->
             ( model, Effect.none )
@@ -141,19 +136,22 @@ type alias Options msg =
 
 view : Options msg -> Element msg
 view options =
-    case options.feed.articles of
-        WebData.Loading ->
+    case options.feed of
+        Api.Loading ->
             Text.text [] "Loading Feed"
 
-        WebData.Success articles ->
+        Api.Success articles ->
             column
                 [ spacing Scale.large
                 , width fill
                 ]
                 (List.map (viewArticle options) articles)
 
-        WebData.Failure ->
+        Api.Failure ->
             Text.error [] "Something went wrong"
+
+        Api.NotFound ->
+            none
 
 
 viewArticle : Options msg -> Article -> Element msg

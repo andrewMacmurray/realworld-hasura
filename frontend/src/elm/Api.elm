@@ -1,11 +1,15 @@
 module Api exposing
-    ( Mutation
+    ( Data(..)
+    , Mutation
     , Query
     , Response
     , doMutation
     , doQuery
     , errorMessage
+    , fromNullableResponse
+    , fromResponse
     , map
+    , mapData
     , mutation
     , query
     )
@@ -35,6 +39,51 @@ type alias Query a msg =
     { msg : Response a -> msg
     , selection : SelectionSet a RootQuery
     }
+
+
+
+-- Data
+
+
+type Data a
+    = Loading
+    | Success a
+    | NotFound
+    | Failure
+
+
+fromResponse : Response a -> Data a
+fromResponse =
+    Result.map Success >> Result.withDefault Failure
+
+
+fromNullableResponse : Result error (Maybe a) -> Data a
+fromNullableResponse res =
+    case res of
+        Ok (Just a) ->
+            Success a
+
+        Ok Nothing ->
+            NotFound
+
+        Err _ ->
+            Failure
+
+
+mapData : (a -> b) -> Data a -> Data b
+mapData f data =
+    case data of
+        Success a ->
+            Success (f a)
+
+        Loading ->
+            Loading
+
+        NotFound ->
+            NotFound
+
+        Failure ->
+            Failure
 
 
 
