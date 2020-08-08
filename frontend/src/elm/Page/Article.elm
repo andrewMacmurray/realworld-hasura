@@ -11,12 +11,14 @@ import Api.Articles
 import Article exposing (Article)
 import Article.Author as Author exposing (Author)
 import Article.Author.Follow as Follow
+import Article.Comment as Comment exposing (Comment)
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Anchor as Anchor
 import Element.Avatar as Avatar
 import Element.Background as Background
-import Element.Button as Button
+import Element.Button as Button exposing (Button)
+import Element.Events exposing (onClick)
 import Element.Font as Font
 import Element.Layout as Layout exposing (Layout)
 import Element.Layout.Block as Block
@@ -38,7 +40,8 @@ import Utils.String as String
 
 type alias Model =
     { article : LoadStatus Article
-    , comment : String
+    , newComment : String
+    , commentEdit : CommentEdit
     }
 
 
@@ -48,6 +51,14 @@ type Msg
     | CommentTyped String
     | PostCommentClicked Article
     | PostCommentResponseReceived (Api.Response Article)
+    | CommentEditUnfocused
+    | DeleteCommentClicked Comment
+    | DeleteCommentResponseReceived (Api.Response Article)
+    | DeleteAreYouSureClicked Comment
+    | EditCommentClicked Comment
+    | CommentEdited Comment
+    | SubmitEditClicked Comment
+    | UpdateCommentResponseReceived (Api.Response Article)
 
 
 type LoadStatus a
@@ -55,6 +66,13 @@ type LoadStatus a
     | Loaded a
     | NotFound
     | FailedToLoad
+
+
+type CommentEdit
+    = None
+    | Editing Comment
+    | ConfirmDelete Comment
+    | Updating Comment
 
 
 
@@ -74,7 +92,8 @@ loadArticle id =
 initialModel : Model
 initialModel =
     { article = Loading
-    , comment = ""
+    , newComment = ""
+    , commentEdit = None
     }
 
 
@@ -98,16 +117,51 @@ update msg model =
             ( model, handleFollowEffect msg_ )
 
         CommentTyped comment ->
-            ( { model | comment = comment }, Effect.none )
+            ( { model | newComment = comment, commentEdit = None }, Effect.none )
 
         PostCommentClicked article ->
-            ( model, postComment article model.comment )
+            ( model, postComment article model.newComment )
 
         PostCommentResponseReceived (Ok article) ->
-            ( { model | article = Loaded article, comment = "" }, Effect.none )
+            ( resetComments { model | article = Loaded article }, Effect.none )
 
         PostCommentResponseReceived (Err _) ->
             ( model, Effect.none )
+
+        DeleteCommentClicked comment ->
+            ( { model | commentEdit = ConfirmDelete comment }, Effect.none )
+
+        DeleteAreYouSureClicked comment ->
+            ( { model | commentEdit = Updating comment }, deleteComment comment )
+
+        DeleteCommentResponseReceived (Ok article) ->
+            ( resetComments { model | article = Loaded article }, Effect.none )
+
+        DeleteCommentResponseReceived (Err _) ->
+            ( resetComments model, Effect.none )
+
+        EditCommentClicked comment ->
+            ( { model | commentEdit = Editing comment }, Effect.none )
+
+        CommentEdited comment ->
+            ( { model | commentEdit = Editing comment }, Effect.none )
+
+        SubmitEditClicked comment ->
+            ( { model | commentEdit = Updating comment }, updateComment comment )
+
+        UpdateCommentResponseReceived (Ok article) ->
+            ( resetComments { model | article = Loaded article }, Effect.none )
+
+        UpdateCommentResponseReceived (Err _) ->
+            ( resetComments model, Effect.none )
+
+        CommentEditUnfocused ->
+            ( { model | commentEdit = None }, Effect.none )
+
+
+resetComments : Model -> Model
+resetComments model =
+    { model | newComment = "", commentEdit = None }
 
 
 handleFollowEffect : Follow.Msg -> Effect Msg
@@ -118,6 +172,16 @@ handleFollowEffect =
 postComment : Article -> String -> Effect Msg
 postComment =
     Api.Articles.postComment PostCommentResponseReceived
+
+
+deleteComment : Comment -> Effect Msg
+deleteComment =
+    Api.Articles.deleteComment DeleteCommentResponseReceived
+
+
+updateComment : Comment -> Effect Msg
+updateComment =
+    Api.Articles.updateComment UpdateCommentResponseReceived
 
 
 
@@ -249,7 +313,8 @@ comments user model article =
             ]
             [ Text.title [ Text.green ] (commentsTitle (Article.comments article))
             , newComment article model user
-            , column [ spacing Scale.large ] (List.map showComment (Article.comments article))
+            , column [ spacing Scale.large, width fill ]
+                (List.map (showComment model.commentEdit user) (Article.comments article))
             ]
         )
 
@@ -265,9 +330,10 @@ newComment_ article model =
         [ width fill
         , spacing Scale.medium
         , height fill
+        , onClick CommentEditUnfocused
+        , onRight (el [ alignBottom, moveRight Scale.small ] (postCommentButton article))
         ]
-        [ commentInput model.comment
-        , el [ alignBottom ] (postCommentButton article)
+        [ commentInput model.newComment
         ]
 
 
@@ -290,31 +356,143 @@ commentInput =
         |> Field.toElement CommentTyped
 
 
-commentsTitle : List Article.Comment -> String
+commentsTitle : List Comment -> String
 commentsTitle comments_ =
     String.pluralize "Comment" (List.length comments_)
 
 
-showComment : Article.Comment -> Element msg
-showComment comment =
-    row [ spacing Scale.extraLarge ]
+showComment : CommentEdit -> User -> Comment -> Element Msg
+showComment edit user comment =
+    row
+        [ spacing Scale.extraLarge
+        , onRight (commentActions edit comment user)
+        , Anchor.description "comment"
+        , width fill
+        ]
         [ el [ alignTop ] (commentAuthor comment)
-        , paragraph [] [ Text.text [] comment.comment ]
+        , toCommentText user edit comment
         ]
 
 
-commentAuthor : Article.Comment -> Element msg
+toCommentText : User -> CommentEdit -> Comment -> Element Msg
+toCommentText user edit comment =
+    let
+        value =
+            Comment.value comment
+
+        commentText_ =
+            if Comment.isBy user comment then
+                paragraph [ onClick (EditCommentClicked comment) ] [ Text.text [] value ]
+
+            else
+                paragraph [] [ Text.text [] value ]
+    in
+    case edit of
+        None ->
+            commentText_
+
+        Editing comment_ ->
+            if Comment.equals comment comment_ then
+                editCommentField comment_
+
+            else
+                commentText_
+
+        ConfirmDelete comment_ ->
+            if Comment.equals comment comment_ then
+                editCommentField comment_
+
+            else
+                commentText_
+
+        Updating _ ->
+            paragraph [] [ Text.text [] value ]
+
+
+editCommentField : Comment -> Element Msg
+editCommentField =
+    Field.field
+        { label = "Edit comment"
+        , value = Comment.value
+        , update = Comment.update
+        }
+        |> Field.borderless
+        |> Field.toElement CommentEdited
+
+
+commentActions : CommentEdit -> Comment -> User -> Element Msg
+commentActions edit comment user =
+    Element.showIfMe (editComment edit comment) user (Comment.by comment)
+
+
+editComment : CommentEdit -> Comment -> Element Msg
+editComment edit comment =
+    el
+        [ moveRight Scale.small
+        , Anchor.description "comment-actions"
+        ]
+        (editComment_ edit comment)
+
+
+editComment_ : CommentEdit -> Comment -> Element Msg
+editComment_ edit comment =
+    let
+        optionsButton =
+            Button.button (EditCommentClicked comment) "Edit"
+                |> Button.ellipsis
+                |> Button.toElement
+    in
+    case edit of
+        None ->
+            optionsButton
+
+        Updating _ ->
+            Text.text [] "Updating"
+
+        ConfirmDelete comment_ ->
+            if Comment.equals comment comment_ then
+                row [ spacing Scale.extraSmall ]
+                    [ Button.button (SubmitEditClicked comment_) "Update"
+                        |> Button.edit
+                        |> Button.noText
+                        |> Button.toElement
+                    , Button.button (DeleteAreYouSureClicked comment_) "Are you Sure?"
+                        |> Button.delete
+                        |> Button.toElement
+                    ]
+
+            else
+                optionsButton
+
+        Editing comment_ ->
+            if Comment.equals comment comment_ then
+                row [ spacing Scale.extraSmall ]
+                    [ Button.button (SubmitEditClicked comment_) "Update"
+                        |> Button.edit
+                        |> Button.noText
+                        |> Button.toElement
+                    , Button.button (DeleteCommentClicked comment_) "Delete"
+                        |> Button.delete
+                        |> Button.noText
+                        |> Button.toElement
+                    ]
+
+            else
+                optionsButton
+
+
+commentAuthor : Comment -> Element msg
 commentAuthor comment =
     let
         author_ =
-            comment.by
+            Comment.by comment
     in
     authorLink author_
         (row [ spacing Scale.small ]
             [ Avatar.medium (Author.profileImage author_)
             , column [ spacing Scale.extraSmall ]
                 [ Text.text [ Text.black ] (Author.username author_)
-                , Text.date [ Text.black ] comment.date
+                , Text.date [ Text.black ] (Comment.date comment)
                 ]
             ]
         )

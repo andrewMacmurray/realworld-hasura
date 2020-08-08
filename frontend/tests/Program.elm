@@ -1,5 +1,6 @@
 module Program exposing
     ( BlogProgramTest
+    , Options
     , baseUrl
     , defaultUser
     , fillField
@@ -256,7 +257,7 @@ simulateEffects options eff =
         MutateWithEmptyResponse mutation ->
             simulateResponse mutation (Ok ())
 
-        MutateArticle mutation ->
+        MutationReturningArticle mutation ->
             simulateResponse mutation (Ok (Helpers.article "updated"))
 
         AddToUserFollows _ ->

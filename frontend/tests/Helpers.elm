@@ -2,12 +2,15 @@ module Helpers exposing
     ( article
     , articleBy
     , articleLikedBy
+    , articleWithComments
     , author
+    , comment
     , serverError
     )
 
 import Article exposing (Article)
 import Article.Author as Author exposing (Author)
+import Article.Comment as Comment exposing (Comment)
 import Date
 import Graphql.Http exposing (HttpError(..), RawError(..))
 import Time exposing (Month(..))
@@ -23,9 +26,19 @@ articleLikedBy username { title } =
     Article.build { article_ | title = title, likedBy = [ author 1 username ] }
 
 
+articleWithComments : List Comment -> Article
+articleWithComments comments =
+    Article.build { article_ | comments = comments }
+
+
 articleBy : Int -> String -> Article
 articleBy authorId username =
     Article.build { article_ | author = author authorId username }
+
+
+comment : Author -> Comment
+comment author_ =
+    Comment.build { comment_ | by = author_ }
 
 
 article : String -> Article
@@ -50,4 +63,13 @@ article_ =
     , likes = 0
     , likedBy = []
     , comments = []
+    }
+
+
+comment_ : Comment.Comment_
+comment_ =
+    { id = 1
+    , value = "A comment"
+    , date = Date.fromCalendarDate 2020 Jan 1
+    , by = author 1 "username"
     }

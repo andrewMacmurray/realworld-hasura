@@ -2,6 +2,7 @@ module Api.Articles exposing
     ( all
     , articleSelection
     , byTag
+    , deleteComment
     , followedByAuthor
     , like
     , load
@@ -11,13 +12,15 @@ module Api.Articles exposing
     , postComment
     , publish
     , unlike
+    , updateComment
     )
 
 import Api
-import Api.Argument as Argument exposing (author, created_at, eq_, id, in_, order_by, tag, tags, where_)
+import Api.Argument as Argument exposing (..)
 import Api.Date as Date
 import Article exposing (Article)
 import Article.Author as Author exposing (Author)
+import Article.Comment as Comment exposing (Comment, Comment_)
 import Effect exposing (Effect)
 import Graphql.Operation exposing (RootQuery)
 import Graphql.OptionalArgument exposing (OptionalArgument(..))
@@ -25,9 +28,9 @@ import Graphql.SelectionSet as SelectionSet exposing (SelectionSet, with)
 import Hasura.Enum.Order_by exposing (Order_by(..))
 import Hasura.Enum.Tags_select_column as Tags_select_column
 import Hasura.InputObject as Input exposing (Articles_insert_input, Articles_order_byOptionalFields)
-import Hasura.Mutation
+import Hasura.Mutation exposing (UpdateCommentOptionalArguments, UpdateCommentRequiredArguments)
 import Hasura.Object exposing (Articles)
-import Hasura.Object.Articles as Articles
+import Hasura.Object.Articles as Articles exposing (CommentsOptionalArguments)
 import Hasura.Object.Comments as Comments
 import Hasura.Object.Likes as Likes
 import Hasura.Object.Likes_aggregate as LikesAggregate
@@ -156,17 +159,26 @@ articleSelection =
             |> with (Articles.tags identity tagSelection)
             |> with (Articles.likes_aggregate identity likesCountSelection)
             |> with (Articles.likes identity likedBySelection)
-            |> with (Articles.comments identity commentSelection)
+            |> with (Articles.comments newestCommentsFirst commentSelection)
         )
 
 
-commentSelection : SelectionSet Article.Comment Hasura.Object.Comments
+newestCommentsFirst : CommentsOptionalArguments -> CommentsOptionalArguments
+newestCommentsFirst =
+    Argument.combine2
+        (order_by Input.buildComments_order_by)
+        (created_at Desc)
+
+
+commentSelection : SelectionSet Comment Hasura.Object.Comments
 commentSelection =
-    SelectionSet.succeed Article.Comment
-        |> with Comments.id
-        |> with Comments.comment
-        |> with (Date.fromScalar Comments.created_at)
-        |> with (Comments.user authorSelection)
+    SelectionSet.map Comment.build
+        (SelectionSet.succeed Comment_
+            |> with Comments.id
+            |> with Comments.comment
+            |> with (Date.fromScalar Comments.created_at)
+            |> with (Comments.user authorSelection)
+        )
 
 
 authorSelection : SelectionSet Author Hasura.Object.Users
@@ -256,7 +268,8 @@ likeArticleArgs article =
 
 unlike : Article -> (Api.Response Article -> msg) -> Effect msg
 unlike article msg =
-    Hasura.Mutation.unlike_article { article_id = Article.id article } (UnlikeResponse.article articleSelection)
+    UnlikeResponse.article articleSelection
+        |> Hasura.Mutation.unlike_article { article_id = Article.id article }
         |> SelectionSet.failOnNothing
         |> Api.mutation msg
         |> Effect.unlikeArticle
@@ -268,14 +281,15 @@ unlike article msg =
 
 postComment : (Api.Response Article -> msg) -> Article -> String -> Effect msg
 postComment msg article comment =
-    Hasura.Mutation.post_comment { object = postCommentArgs article comment } postCommentSelection
+    mutateCommentsSelection
+        |> Hasura.Mutation.post_comment identity { object = postCommentArgs article comment }
         |> SelectionSet.failOnNothing
         |> Api.mutation msg
         |> Effect.postComment
 
 
-postCommentSelection : SelectionSet Article Hasura.Object.Comments
-postCommentSelection =
+mutateCommentsSelection : SelectionSet Article Hasura.Object.Comments
+mutateCommentsSelection =
     Comments.article articleSelection
 
 
@@ -288,3 +302,40 @@ postCommentArgs article comment =
                 , comment = Present comment
             }
         )
+
+
+
+-- Delete Comment
+
+
+deleteComment : (Api.Response Article -> msg) -> Comment -> Effect msg
+deleteComment msg comment =
+    Hasura.Mutation.delete_comment { id = Comment.id comment } mutateCommentsSelection
+        |> SelectionSet.failOnNothing
+        |> Api.mutation msg
+        |> Effect.deleteComment
+
+
+
+-- Update Comment
+
+
+updateComment : (Api.Response Article -> msg) -> Comment -> Effect msg
+updateComment msg comment =
+    mutateCommentsSelection
+        |> Hasura.Mutation.update_comment (updateCommentArgs comment) (updateCommentId comment)
+        |> SelectionSet.failOnNothing
+        |> Api.mutation msg
+        |> Effect.updateComment
+
+
+updateCommentId : Comment -> UpdateCommentRequiredArguments
+updateCommentId comment =
+    { pk_columns = { id = Comment.id comment } }
+
+
+updateCommentArgs : Comment -> UpdateCommentOptionalArguments -> UpdateCommentOptionalArguments
+updateCommentArgs comment =
+    Argument.combine2
+        (set_ Input.buildComments_set_input)
+        (comment_ (Comment.value comment))

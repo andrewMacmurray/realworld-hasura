@@ -80,6 +80,8 @@
   configuration:
     custom_root_fields:
       insert_one: post_comment
+      delete_by_pk: delete_comment
+      update_by_pk: update_comment
     custom_column_names: {}
   object_relationships:
   - name: article
@@ -115,6 +117,17 @@
       - created_at
       - id
       filter: {}
+  update_permissions:
+  - role: user
+    permission:
+      columns:
+      - comment
+      filter:
+        user_id:
+          _eq: X-Hasura-User-Id
+      check:
+        comment:
+          _ne: ""
   delete_permissions:
   - role: user
     permission:

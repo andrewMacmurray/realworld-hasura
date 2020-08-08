@@ -1,12 +1,12 @@
 module Article.Feed exposing
     ( Model
     , Msg
-    , embedWith
+    , embed
     , failure
     , load
     , loaded
     , loading
-    , updateWith
+    , update
     , view
     )
 
@@ -89,14 +89,14 @@ loading =
 -- Update
 
 
-embedWith : PageMsg msg -> PageModel model -> ( Model, Effect Msg ) -> ( PageModel model, Effect msg )
-embedWith pageMsg pageModel =
+embed : PageMsg msg -> PageModel model -> ( Model, Effect Msg ) -> ( PageModel model, Effect msg )
+embed pageMsg pageModel =
     Update.updateWith (\feed -> { pageModel | feed = feed }) pageMsg
 
 
-updateWith : PageMsg msg -> Msg -> PageModel model -> ( PageModel model, Effect msg )
-updateWith pageMsg msg pageModel =
-    update_ msg pageModel.feed |> embedWith pageMsg pageModel
+update : PageMsg msg -> Msg -> PageModel model -> ( PageModel model, Effect msg )
+update pageMsg msg pageModel =
+    update_ msg pageModel.feed |> embed pageMsg pageModel
 
 
 update_ : Msg -> Model -> ( Model, Effect Msg )

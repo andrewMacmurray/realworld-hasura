@@ -2,12 +2,15 @@ module Element.Button exposing
     ( Button
     , button
     , decorative
+    , delete
     , description
     , disabled
     , edit
+    , ellipsis
     , follow
     , like
     , link
+    , noText
     , post
     , primary
     , solid
@@ -20,6 +23,8 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Element.Icon as Icon
+import Element.Icon.Bin as Bin
+import Element.Icon.Ellipsis as Elipsis
 import Element.Icon.Heart as Heart
 import Element.Icon.Pencil as Pencil
 import Element.Icon.Plane as Plane
@@ -41,7 +46,7 @@ type Button msg
 
 type alias Options msg =
     { fill : Fill
-    , text : String
+    , text : Maybe String
     , size : Size
     , shape : Shape
     , color : Color
@@ -73,6 +78,7 @@ type Fill
     = Solid
     | Hollow
     | Borderless
+    | NoFill
 
 
 type Color
@@ -86,6 +92,8 @@ type Icon
     | Plus
     | Plane
     | Pencil
+    | Bin
+    | Ellipsis
 
 
 
@@ -100,7 +108,7 @@ defaults action text =
         , size = Medium
         , icon = Nothing
         , shape = Square
-        , text = text
+        , text = Just text
         , onClick = action
         , description = Nothing
         , hover = True
@@ -112,13 +120,13 @@ defaults action text =
 
 
 decorative : String -> Button msg
-decorative text =
-    defaults None text |> noHover
+decorative =
+    defaults None >> noHover
 
 
 button : msg -> String -> Button msg
-button msg text =
-    defaults (Msg msg) text
+button msg =
+    defaults (Msg msg)
 
 
 link : { href : String, text : String } -> Button msg
@@ -138,6 +146,16 @@ disabled =
 primary : Button msg -> Button msg
 primary =
     identity
+
+
+ellipsis : Button msg -> Button msg
+ellipsis =
+    borderless
+        >> noBackground
+        >> withIcon_ Ellipsis
+        >> noText
+        >> small
+        >> grey
 
 
 edit : Button msg -> Button msg
@@ -171,6 +189,14 @@ follow =
         >> small
 
 
+delete : Button msg -> Button msg
+delete =
+    borderless
+        >> withIcon_ Bin
+        >> small
+        >> red
+
+
 red : Button msg -> Button msg
 red (Button options) =
     Button { options | color = Red }
@@ -186,6 +212,11 @@ small (Button options) =
     Button { options | size = Small }
 
 
+noBackground : Button msg -> Button msg
+noBackground (Button options) =
+    Button { options | fill = NoFill }
+
+
 pill : Button msg -> Button msg
 pill (Button options) =
     Button { options | shape = Pill }
@@ -199,6 +230,11 @@ description d (Button options) =
 borderless : Button msg -> Button msg
 borderless (Button options) =
     Button { options | fill = Borderless }
+
+
+noText : Button msg -> Button msg
+noText (Button options) =
+    Button { options | text = Nothing }
 
 
 hollow : Button msg -> Button msg
@@ -263,7 +299,7 @@ toAttributes : Options msg -> List (Attribute msg)
 toAttributes options =
     List.concat
         [ [ fill_ options
-          , Transition.colors
+          , transition_ options
           , borderColor options
           , fontColor options
           , Border.width 1
@@ -281,6 +317,35 @@ description_ options =
     options.description
         |> Maybe.map (Anchor.description >> List.singleton)
         |> Maybe.withDefault []
+
+
+transition_ : Options msg -> Attribute msg
+transition_ options =
+    case options.fill of
+        Borderless ->
+            Transition.all 0.2
+                [ Transition.background
+                , Transition.color
+                ]
+
+        Solid ->
+            Transition.all 0.2
+                [ Transition.background
+                , Transition.color
+                , Transition.border
+                ]
+
+        Hollow ->
+            Transition.all 0.2
+                [ Transition.background
+                , Transition.color
+                , Transition.border
+                ]
+
+        NoFill ->
+            Transition.all 0.2
+                [ Transition.color
+                ]
 
 
 borderRadius_ : Options msg -> Attribute msg
@@ -327,6 +392,10 @@ hoverStyles options =
             , Font.color Palette.white
             ]
 
+        ( _, NoFill ) ->
+            [ Font.color (darkerColor options.color)
+            ]
+
 
 fill_ : Options msg -> Attr decorative msg
 fill_ options =
@@ -340,11 +409,17 @@ fill_ options =
         ( Borderless, _ ) ->
             Background.color Palette.transparent
 
+        ( NoFill, _ ) ->
+            Background.color Palette.transparent
+
 
 borderColor : Options msg -> Attr decorative msg
 borderColor options =
     case options.fill of
         Borderless ->
+            Border.color Palette.transparent
+
+        NoFill ->
             Border.color Palette.transparent
 
         _ ->
@@ -361,6 +436,9 @@ fontColor options =
             Font.color (color options.color)
 
         Borderless ->
+            Font.color (color options.color)
+
+        NoFill ->
             Font.color (color options.color)
 
 
@@ -392,22 +470,28 @@ darkerColor color_ =
 
 label : Options msg -> Element msg
 label options =
-    case options.icon of
-        Just icon_ ->
+    case ( options.text, options.icon ) of
+        ( Just _, Just icon_ ) ->
             row [ width fill, spacing Scale.extraSmall ]
                 [ el [ centerY ] (icon icon_ options)
                 , el [ centerY ] (text_ options)
                 ]
 
-        Nothing ->
+        ( Nothing, Just icon_ ) ->
+            icon icon_ options
+
+        ( _, _ ) ->
             text_ options
 
 
 iconHover : Options msg -> List (Attribute msg)
 iconHover options =
     case ( options.icon, options.hover ) of
+        ( Just Ellipsis, True ) ->
+            [ Icon.blackHover ]
+
         ( Just _, True ) ->
-            [ Icon.enableHover ]
+            [ Icon.whiteHover ]
 
         ( _, _ ) ->
             []
@@ -428,6 +512,12 @@ icon icon_ options =
         Pencil ->
             Pencil.icon (iconColor options)
 
+        Bin ->
+            Bin.icon (iconColor options)
+
+        Ellipsis ->
+            Elipsis.icon (iconColor options)
+
 
 iconColor : Options msg -> Element.Color
 iconColor options =
@@ -447,7 +537,9 @@ iconColor options =
 
 text_ : Options msg -> Element msg
 text_ options =
-    el [ toFontSize options ] (text options.text)
+    options.text
+        |> Maybe.map (el [ toFontSize options ] << text)
+        |> Maybe.withDefault none
 
 
 toFontSize : Options msg -> Attr decorative msg

@@ -240,6 +240,7 @@ constrainWidth =
     width (fill |> maximum maxWidth)
 
 
+constrainBy : Int -> Attribute msg
 constrainBy n =
     width (fill |> maximum n)
 

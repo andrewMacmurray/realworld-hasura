@@ -2,6 +2,7 @@ module Effect exposing
     ( Effect(..)
     , addToUserFollows
     , batch
+    , deleteComment
     , followAuthor
     , likeArticle
     , loadArticle
@@ -24,6 +25,7 @@ module Effect exposing
     , signUp
     , unfollowAuthor
     , unlikeArticle
+    , updateComment
     , updateSettings
     )
 
@@ -57,7 +59,7 @@ type Effect msg
     | LoadArticles (Api.Query (List Article) msg)
     | LoadArticle (Api.Query (Maybe Article) msg)
     | MutateWithEmptyResponse (Api.Mutation () msg)
-    | MutateArticle (Api.Mutation Article msg)
+    | MutationReturningArticle (Api.Mutation Article msg)
     | MutateAuthor (Api.Mutation Int msg)
     | LoadAuthorFeed (Api.Query (Maybe Author.Feed) msg)
     | MutateSettings (Api.Mutation () msg)
@@ -141,17 +143,27 @@ publishArticle =
 
 likeArticle : Api.Mutation Article msg -> Effect msg
 likeArticle =
-    MutateArticle
+    MutationReturningArticle
 
 
 unlikeArticle : Api.Mutation Article msg -> Effect msg
 unlikeArticle =
-    MutateArticle
+    MutationReturningArticle
 
 
 postComment : Api.Mutation Article msg -> Effect msg
 postComment =
-    MutateArticle
+    MutationReturningArticle
+
+
+deleteComment : Api.Mutation Article msg -> Effect msg
+deleteComment =
+    MutationReturningArticle
+
+
+updateComment : Api.Mutation Article msg -> Effect msg
+updateComment =
+    MutationReturningArticle
 
 
 followAuthor : Api.Mutation Int msg -> Effect msg
@@ -231,8 +243,8 @@ map toMsg effect =
         MutateWithEmptyResponse mut ->
             MutateWithEmptyResponse (Api.map toMsg mut)
 
-        MutateArticle mut ->
-            MutateArticle (Api.map toMsg mut)
+        MutationReturningArticle mut ->
+            MutationReturningArticle (Api.map toMsg mut)
 
         MutateAuthor mut ->
             MutateAuthor (Api.map toMsg mut)
@@ -314,7 +326,7 @@ perform pushUrl_ ( model, effect ) =
         MutateWithEmptyResponse mutation ->
             ( model, Api.doMutation model.user mutation )
 
-        MutateArticle mutation ->
+        MutationReturningArticle mutation ->
             ( model, Api.doMutation model.user mutation )
 
         MutateAuthor mutation ->

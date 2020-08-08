@@ -119,12 +119,12 @@ update msg model =
             loadYourFeed profile_ model
 
         FeedMsg msg_ ->
-            Feed.updateWith FeedMsg msg_ model
+            Feed.update FeedMsg msg_ model
 
 
 embedFeed : Model -> ( Feed.Model, Effect Feed.Msg ) -> ( Model, Effect Msg )
 embedFeed =
-    Feed.embedWith FeedMsg
+    Feed.embed FeedMsg
 
 
 loadGlobalFeed : Model -> ( Model, Effect Msg )

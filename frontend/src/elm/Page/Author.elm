@@ -99,7 +99,7 @@ update msg model =
             ( { model | author = Failed }, Effect.none )
 
         FeedMsg msg_ ->
-            Feed.updateWith FeedMsg msg_ model
+            Feed.update FeedMsg msg_ model
 
         FollowMsg msg_ ->
             ( model, handleFollowEffect msg_ )
@@ -135,7 +135,7 @@ loadFeed selection model =
 
 embedFeed : Model -> ( Feed.Model, Effect Feed.Msg ) -> ( Model, Effect Msg )
 embedFeed =
-    Feed.embedWith FeedMsg
+    Feed.embed FeedMsg
 
 
 handleFollowEffect : Follow.Msg -> Effect Msg
