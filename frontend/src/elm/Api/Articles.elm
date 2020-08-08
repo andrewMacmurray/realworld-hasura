@@ -28,7 +28,7 @@ import Graphql.SelectionSet as SelectionSet exposing (SelectionSet, with)
 import Hasura.Enum.Order_by exposing (Order_by(..))
 import Hasura.Enum.Tags_select_column as Tags_select_column
 import Hasura.InputObject as Input exposing (Articles_insert_input, Articles_order_byOptionalFields)
-import Hasura.Mutation exposing (UpdateCommentOptionalArguments)
+import Hasura.Mutation exposing (UpdateCommentOptionalArguments, UpdateCommentRequiredArguments)
 import Hasura.Object exposing (Articles)
 import Hasura.Object.Articles as Articles exposing (CommentsOptionalArguments)
 import Hasura.Object.Comments as Comments
@@ -268,7 +268,8 @@ likeArticleArgs article =
 
 unlike : Article -> (Api.Response Article -> msg) -> Effect msg
 unlike article msg =
-    Hasura.Mutation.unlike_article { article_id = Article.id article } (UnlikeResponse.article articleSelection)
+    UnlikeResponse.article articleSelection
+        |> Hasura.Mutation.unlike_article { article_id = Article.id article }
         |> SelectionSet.failOnNothing
         |> Api.mutation msg
         |> Effect.unlikeArticle
@@ -280,7 +281,8 @@ unlike article msg =
 
 postComment : (Api.Response Article -> msg) -> Article -> String -> Effect msg
 postComment msg article comment =
-    Hasura.Mutation.post_comment identity { object = postCommentArgs article comment } mutateCommentsSelection
+    mutateCommentsSelection
+        |> Hasura.Mutation.post_comment identity { object = postCommentArgs article comment }
         |> SelectionSet.failOnNothing
         |> Api.mutation msg
         |> Effect.postComment
@@ -320,10 +322,16 @@ deleteComment msg comment =
 
 updateComment : (Api.Response Article -> msg) -> Comment -> Effect msg
 updateComment msg comment =
-    Hasura.Mutation.update_comment (updateCommentArgs comment) { pk_columns = { id = Comment.id comment } } mutateCommentsSelection
+    mutateCommentsSelection
+        |> Hasura.Mutation.update_comment (updateCommentArgs comment) (updateCommentId comment)
         |> SelectionSet.failOnNothing
         |> Api.mutation msg
         |> Effect.updateComment
+
+
+updateCommentId : Comment -> UpdateCommentRequiredArguments
+updateCommentId comment =
+    { pk_columns = { id = Comment.id comment } }
 
 
 updateCommentArgs : Comment -> UpdateCommentOptionalArguments -> UpdateCommentOptionalArguments
