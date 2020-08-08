@@ -1,4 +1,9 @@
-module Program.Expect exposing (noEl, redirect, redirectHome)
+module Program.Expect exposing
+    ( contains
+    , hasNoEls
+    , redirect
+    , redirectHome
+    )
 
 import Expect exposing (Expectation)
 import Program exposing (BlogProgramTest, baseUrl)
@@ -8,9 +13,14 @@ import Route exposing (Route)
 import Test.Html.Query as Query
 
 
-noEl : String -> Query.Single msg -> Expect.Expectation
-noEl label =
-    Query.findAll [ el label ] >> Query.count (Expect.equal 0)
+hasNoEls : String -> Query.Single msg -> Expect.Expectation
+hasNoEls =
+    contains 0
+
+
+contains : Int -> String -> Query.Single msg -> Expectation
+contains n label =
+    Query.findAll [ el label ] >> Query.count (Expect.equal n)
 
 
 redirect : Route -> BlogProgramTest -> Expectation

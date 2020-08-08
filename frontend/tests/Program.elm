@@ -1,5 +1,6 @@
 module Program exposing
     ( BlogProgramTest
+    , Options
     , baseUrl
     , defaultUser
     , fillField

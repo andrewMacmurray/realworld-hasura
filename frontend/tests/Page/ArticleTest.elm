@@ -1,13 +1,19 @@
 module Page.ArticleTest exposing (..)
 
 import Article exposing (Article)
+import Article.Author exposing (Author)
+import Article.Comment exposing (Comment)
+import Expect exposing (Expectation)
 import Helpers
+import Ports
 import Program exposing (defaultUser)
-import Program.Expect exposing (noEl)
+import Program.Expect exposing (contains, hasNoEls)
 import Program.Selector exposing (el)
-import ProgramTest exposing (ensureViewHas, expectView, expectViewHas)
+import ProgramTest exposing (ensureView, ensureViewHas, expectView, expectViewHas)
 import Route
 import Test exposing (..)
+import Test.Html.Query as Query
+import Test.Html.Selector exposing (containing, text)
 
 
 suite : Test
@@ -34,36 +40,84 @@ suite =
         , test "Logged in user can follow an author" <|
             \_ ->
                 Program.withPage articlePage
-                    |> Program.simulateArticle articleResponse
+                    |> withArticle anArticle
                     |> Program.loggedInWithUser "amacmurray"
                     |> Program.start
                     |> expectViewHas [ el "follow-someone" ]
         , test "Logged in user can unfollow a previously followed author" <|
             \_ ->
                 Program.withPage articlePage
-                    |> Program.simulateArticle articleResponse
+                    |> withArticle anArticle
                     |> Program.loggedInWithDetails { defaultUser | following = [ 2 ] }
                     |> Program.start
                     |> expectViewHas [ el "unfollow-someone" ]
         , test "Logged in user can post a comment" <|
             \_ ->
                 Program.withPage articlePage
-                    |> Program.simulateArticle articleResponse
+                    |> withArticle anArticle
                     |> Program.withLoggedInUser
                     |> Program.start
                     |> expectViewHas [ el "comments", el "post-new-comment" ]
         , test "Guest user cannot post comment" <|
             \_ ->
                 Program.withPage articlePage
-                    |> Program.simulateArticle articleResponse
+                    |> withArticle anArticle
                     |> Program.start
                     |> ensureViewHas [ el "comments" ]
-                    |> expectView (noEl "post-new-comment")
+                    |> expectView (hasNoEls "post-new-comment")
+        , test "User can perform actions on their own comments" <|
+            \_ ->
+                Program.withPage articlePage
+                    |> Program.loggedInWithDetails defaultUser
+                    |> withArticle
+                        (articleWithComments
+                            [ comment anotherAuthor
+                            , comment (toAuthor defaultUser)
+                            ]
+                        )
+                    |> Program.start
+                    |> ensureView (contains 2 "comment")
+                    |> expectView (hasEditableCommentFor defaultUser)
         ]
 
 
-articleResponse =
-    Ok (Just (articleBy 2 "someone"))
+hasEditableCommentFor : Ports.User -> Query.Single msg -> Expectation
+hasEditableCommentFor user =
+    Query.has
+        [ el "comment"
+        , containing [ text user.username ]
+        , containing [ el "comment-actions" ]
+        ]
+
+
+articleWithComments : List Comment -> Article
+articleWithComments =
+    Helpers.articleWithComments
+
+
+comment : Author -> Comment
+comment =
+    Helpers.comment
+
+
+toAuthor : Ports.User -> Author
+toAuthor user =
+    Helpers.author user.id user.username
+
+
+anotherAuthor : Author
+anotherAuthor =
+    Helpers.author 12 "crusty"
+
+
+withArticle : Article -> Program.Options -> Program.Options
+withArticle =
+    Program.simulateArticle << Ok << Just
+
+
+anArticle : Article
+anArticle =
+    articleBy 2 "someone"
 
 
 articlePage : Route.Route

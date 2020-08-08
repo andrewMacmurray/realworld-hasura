@@ -314,9 +314,7 @@ comments user model article =
             [ Text.title [ Text.green ] (commentsTitle (Article.comments article))
             , newComment article model user
             , column [ spacing Scale.large, width fill ]
-                (List.map (showComment model.commentEdit user)
-                    (Article.comments article)
-                )
+                (List.map (showComment model.commentEdit user) (Article.comments article))
             ]
         )
 
@@ -368,6 +366,7 @@ showComment edit user comment =
     row
         [ spacing Scale.extraLarge
         , onRight (commentActions edit comment user)
+        , Anchor.description "comment"
         , width fill
         ]
         [ el [ alignTop ] (commentAuthor comment)
@@ -423,20 +422,32 @@ editCommentField =
 
 commentActions : CommentEdit -> Comment -> User -> Element Msg
 commentActions edit comment user =
-    Element.showIfMe (el [ moveRight Scale.small ] (editComment edit comment))
-        user
-        (Comment.by comment)
+    Element.showIfMe (editComment edit comment) user (Comment.by comment)
 
 
+editComment : CommentEdit -> Comment -> Element Msg
 editComment edit comment =
+    el
+        [ moveRight Scale.small
+        , Anchor.description "comment-actions"
+        ]
+        (editComment_ edit comment)
+
+
+editComment_ : CommentEdit -> Comment -> Element Msg
+editComment_ edit comment =
     let
         optionsButton =
             Button.button (EditCommentClicked comment) "Edit"
                 |> Button.ellipsis
+                |> Button.toElement
     in
     case edit of
         None ->
-            optionsButton |> Button.toElement
+            optionsButton
+
+        Updating _ ->
+            Text.text [] "Updating"
 
         ConfirmDelete comment_ ->
             if Comment.equals comment comment_ then
@@ -451,10 +462,7 @@ editComment edit comment =
                     ]
 
             else
-                optionsButton |> Button.toElement
-
-        Updating _ ->
-            Text.text [] "Updating"
+                optionsButton
 
         Editing comment_ ->
             if Comment.equals comment comment_ then
@@ -470,7 +478,7 @@ editComment edit comment =
                     ]
 
             else
-                optionsButton |> Button.toElement
+                optionsButton
 
 
 commentAuthor : Comment -> Element msg
