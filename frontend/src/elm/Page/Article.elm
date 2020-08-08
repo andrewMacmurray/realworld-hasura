@@ -217,11 +217,23 @@ loadedBanner user article =
             [ headline article
             , row [ spacing Scale.medium ]
                 [ author article
+                , editArticleButton user article
                 , followButton user article
                 ]
             ]
         , el [ alignRight, alignBottom ] (tags article)
         ]
+
+
+editArticleButton : User -> Article -> Element msg
+editArticleButton user article =
+    Element.showIfMe
+        (Route.button (Route.editArticle article) "Edit Article"
+            |> Button.edit
+            |> Button.toElement
+        )
+        user
+        (Article.author article)
 
 
 followButton : User -> Article -> Element Msg

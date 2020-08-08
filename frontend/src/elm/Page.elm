@@ -11,8 +11,8 @@ import Effect exposing (Effect)
 import Element exposing (..)
 import Page.Article as Article
 import Page.Author as Author
+import Page.Editor as Editor
 import Page.Home as Home
-import Page.NewPost as NewPost
 import Page.NotFound as NotFound
 import Page.Settings as Settings
 import Page.SignIn as SignIn
@@ -31,7 +31,7 @@ type Page
     = Home Home.Model
     | SignUp SignUp.Model
     | SignIn SignIn.Model
-    | NewPost NewPost.Model
+    | Editor Editor.Model
     | Settings Settings.Model
     | Article Article.Model
     | Author Author.Model
@@ -42,7 +42,7 @@ type Msg
     = HomeMsg Home.Msg
     | SignUpMsg SignUp.Msg
     | SignInMsg SignIn.Msg
-    | NewPostMsg NewPost.Msg
+    | EditorMsg Editor.Msg
     | SettingsMsg Settings.Msg
     | ArticleMsg Article.Msg
     | AuthorMsg Author.Msg
@@ -69,8 +69,11 @@ changeTo url user page =
         Just Route.SignIn ->
             updateWith SignIn SignInMsg SignIn.init
 
-        Just Route.NewPost ->
-            updateWith NewPost NewPostMsg NewPost.init
+        Just Route.NewArticle ->
+            updateWith Editor EditorMsg (Editor.init Editor.New)
+
+        Just (Route.EditArticle id_) ->
+            updateWith Editor EditorMsg (Editor.init (Editor.Edit id_))
 
         Just Route.Settings ->
             initAuthenticated Settings SettingsMsg Settings.init user
@@ -116,9 +119,9 @@ update msg page =
             SignIn.update msg_ model_
                 |> updateWith SignIn SignInMsg
 
-        ( NewPostMsg msg_, NewPost model_ ) ->
-            NewPost.update msg_ model_
-                |> updateWith NewPost NewPostMsg
+        ( EditorMsg msg_, Editor model_ ) ->
+            Editor.update msg_ model_
+                |> updateWith Editor EditorMsg
 
         ( SettingsMsg msg_, Settings model_ ) ->
             Settings.update msg_ model_
@@ -152,8 +155,8 @@ view user model =
         SignIn model_ ->
             Element.map SignInMsg (SignIn.view model_)
 
-        NewPost model_ ->
-            Element.map NewPostMsg (whenLoggedIn NewPost.view model_ user)
+        Editor model_ ->
+            Element.map EditorMsg (whenLoggedIn Editor.view model_ user)
 
         Settings model_ ->
             Element.map SettingsMsg (whenLoggedIn Settings.view model_ user)

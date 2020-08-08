@@ -1,5 +1,6 @@
-module Page.NewPost exposing
-    ( Model
+module Page.Editor exposing
+    ( Mode(..)
+    , Model
     , Msg
     , init
     , update
@@ -28,6 +29,7 @@ import User exposing (User(..))
 
 type alias Model =
     { inputs : Inputs
+    , mode : Mode
     , errorsVisible : Bool
     }
 
@@ -37,6 +39,11 @@ type Msg
     | PublishClickedWithErrors
     | PublishClicked Article.ToCreate
     | PublishResponseReceived (Api.Response ())
+
+
+type Mode
+    = Edit Article.Id
+    | New
 
 
 type alias Inputs =
@@ -51,14 +58,15 @@ type alias Inputs =
 -- Init
 
 
-init : ( Model, Effect Msg )
-init =
-    ( initialModel, Effect.none )
+init : Mode -> ( Model, Effect Msg )
+init mode =
+    ( initialModel mode, Effect.none )
 
 
-initialModel : Model
-initialModel =
+initialModel : Mode -> Model
+initialModel mode =
     { inputs = emptyInputs
+    , mode = mode
     , errorsVisible = False
     }
 

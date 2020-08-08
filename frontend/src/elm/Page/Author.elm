@@ -184,7 +184,7 @@ newPostButton : User -> Author -> Element msg
 newPostButton =
     Element.showIfMe
         (row [ spacing Scale.extraSmall ]
-            [ Route.button Route.NewPost "New Post"
+            [ Route.button Route.NewArticle "New Post"
                 |> Button.follow
                 |> Button.toElement
             , Route.button Route.Settings "Edit Settings"

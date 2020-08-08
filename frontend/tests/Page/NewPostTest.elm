@@ -15,7 +15,7 @@ suite =
     describe "New Post Page"
         [ test "User can fill fields for new article" <|
             \_ ->
-                Program.withPage Route.NewPost
+                Program.withPage Route.NewArticle
                     |> Program.withLoggedInUser
                     |> Program.start
                     |> Program.fillField "article-title" "Title"
@@ -28,14 +28,14 @@ suite =
                         ]
         , test "User can enter tags" <|
             \_ ->
-                Program.withPage Route.NewPost
+                Program.withPage Route.NewArticle
                     |> Program.withLoggedInUser
                     |> Program.start
                     |> Program.fillField "enter-tags" "tag1, tag2,tag3"
                     |> expectView hasThreeTags
         , test "User is redirected home after publishing article" <|
             \_ ->
-                Program.withPage Route.NewPost
+                Program.withPage Route.NewArticle
                     |> Program.withLoggedInUser
                     |> Program.start
                     |> Program.fillField "article-title" "Title"
@@ -46,7 +46,7 @@ suite =
                     |> Expect.redirectHome
         , test "User sees errors if submitting an incomplete article" <|
             \_ ->
-                Program.withPage Route.NewPost
+                Program.withPage Route.NewArticle
                     |> Program.withLoggedInUser
                     |> Program.start
                     |> Program.fillField "article-title" "Title"
