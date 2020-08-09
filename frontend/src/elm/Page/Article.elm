@@ -41,7 +41,8 @@ import Utils.String as String
 type alias Model =
     { article : Api.Data Article
     , newComment : String
-    , commentEdit : CommentEdit
+    , commentAction : CommentAction
+    , articleAction : ArticleAction
     }
 
 
@@ -59,13 +60,21 @@ type Msg
     | CommentEdited Comment
     | SubmitEditClicked Comment
     | UpdateCommentResponseReceived (Api.Response Article)
+    | DeleteArticleClicked
+    | ConfirmDeleteArticleClicked Article
 
 
-type CommentEdit
-    = None
+type CommentAction
+    = NoCommentAction
     | Editing Comment
     | ConfirmDelete Comment
     | Updating Comment
+
+
+type ArticleAction
+    = NoArticleAction
+    | ConfirmDeleteArticle
+    | ArticleDeleting
 
 
 
@@ -86,7 +95,8 @@ initialModel : Model
 initialModel =
     { article = Api.Loading
     , newComment = ""
-    , commentEdit = None
+    , commentAction = NoCommentAction
+    , articleAction = NoArticleAction
     }
 
 
@@ -104,7 +114,7 @@ update msg model =
             ( model, handleFollowEffect msg_ )
 
         CommentTyped comment ->
-            ( { model | newComment = comment, commentEdit = None }, Effect.none )
+            ( { model | newComment = comment, commentAction = NoCommentAction }, Effect.none )
 
         PostCommentClicked article ->
             ( model, postComment article model.newComment )
@@ -113,33 +123,44 @@ update msg model =
             ( resetComments { model | article = Api.fromResponse response }, Effect.none )
 
         DeleteCommentClicked comment ->
-            ( { model | commentEdit = ConfirmDelete comment }, Effect.none )
+            ( { model | commentAction = ConfirmDelete comment }, Effect.none )
 
         DeleteAreYouSureClicked comment ->
-            ( { model | commentEdit = Updating comment }, deleteComment comment )
+            ( { model | commentAction = Updating comment }, deleteComment comment )
 
         DeleteCommentResponseReceived response ->
             ( resetComments { model | article = Api.fromResponse response }, Effect.none )
 
         EditCommentClicked comment ->
-            ( { model | commentEdit = Editing comment }, Effect.none )
+            ( { model | commentAction = Editing comment }, Effect.none )
 
         CommentEdited comment ->
-            ( { model | commentEdit = Editing comment }, Effect.none )
+            ( { model | commentAction = Editing comment }, Effect.none )
 
         SubmitEditClicked comment ->
-            ( { model | commentEdit = Updating comment }, updateComment comment )
+            ( { model | commentAction = Updating comment }, updateComment comment )
 
         UpdateCommentResponseReceived response ->
             ( resetComments { model | article = Api.fromResponse response }, Effect.none )
 
         CommentEditUnfocused ->
-            ( { model | commentEdit = None }, Effect.none )
+            ( resetActions model, Effect.none )
+
+        DeleteArticleClicked ->
+            ( { model | articleAction = ConfirmDeleteArticle }, Effect.none )
+
+        ConfirmDeleteArticleClicked article ->
+            ( { model | articleAction = ArticleDeleting }, Effect.none )
 
 
 resetComments : Model -> Model
 resetComments model =
-    { model | newComment = "", commentEdit = None }
+    resetActions { model | newComment = "" }
+
+
+resetActions : Model -> Model
+resetActions model =
+    { model | commentAction = NoCommentAction, articleAction = NoArticleAction }
 
 
 handleFollowEffect : Follow.Msg -> Effect Msg
@@ -177,7 +198,7 @@ withBanner : User -> Model -> Layout Msg -> Layout Msg
 withBanner user model layout =
     case model.article of
         Api.Success article ->
-            bannerConfig (loadedBanner user article) layout
+            bannerConfig (loadedBanner model user article) layout
 
         _ ->
             bannerConfig none layout
@@ -188,19 +209,50 @@ bannerConfig =
     Layout.withBanner [ Background.color Palette.black ]
 
 
-loadedBanner : User -> Article -> Element Msg
-loadedBanner user article =
+loadedBanner : Model -> User -> Article -> Element Msg
+loadedBanner model user article =
     row [ width fill ]
         [ column [ spacing Scale.large, width fill ]
             [ headline article
             , row [ spacing Scale.medium ]
                 [ author article
-                , editArticleButton user article
                 , followButton user article
                 ]
+            , actionButtons model user article
             ]
         , el [ alignRight, alignBottom ] (tags article)
         ]
+
+
+actionButtons : Model -> User -> Article -> Element Msg
+actionButtons model user article =
+    row []
+        [ editArticleButton user article
+        , deleteArticleButton model user article
+        ]
+
+
+deleteArticleButton : Model -> User -> Article -> Element Msg
+deleteArticleButton model user article =
+    Element.showIfMe (deleteArticleButton_ model article) user (Article.author article)
+
+
+deleteArticleButton_ : Model -> Article -> Element Msg
+deleteArticleButton_ model article =
+    let
+        delete =
+            Button.delete
+                >> Button.toElement
+    in
+    case model.articleAction of
+        NoArticleAction ->
+            delete (Button.button DeleteArticleClicked "Delete Article")
+
+        ConfirmDeleteArticle ->
+            delete (Button.button (ConfirmDeleteArticleClicked article) "Are you sure?")
+
+        ArticleDeleting ->
+            delete (Button.decorative "Deleting...")
 
 
 editArticleButton : User -> Article -> Element msg
@@ -304,7 +356,7 @@ comments user model article =
             [ Text.title [ Text.green ] (commentsTitle (Article.comments article))
             , newComment article model user
             , column [ spacing Scale.large, width fill ]
-                (List.map (showComment model.commentEdit user) (Article.comments article))
+                (List.map (showComment model.commentAction user) (Article.comments article))
             ]
         )
 
@@ -351,7 +403,7 @@ commentsTitle comments_ =
     String.pluralize "Comment" (List.length comments_)
 
 
-showComment : CommentEdit -> User -> Comment -> Element Msg
+showComment : CommentAction -> User -> Comment -> Element Msg
 showComment edit user comment =
     row
         [ spacing Scale.extraLarge
@@ -364,7 +416,7 @@ showComment edit user comment =
         ]
 
 
-toCommentText : User -> CommentEdit -> Comment -> Element Msg
+toCommentText : User -> CommentAction -> Comment -> Element Msg
 toCommentText user edit comment =
     let
         value =
@@ -378,7 +430,7 @@ toCommentText user edit comment =
                 paragraph [] [ Text.text [] value ]
     in
     case edit of
-        None ->
+        NoCommentAction ->
             commentText_
 
         Editing comment_ ->
@@ -410,12 +462,12 @@ editCommentField =
         |> Field.toElement CommentEdited
 
 
-commentActions : CommentEdit -> Comment -> User -> Element Msg
+commentActions : CommentAction -> Comment -> User -> Element Msg
 commentActions edit comment user =
     Element.showIfMe (editComment edit comment) user (Comment.by comment)
 
 
-editComment : CommentEdit -> Comment -> Element Msg
+editComment : CommentAction -> Comment -> Element Msg
 editComment edit comment =
     el
         [ moveRight Scale.small
@@ -424,7 +476,7 @@ editComment edit comment =
         (editComment_ edit comment)
 
 
-editComment_ : CommentEdit -> Comment -> Element Msg
+editComment_ : CommentAction -> Comment -> Element Msg
 editComment_ edit comment =
     let
         optionsButton =
@@ -433,7 +485,7 @@ editComment_ edit comment =
                 |> Button.toElement
     in
     case edit of
-        None ->
+        NoCommentAction ->
             optionsButton
 
         Updating _ ->
