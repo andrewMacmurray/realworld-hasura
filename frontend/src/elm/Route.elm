@@ -2,6 +2,7 @@ module Route exposing
     ( Route(..)
     , author
     , button
+    , editArticle
     , el
     , fromUrl
     , home
@@ -10,7 +11,7 @@ module Route exposing
     , tagFeed
     )
 
-import Article
+import Article exposing (Article)
 import Article.Author as Author exposing (Author)
 import Element exposing (Element)
 import Element.Button as Button exposing (Button)
@@ -31,7 +32,8 @@ type Route
     = Home (Maybe Tag)
     | SignUp
     | SignIn
-    | NewPost
+    | NewArticle
+    | EditArticle Article.Id
     | Settings
     | Article Article.Id
     | Author User.Id
@@ -44,9 +46,10 @@ parser =
         [ Parser.map Home (top <?> tagQuery)
         , Parser.map SignUp (s "sign-up")
         , Parser.map SignIn (s "sign-in")
-        , Parser.map NewPost (s "new-post")
-        , Parser.map Settings (s "settings")
+        , Parser.map NewArticle (s "new-article")
         , Parser.map Article (s "article" </> int)
+        , Parser.map EditArticle (s "article" </> s "edit" </> int)
+        , Parser.map Settings (s "settings")
         , Parser.map Author (s "author" </> int)
         , Parser.map Logout (s "logout")
         ]
@@ -60,6 +63,11 @@ tagFeed tag =
 home : Route
 home =
     Home Nothing
+
+
+editArticle : Article -> Route
+editArticle =
+    Article.id >> EditArticle
 
 
 author : Author -> Route
@@ -105,8 +113,11 @@ routeToString route =
         SignIn ->
             absolute [ "sign-in" ] []
 
-        NewPost ->
-            absolute [ "new-post" ] []
+        NewArticle ->
+            absolute [ "new-article" ] []
+
+        EditArticle id ->
+            absolute [ "article", "edit", String.fromInt id ] []
 
         Settings ->
             absolute [ "settings" ] []

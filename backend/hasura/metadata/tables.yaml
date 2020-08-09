@@ -6,6 +6,7 @@
       insert: publish_articles
       insert_one: publish_article
       select_by_pk: article
+      update_by_pk: edit_article
     custom_column_names: {}
   object_relationships:
   - name: author
@@ -223,6 +224,10 @@
       insert_one: insert_tag
       select_by_pk: tag
     custom_column_names: {}
+  object_relationships:
+  - name: article
+    using:
+      foreign_key_constraint_on: article_id
   computed_fields:
   - name: count
     definition:
@@ -233,8 +238,12 @@
   insert_permissions:
   - role: user
     permission:
-      check: {}
+      check:
+        article:
+          author_id:
+            _eq: X-Hasura-User-Id
       columns:
+      - article_id
       - tag
       backend_only: false
   select_permissions:
@@ -252,6 +261,13 @@
       computed_fields:
       - count
       filter: {}
+  delete_permissions:
+  - role: user
+    permission:
+      filter:
+        article:
+          author_id:
+            _eq: X-Hasura-User-Id
 - table:
     schema: public
     name: users

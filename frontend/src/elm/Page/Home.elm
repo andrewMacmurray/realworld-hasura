@@ -23,7 +23,6 @@ import Element.Text as Text
 import Route
 import Tag exposing (Tag)
 import User exposing (User(..))
-import WebData exposing (WebData)
 
 
 
@@ -31,7 +30,7 @@ import WebData exposing (WebData)
 
 
 type alias Model =
-    { popularTags : WebData (List Tag.Popular)
+    { popularTags : Api.Data (List Tag.Popular)
     , feed : Feed.Model
     , activeTab : Tab
     }
@@ -78,7 +77,7 @@ initialModel : User -> Maybe Tag -> Model
 initialModel user tag =
     { activeTab = initTab user tag
     , feed = Feed.loading
-    , popularTags = WebData.Loading
+    , popularTags = Api.Loading
     }
 
 
@@ -102,13 +101,8 @@ initTab user tag =
 update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
-        LoadFeedResponseReceived (Ok feed) ->
-            ( { model | popularTags = WebData.Success feed.popularTags, feed = Feed.loaded feed.articles }
-            , Effect.none
-            )
-
-        LoadFeedResponseReceived (Err _) ->
-            ( { model | popularTags = WebData.Failure, feed = Feed.failure }
+        LoadFeedResponseReceived res ->
+            ( handleFeedResponse model res
             , Effect.none
             )
 
@@ -120,6 +114,14 @@ update msg model =
 
         FeedMsg msg_ ->
             Feed.update FeedMsg msg_ model
+
+
+handleFeedResponse : Model -> Api.Response Article.Feed -> Model
+handleFeedResponse model res =
+    { model
+        | popularTags = Api.mapData .popularTags (Api.fromResponse res)
+        , feed = Feed.fromResponse res
+    }
 
 
 embedFeed : Model -> ( Feed.Model, Effect Feed.Msg ) -> ( Model, Effect Msg )
@@ -256,17 +258,14 @@ viewFeed user feed =
         }
 
 
-popularTags : WebData (List Tag.Popular) -> Element msg
+popularTags : Api.Data (List Tag.Popular) -> Element msg
 popularTags tags =
     case tags of
-        WebData.Loading ->
-            none
-
-        WebData.Failure ->
-            none
-
-        WebData.Success tags_ ->
+        Api.Success tags_ ->
             wrappedRow [ spacing Scale.small ] (List.map popularTag tags_)
+
+        _ ->
+            none
 
 
 popularTag : Tag.Popular -> Element msg

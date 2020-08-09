@@ -33,7 +33,7 @@ import User.Element as Element
 
 type alias Model =
     { feed : Feed.Model
-    , author : LoadStatus Author
+    , author : Api.Data Author
     , activeTab : Tab
     }
 
@@ -51,13 +51,6 @@ type Tab
     | LikedArticles
 
 
-type LoadStatus data
-    = Loading
-    | Failed
-    | NotFound
-    | Loaded data
-
-
 
 -- Init
 
@@ -70,7 +63,7 @@ init id_ =
 initialModel : Model
 initialModel =
     { feed = Feed.loading
-    , author = Loading
+    , author = Api.Loading
     , activeTab = AuthoredArticles
     }
 
@@ -87,16 +80,8 @@ fetchAuthorFeed id_ =
 update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
-        LoadAuthorResponseReceived (Ok (Just authorFeed)) ->
-            ( { model | author = Loaded authorFeed.author, feed = Feed.loaded authorFeed.articles }
-            , Effect.none
-            )
-
-        LoadAuthorResponseReceived (Ok Nothing) ->
-            ( { model | author = NotFound }, Effect.none )
-
-        LoadAuthorResponseReceived (Err _) ->
-            ( { model | author = Failed }, Effect.none )
+        LoadAuthorResponseReceived res ->
+            ( handleLoadResponse model res, Effect.none )
 
         FeedMsg msg_ ->
             Feed.update FeedMsg msg_ model
@@ -109,6 +94,14 @@ update msg model =
 
         AuthoredArticlesClicked ->
             handleLoadAuthoredArticles model
+
+
+handleLoadResponse : Model -> Api.Response (Maybe Author.Feed) -> Model
+handleLoadResponse model response =
+    { model
+        | author = Api.mapData .author (Api.fromNullableResponse response)
+        , feed = Feed.fromNullableResponse response
+    }
 
 
 handleLoadLikedArticles : Model -> ( Model, Effect Msg )
@@ -126,7 +119,7 @@ handleLoadAuthoredArticles model =
 loadFeed : Authors.ArticlesSelection -> Model -> ( Feed.Model, Effect Feed.Msg )
 loadFeed selection model =
     case model.author of
-        Loaded author ->
+        Api.Success author ->
             Feed.load (selection (Author.id author))
 
         _ ->
@@ -163,10 +156,10 @@ withBanner user model =
     Layout.withBanner [ Background.color Palette.black ] (bannerContent user model.author)
 
 
-bannerContent : User -> LoadStatus Author -> Element Msg
+bannerContent : User -> Api.Data Author -> Element Msg
 bannerContent user author =
     case author of
-        Loaded author_ ->
+        Api.Success author_ ->
             column [ spacing Scale.small, centerY ]
                 [ row [ spacing Scale.small ]
                     [ Avatar.large (Author.profileImage author_)
@@ -184,7 +177,7 @@ newPostButton : User -> Author -> Element msg
 newPostButton =
     Element.showIfMe
         (row [ spacing Scale.extraSmall ]
-            [ Route.button Route.NewPost "New Post"
+            [ Route.button Route.NewArticle "New Post"
                 |> Button.follow
                 |> Button.toElement
             , Route.button Route.Settings "Edit Settings"
@@ -234,16 +227,16 @@ tabs activeTab =
 feed : User -> Model -> Element Msg
 feed user model =
     case model.author of
-        Loading ->
+        Api.Loading ->
             Text.text [] "Loading..."
 
-        Failed ->
+        Api.Failure ->
             Text.error [ Text.description "error-message" ] "Something went wrong"
 
-        NotFound ->
+        Api.NotFound ->
             Text.text [ Text.description "not-found-message" ] "Author not found"
 
-        Loaded _ ->
+        Api.Success _ ->
             Feed.view
                 { user = user
                 , feed = model.feed

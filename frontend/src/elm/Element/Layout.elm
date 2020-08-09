@@ -178,7 +178,7 @@ toNavBar options =
         Just profile_ ->
             navBar
                 [ Route.link (Route.Home Nothing) [] "Home"
-                , Route.link Route.NewPost [] "New Post"
+                , Route.link Route.NewArticle [] "New Post"
                 , Route.el (Route.Author (User.id profile_)) (profileLink profile_)
                 , Route.link Route.Settings [] "Settings"
                 , Route.link Route.Logout [] "Logout"

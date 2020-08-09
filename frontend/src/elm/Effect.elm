@@ -3,7 +3,9 @@ module Effect exposing
     , addToUserFollows
     , batch
     , deleteComment
+    , editArticle
     , followAuthor
+    , goToArticle
     , likeArticle
     , loadArticle
     , loadArticles
@@ -106,6 +108,11 @@ redirectHome =
     NavigateTo (Route.Home Nothing)
 
 
+goToArticle : Article.Id -> Effect msg
+goToArticle =
+    NavigateTo << Route.Article
+
+
 loadUrl : String -> Effect msg
 loadUrl =
     LoadUrl
@@ -138,6 +145,11 @@ loadArticles =
 
 publishArticle : Api.Mutation () msg -> Effect msg
 publishArticle =
+    MutateWithEmptyResponse
+
+
+editArticle : Api.Mutation () msg -> Effect msg
+editArticle =
     MutateWithEmptyResponse
 
 

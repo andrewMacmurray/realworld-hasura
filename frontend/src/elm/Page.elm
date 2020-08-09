@@ -11,13 +11,13 @@ import Effect exposing (Effect)
 import Element exposing (..)
 import Page.Article as Article
 import Page.Author as Author
+import Page.Editor as Editor
 import Page.Home as Home
-import Page.NewPost as NewPost
 import Page.NotFound as NotFound
 import Page.Settings as Settings
 import Page.SignIn as SignIn
 import Page.Signup as SignUp
-import Route
+import Route exposing (Route)
 import Url exposing (Url)
 import User exposing (User)
 import Utils.Update exposing (updateWith)
@@ -31,7 +31,7 @@ type Page
     = Home Home.Model
     | SignUp SignUp.Model
     | SignIn SignIn.Model
-    | NewPost NewPost.Model
+    | Editor Editor.Model
     | Settings Settings.Model
     | Article Article.Model
     | Author Author.Model
@@ -42,7 +42,7 @@ type Msg
     = HomeMsg Home.Msg
     | SignUpMsg SignUp.Msg
     | SignInMsg SignIn.Msg
-    | NewPostMsg NewPost.Msg
+    | EditorMsg Editor.Msg
     | SettingsMsg Settings.Msg
     | ArticleMsg Article.Msg
     | AuthorMsg Author.Msg
@@ -59,42 +59,55 @@ init =
 
 changeTo : Url -> User -> Page -> ( Page, Effect Msg )
 changeTo url user page =
-    case Route.fromUrl url of
-        Just (Route.Home tag) ->
+    Route.fromUrl url
+        |> Maybe.map (changeTo_ user page)
+        |> Maybe.withDefault ( NotFound, Effect.none )
+
+
+changeTo_ : User -> Page -> Route -> ( Page, Effect Msg )
+changeTo_ user page route =
+    case route of
+        Route.Home tag ->
             updateWith Home HomeMsg (Home.init user tag)
 
-        Just Route.SignUp ->
+        Route.SignUp ->
             updateWith SignUp SignUpMsg SignUp.init
 
-        Just Route.SignIn ->
+        Route.SignIn ->
             updateWith SignIn SignInMsg SignIn.init
 
-        Just Route.NewPost ->
-            updateWith NewPost NewPostMsg NewPost.init
+        Route.NewArticle ->
+            updateWith Editor EditorMsg (Editor.init Editor.NewArticle)
 
-        Just Route.Settings ->
-            initAuthenticated Settings SettingsMsg Settings.init user
+        Route.EditArticle id_ ->
+            updateWith Editor EditorMsg (Editor.init (Editor.EditArticle id_))
 
-        Just (Route.Article id_) ->
+        Route.Settings ->
+            authenticated Settings SettingsMsg Settings.init user
+
+        Route.Article id_ ->
             updateWith Article ArticleMsg (Article.init id_)
 
-        Just (Route.Author id_) ->
+        Route.Author id_ ->
             updateWith Author AuthorMsg (Author.init id_)
 
-        Just Route.Logout ->
+        Route.Logout ->
             ( page, Effect.logout )
 
-        Nothing ->
-            ( NotFound, Effect.none )
 
-
-initAuthenticated modelF msgF init_ user =
+authenticated :
+    (subModel -> Page)
+    -> (subMsg -> msg)
+    -> (User.Profile -> ( subModel, Effect subMsg ))
+    -> User
+    -> ( Page, Effect msg )
+authenticated toPage toMsg init_ user =
     case user of
         User.Guest ->
             ( NotFound, Effect.none )
 
         User.Author profile ->
-            init_ profile |> updateWith modelF msgF
+            init_ profile |> updateWith toPage toMsg
 
 
 
@@ -116,9 +129,9 @@ update msg page =
             SignIn.update msg_ model_
                 |> updateWith SignIn SignInMsg
 
-        ( NewPostMsg msg_, NewPost model_ ) ->
-            NewPost.update msg_ model_
-                |> updateWith NewPost NewPostMsg
+        ( EditorMsg msg_, Editor model_ ) ->
+            Editor.update msg_ model_
+                |> updateWith Editor EditorMsg
 
         ( SettingsMsg msg_, Settings model_ ) ->
             Settings.update msg_ model_
@@ -152,8 +165,8 @@ view user model =
         SignIn model_ ->
             Element.map SignInMsg (SignIn.view model_)
 
-        NewPost model_ ->
-            Element.map NewPostMsg (whenLoggedIn NewPost.view model_ user)
+        Editor model_ ->
+            Element.map EditorMsg (whenLoggedIn Editor.view model_ user)
 
         Settings model_ ->
             Element.map SettingsMsg (whenLoggedIn Settings.view model_ user)
