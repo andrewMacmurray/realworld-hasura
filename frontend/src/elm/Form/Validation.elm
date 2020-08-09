@@ -46,8 +46,8 @@ type alias FieldId =
 
 
 build : output -> Validation inputs output
-build output_ =
-    Validation (\_ -> Success output_)
+build output =
+    Validation (\_ -> Success output)
 
 
 
@@ -57,10 +57,10 @@ build output_ =
 map : (outputA -> outputB) -> Validation inputs outputA -> Validation inputs outputB
 map f (Validation toOutput) =
     Validation
-        (\inputs_ ->
-            case toOutput inputs_ of
-                Success output_ ->
-                    Success (f output_)
+        (\inputs ->
+            case toOutput inputs of
+                Success output ->
+                    Success (f output)
 
                 Failure errs ->
                     Failure errs
@@ -79,21 +79,21 @@ constant value =
 nonEmpty : Field inputs -> Validation inputs (String.NonEmpty -> output) -> Validation inputs output
 nonEmpty field (Validation toOutput) =
     Validation
-        (\inputs_ ->
-            Field.value field inputs_
+        (\inputs ->
+            Field.value field inputs
                 |> String.toNonEmpty
-                |> Maybe.map (mapResult (toOutput inputs_))
-                |> Maybe.withDefault (addToErrors (Field.id field) (toOutput inputs_))
+                |> Maybe.map (mapResult (toOutput inputs))
+                |> Maybe.withDefault (addToErrors (Field.id field) (toOutput inputs))
         )
 
 
 optional : Field inputs -> Validation inputs (String.Optional -> output) -> Validation inputs output
 optional field (Validation toOutput) =
     Validation
-        (\inputs_ ->
-            Field.value field inputs_
+        (\inputs ->
+            Field.value field inputs
                 |> String.toOptional
-                |> mapResult (toOutput inputs_)
+                |> mapResult (toOutput inputs)
         )
 
 

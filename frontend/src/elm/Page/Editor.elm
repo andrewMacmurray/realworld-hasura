@@ -38,7 +38,7 @@ type Msg
     = LoadArticleResponseReceived (Api.Response (Maybe Article))
     | InputsChanged Inputs
     | PublishClickedWithErrors
-    | PublishClicked Article.ToCreate
+    | PublishClicked Article.Inputs
     | PublishResponseReceived (Api.Response ())
     | EditResponseReceived Article.Id (Api.Response ())
 
@@ -140,7 +140,7 @@ tagsToString =
     Article.tags >> List.map Tag.value >> String.join " "
 
 
-publishArticle : Mode -> Article.ToCreate -> Effect Msg
+publishArticle : Mode -> Article.Inputs -> Effect Msg
 publishArticle mode =
     case mode of
         NewArticle ->
@@ -210,9 +210,9 @@ publishButton_ inputs model =
         }
 
 
-validation : Inputs -> Validation Inputs Article.ToCreate
+validation : Inputs -> Validation Inputs Article.Inputs
 validation inputs =
-    Validation.build Article.ToCreate
+    Validation.build Article.Inputs
         |> Validation.nonEmpty title_
         |> Validation.nonEmpty about_
         |> Validation.nonEmpty content_
@@ -262,7 +262,7 @@ tags inputs =
         |> textInput inputs
 
 
-validate : Inputs -> Model -> Field.View Inputs Article.ToCreate -> Field.View Inputs Article.ToCreate
+validate : Inputs -> Model -> Field.View Inputs Article.Inputs -> Field.View Inputs Article.Inputs
 validate inputs model =
     Field.validateWith (validation inputs) >> Field.showErrorsIf model.errorsVisible
 

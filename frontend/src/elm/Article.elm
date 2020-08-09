@@ -3,7 +3,7 @@ module Article exposing
     , Details
     , Feed
     , Id
-    , ToCreate
+    , Inputs
     , about
     , author
     , authorUsername
@@ -54,7 +54,7 @@ type alias Id =
     Int
 
 
-type alias ToCreate =
+type alias Inputs =
     { title : String.NonEmpty
     , about : String.NonEmpty
     , content : String.NonEmpty

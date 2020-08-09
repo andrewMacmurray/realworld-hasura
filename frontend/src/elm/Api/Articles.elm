@@ -222,7 +222,7 @@ newestFirst =
 -- Publish
 
 
-publish : (Api.Response () -> msg) -> Article.ToCreate -> Effect msg
+publish : (Api.Response () -> msg) -> Article.Inputs -> Effect msg
 publish msg article_ =
     Mutation.publish_article identity { object = toPublishArgs article_ } SelectionSet.empty
         |> SelectionSet.failOnNothing
@@ -230,7 +230,7 @@ publish msg article_ =
         |> Effect.publishArticle
 
 
-toPublishArgs : Article.ToCreate -> Input.Articles_insert_input
+toPublishArgs : Article.Inputs -> Input.Articles_insert_input
 toPublishArgs article_ =
     Input.buildArticles_insert_input
         (\args ->
@@ -257,7 +257,7 @@ toTagArg tag_ =
 -- Edit
 
 
-edit : (Api.Response () -> msg) -> Article.Id -> Article.ToCreate -> Effect msg
+edit : (Api.Response () -> msg) -> Article.Id -> Article.Inputs -> Effect msg
 edit msg id_ edits =
     SelectionSet.succeed (\_ _ _ -> ())
         |> with (editArticle id_ edits)
@@ -267,7 +267,7 @@ edit msg id_ edits =
         |> Effect.editArticle
 
 
-insertTags : Article.Id -> Article.ToCreate -> SelectionSet () RootMutation
+insertTags : Article.Id -> Article.Inputs -> SelectionSet () RootMutation
 insertTags id_ edits =
     SelectionSet.empty
         |> Mutation.insert_tags { objects = List.map (toTagsArgs_ id_) edits.tags }
@@ -300,7 +300,7 @@ tagIsForArticle id_ =
         (eq_ id_)
 
 
-editArticle : Int -> Article.ToCreate -> SelectionSet () RootMutation
+editArticle : Int -> Article.Inputs -> SelectionSet () RootMutation
 editArticle id edits =
     SelectionSet.empty
         |> Mutation.edit_article (editArticleArgs edits) { pk_columns = { id = id } }
@@ -308,7 +308,7 @@ editArticle id edits =
 
 
 editArticleArgs :
-    Article.ToCreate
+    Article.Inputs
     -> Mutation.EditArticleOptionalArguments
     -> Mutation.EditArticleOptionalArguments
 editArticleArgs edits args =
