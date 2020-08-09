@@ -6,6 +6,7 @@
       insert: publish_articles
       insert_one: publish_article
       select_by_pk: article
+      delete_by_pk: delete_article
       update_by_pk: edit_article
     custom_column_names: {}
   object_relationships:
@@ -75,6 +76,12 @@
         author_id:
           _eq: X-Hasura-User-Id
       check: null
+  delete_permissions:
+  - role: user
+    permission:
+      filter:
+        author_id:
+          _eq: X-Hasura-User-Id
 - table:
     schema: public
     name: comments

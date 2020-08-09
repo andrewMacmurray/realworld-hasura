@@ -62,6 +62,7 @@ type Msg
     | UpdateCommentResponseReceived (Api.Response Article)
     | DeleteArticleClicked
     | ConfirmDeleteArticleClicked Article
+    | DeleteArticleResponseReceived (Api.Response ())
 
 
 type CommentAction
@@ -150,7 +151,13 @@ update msg model =
             ( { model | articleAction = ConfirmDeleteArticle }, Effect.none )
 
         ConfirmDeleteArticleClicked article ->
-            ( { model | articleAction = ArticleDeleting }, Effect.none )
+            ( { model | articleAction = ArticleDeleting }, deleteArticle article )
+
+        DeleteArticleResponseReceived (Ok _) ->
+            ( model, Effect.redirectHome )
+
+        DeleteArticleResponseReceived (Err _) ->
+            ( model, Effect.none )
 
 
 resetComments : Model -> Model
@@ -181,6 +188,11 @@ deleteComment =
 updateComment : Comment -> Effect Msg
 updateComment =
     Api.Articles.updateComment UpdateCommentResponseReceived
+
+
+deleteArticle : Article -> Effect Msg
+deleteArticle =
+    Api.Articles.delete DeleteArticleResponseReceived
 
 
 
@@ -243,6 +255,7 @@ deleteArticleButton_ model article =
         delete =
             Button.delete
                 >> Button.light
+                >> Button.description "delete-article"
                 >> Button.toElement
     in
     case model.articleAction of
@@ -262,6 +275,7 @@ editArticleButton user article =
         (Route.button (Route.editArticle article) "Edit Article"
             |> Button.edit
             |> Button.light
+            |> Button.description "edit-article"
             |> Button.toElement
         )
         user

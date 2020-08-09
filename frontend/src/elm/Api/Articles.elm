@@ -2,6 +2,7 @@ module Api.Articles exposing
     ( all
     , articleSelection
     , byTag
+    , delete
     , deleteComment
     , edit
     , followedByAuthor
@@ -320,6 +321,18 @@ editArticleArgs edits args =
                 , content = Argument.fromNonEmpty edits.content
                 }
     }
+
+
+
+-- Delete
+
+
+delete : (Api.Response () -> msg) -> Article -> Effect msg
+delete msg article =
+    Mutation.delete_article { id = Article.id article } SelectionSet.empty
+        |> SelectionSet.failOnNothing
+        |> Api.mutation msg
+        |> Effect.deleteArticle
 
 
 

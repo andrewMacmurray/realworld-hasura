@@ -2,6 +2,7 @@ module Effect exposing
     ( Effect(..)
     , addToUserFollows
     , batch
+    , deleteArticle
     , deleteComment
     , editArticle
     , followAuthor
@@ -150,6 +151,11 @@ publishArticle =
 
 editArticle : Api.Mutation () msg -> Effect msg
 editArticle =
+    MutateWithEmptyResponse
+
+
+deleteArticle : Api.Mutation () msg -> Effect msg
+deleteArticle =
     MutateWithEmptyResponse
 
 
