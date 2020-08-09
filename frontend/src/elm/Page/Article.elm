@@ -242,6 +242,7 @@ deleteArticleButton_ model article =
     let
         delete =
             Button.delete
+                >> Button.light
                 >> Button.toElement
     in
     case model.articleAction of
@@ -260,6 +261,7 @@ editArticleButton user article =
     Element.showIfMe
         (Route.button (Route.editArticle article) "Edit Article"
             |> Button.edit
+            |> Button.light
             |> Button.toElement
         )
         user
