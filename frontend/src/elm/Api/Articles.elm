@@ -3,6 +3,7 @@ module Api.Articles exposing
     , articleSelection
     , byTag
     , deleteComment
+    , edit
     , followedByAuthor
     , like
     , load
@@ -22,13 +23,13 @@ import Article exposing (Article)
 import Article.Author as Author exposing (Author)
 import Article.Comment as Comment exposing (Comment, Comment_)
 import Effect exposing (Effect)
-import Graphql.Operation exposing (RootQuery)
+import Graphql.Operation exposing (RootMutation, RootQuery)
 import Graphql.OptionalArgument exposing (OptionalArgument(..))
 import Graphql.SelectionSet as SelectionSet exposing (SelectionSet, with)
 import Hasura.Enum.Order_by exposing (Order_by(..))
 import Hasura.Enum.Tags_select_column as Tags_select_column
-import Hasura.InputObject as Input exposing (Articles_insert_input, Articles_order_byOptionalFields)
-import Hasura.Mutation exposing (UpdateCommentOptionalArguments, UpdateCommentRequiredArguments)
+import Hasura.InputObject as Input
+import Hasura.Mutation as Mutation
 import Hasura.Object exposing (Articles)
 import Hasura.Object.Articles as Articles exposing (CommentsOptionalArguments)
 import Hasura.Object.Comments as Comments
@@ -38,7 +39,7 @@ import Hasura.Object.Likes_aggregate_fields as LikesAggregateFields
 import Hasura.Object.Tags as Tags
 import Hasura.Object.UnlikeResponse as UnlikeResponse
 import Hasura.Object.Users as Users
-import Hasura.Query exposing (ArticlesOptionalArguments, TagsOptionalArguments)
+import Hasura.Query as Query
 import Tag exposing (Tag)
 import User
 import Utils.SelectionSet as SelectionSet
@@ -50,7 +51,7 @@ import Utils.SelectionSet as SelectionSet
 
 loadArticle : Article.Id -> (Api.Response (Maybe Article) -> msg) -> Effect msg
 loadArticle id msg =
-    Hasura.Query.article { id = id } articleSelection
+    Query.article { id = id } articleSelection
         |> Api.query msg
         |> Effect.loadArticle
 
@@ -85,10 +86,10 @@ loadFeed articlesSelection_ msg =
 
 byTag : Tag -> SelectionSet (List Article) RootQuery
 byTag tag =
-    Hasura.Query.articles (newestFirst >> containsTag tag) articleSelection
+    Query.articles (newestFirst >> containsTag tag) articleSelection
 
 
-containsTag : Tag -> ArticlesOptionalArguments -> ArticlesOptionalArguments
+containsTag : Tag -> Query.ArticlesOptionalArguments -> Query.ArticlesOptionalArguments
 containsTag tag_ =
     Argument.combine4
         (where_ Input.buildArticles_bool_exp)
@@ -103,10 +104,10 @@ containsTag tag_ =
 
 followedByAuthor : User.Profile -> SelectionSet (List Article) RootQuery
 followedByAuthor profile =
-    Hasura.Query.articles (newestFirst >> followedBy profile) articleSelection
+    Query.articles (newestFirst >> followedBy profile) articleSelection
 
 
-followedBy : User.Profile -> ArticlesOptionalArguments -> ArticlesOptionalArguments
+followedBy : User.Profile -> Query.ArticlesOptionalArguments -> Query.ArticlesOptionalArguments
 followedBy profile =
     Argument.combine4
         (where_ Input.buildArticles_bool_exp)
@@ -121,11 +122,11 @@ followedBy profile =
 
 popularTagsSelection : SelectionSet (List Tag.Popular) RootQuery
 popularTagsSelection =
-    Hasura.Query.tags distinctAndLimit popularTagSelection
+    Query.tags distinctAndLimit popularTagSelection
         |> SelectionSet.map (List.sortBy .count >> List.reverse)
 
 
-distinctAndLimit : TagsOptionalArguments -> TagsOptionalArguments
+distinctAndLimit : Query.TagsOptionalArguments -> Query.TagsOptionalArguments
 distinctAndLimit args =
     { args | distinct_on = Present [ Tags_select_column.Tag ], limit = Present 20 }
 
@@ -143,7 +144,7 @@ popularTagSelection =
 
 all : SelectionSet (List Article) RootQuery
 all =
-    Hasura.Query.articles newestFirst articleSelection
+    Query.articles newestFirst articleSelection
 
 
 articleSelection : SelectionSet Article Hasura.Object.Articles
@@ -210,9 +211,11 @@ tagSelection =
     SelectionSet.map Tag.one Tags.tag
 
 
-newestFirst : ArticlesOptionalArguments -> ArticlesOptionalArguments
+newestFirst : Query.ArticlesOptionalArguments -> Query.ArticlesOptionalArguments
 newestFirst =
-    Argument.combine2 (order_by Input.buildArticles_order_by) (created_at Desc)
+    Argument.combine2
+        (order_by Input.buildArticles_order_by)
+        (created_at Desc)
 
 
 
@@ -221,13 +224,13 @@ newestFirst =
 
 publish : (Api.Response () -> msg) -> Article.ToCreate -> Effect msg
 publish msg article_ =
-    Hasura.Mutation.publish_article identity { object = toPublishArgs article_ } SelectionSet.empty
+    Mutation.publish_article identity { object = toPublishArgs article_ } SelectionSet.empty
         |> SelectionSet.failOnNothing
         |> Api.mutation msg
         |> Effect.publishArticle
 
 
-toPublishArgs : Article.ToCreate -> Articles_insert_input
+toPublishArgs : Article.ToCreate -> Input.Articles_insert_input
 toPublishArgs article_ =
     Input.buildArticles_insert_input
         (\args ->
@@ -235,14 +238,88 @@ toPublishArgs article_ =
                 | title = Argument.fromNonEmpty article_.title
                 , about = Argument.fromNonEmpty article_.about
                 , content = Argument.fromNonEmpty article_.content
-                , tags = Present { data = List.map toTagArg article_.tags }
+                , tags = Present (toTagsArgs article_.tags)
             }
         )
 
 
-toTagArg : Tag.Tag -> { tag : OptionalArgument String }
+toTagsArgs : List Tag -> Input.Tags_arr_rel_insert_input
+toTagsArgs tags =
+    Input.buildTags_arr_rel_insert_input { data = List.map toTagArg tags }
+
+
+toTagArg : Tag -> Input.Tags_insert_input
 toTagArg tag_ =
-    { tag = Present (Tag.value tag_) }
+    Input.buildTags_insert_input (\args -> { args | tag = Present (Tag.value tag_) })
+
+
+
+-- Edit
+
+
+edit : (Api.Response () -> msg) -> Article.Id -> Article.ToCreate -> Effect msg
+edit msg id_ edits =
+    SelectionSet.succeed (\_ _ _ -> ())
+        |> with (editArticle id_ edits)
+        |> with (insertTags id_ edits)
+        |> with (deleteTags id_)
+        |> Api.mutation msg
+        |> Effect.editArticle
+
+
+insertTags : Article.Id -> Article.ToCreate -> SelectionSet () RootMutation
+insertTags id_ edits =
+    SelectionSet.empty
+        |> Mutation.insert_tags { objects = List.map (toTagsArgs_ id_) edits.tags }
+        |> SelectionSet.failOnNothing
+
+
+toTagsArgs_ : Article.Id -> Tag -> Input.Tags_insert_input
+toTagsArgs_ id_ tag_ =
+    Input.buildTags_insert_input
+        (\args ->
+            { args
+                | article_id = Present id_
+                , tag = Present (Tag.value tag_)
+            }
+        )
+
+
+deleteTags : Int -> SelectionSet () RootMutation
+deleteTags id =
+    SelectionSet.empty
+        |> Mutation.delete_tags { where_ = Input.buildTags_bool_exp (tagIsForArticle id) }
+        |> SelectionSet.failOnNothing
+
+
+tagIsForArticle : Article.Id -> Input.Tags_bool_expOptionalFields -> Input.Tags_bool_expOptionalFields
+tagIsForArticle id_ =
+    Argument.combine3
+        (article Input.buildArticles_bool_exp)
+        (id Input.buildInt_comparison_exp)
+        (eq_ id_)
+
+
+editArticle : Int -> Article.ToCreate -> SelectionSet () RootMutation
+editArticle id edits =
+    SelectionSet.empty
+        |> Mutation.edit_article (editArticleArgs edits) { pk_columns = { id = id } }
+        |> SelectionSet.failOnNothing
+
+
+editArticleArgs :
+    Article.ToCreate
+    -> Mutation.EditArticleOptionalArguments
+    -> Mutation.EditArticleOptionalArguments
+editArticleArgs edits args =
+    { args
+        | set_ =
+            Present
+                { about = Argument.fromNonEmpty edits.about
+                , title = Argument.fromNonEmpty edits.title
+                , content = Argument.fromNonEmpty edits.content
+                }
+    }
 
 
 
@@ -251,7 +328,7 @@ toTagArg tag_ =
 
 like : Article -> (Api.Response Article -> msg) -> Effect msg
 like article msg =
-    Hasura.Mutation.like_article { object = likeArticleArgs article } (Likes.article articleSelection)
+    Mutation.like_article { object = likeArticleArgs article } (Likes.article articleSelection)
         |> SelectionSet.failOnNothing
         |> Api.mutation msg
         |> Effect.likeArticle
@@ -269,7 +346,7 @@ likeArticleArgs article =
 unlike : Article -> (Api.Response Article -> msg) -> Effect msg
 unlike article msg =
     UnlikeResponse.article articleSelection
-        |> Hasura.Mutation.unlike_article { article_id = Article.id article }
+        |> Mutation.unlike_article { article_id = Article.id article }
         |> SelectionSet.failOnNothing
         |> Api.mutation msg
         |> Effect.unlikeArticle
@@ -282,7 +359,7 @@ unlike article msg =
 postComment : (Api.Response Article -> msg) -> Article -> String -> Effect msg
 postComment msg article comment =
     mutateCommentsSelection
-        |> Hasura.Mutation.post_comment identity { object = postCommentArgs article comment }
+        |> Mutation.post_comment identity { object = postCommentArgs article comment }
         |> SelectionSet.failOnNothing
         |> Api.mutation msg
         |> Effect.postComment
@@ -310,7 +387,7 @@ postCommentArgs article comment =
 
 deleteComment : (Api.Response Article -> msg) -> Comment -> Effect msg
 deleteComment msg comment =
-    Hasura.Mutation.delete_comment { id = Comment.id comment } mutateCommentsSelection
+    Mutation.delete_comment { id = Comment.id comment } mutateCommentsSelection
         |> SelectionSet.failOnNothing
         |> Api.mutation msg
         |> Effect.deleteComment
@@ -323,18 +400,18 @@ deleteComment msg comment =
 updateComment : (Api.Response Article -> msg) -> Comment -> Effect msg
 updateComment msg comment =
     mutateCommentsSelection
-        |> Hasura.Mutation.update_comment (updateCommentArgs comment) (updateCommentId comment)
+        |> Mutation.update_comment (updateCommentArgs comment) (updateCommentId comment)
         |> SelectionSet.failOnNothing
         |> Api.mutation msg
         |> Effect.updateComment
 
 
-updateCommentId : Comment -> UpdateCommentRequiredArguments
+updateCommentId : Comment -> Mutation.UpdateCommentRequiredArguments
 updateCommentId comment =
     { pk_columns = { id = Comment.id comment } }
 
 
-updateCommentArgs : Comment -> UpdateCommentOptionalArguments -> UpdateCommentOptionalArguments
+updateCommentArgs : Comment -> Mutation.UpdateCommentOptionalArguments -> Mutation.UpdateCommentOptionalArguments
 updateCommentArgs comment =
     Argument.combine2
         (set_ Input.buildComments_set_input)

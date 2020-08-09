@@ -9,7 +9,7 @@ module Page.Editor exposing
 
 import Api
 import Api.Articles
-import Article
+import Article exposing (Article)
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Layout as Layout
@@ -28,17 +28,19 @@ import User exposing (User(..))
 
 
 type alias Model =
-    { inputs : Inputs
+    { inputs : Api.Data Inputs
     , mode : Mode
     , errorsVisible : Bool
     }
 
 
 type Msg
-    = InputsChanged Inputs
+    = LoadArticleResponseReceived (Api.Response (Maybe Article))
+    | InputsChanged Inputs
     | PublishClickedWithErrors
     | PublishClicked Article.ToCreate
     | PublishResponseReceived (Api.Response ())
+    | EditResponseReceived Article.Id (Api.Response ())
 
 
 type Mode
@@ -60,12 +62,17 @@ type alias Inputs =
 
 init : Mode -> ( Model, Effect Msg )
 init mode =
-    ( initialModel mode, Effect.none )
+    case mode of
+        NewArticle ->
+            ( initialModel mode (Api.Success emptyInputs), Effect.none )
+
+        EditArticle id ->
+            ( initialModel mode Api.Loading, loadArticle id )
 
 
-initialModel : Mode -> Model
-initialModel mode =
-    { inputs = emptyInputs
+initialModel : Mode -> Api.Data Inputs -> Model
+initialModel mode inputs =
+    { inputs = inputs
     , mode = mode
     , errorsVisible = False
     }
@@ -80,6 +87,11 @@ emptyInputs =
     }
 
 
+loadArticle : Article.Id -> Effect Msg
+loadArticle id =
+    Api.Articles.loadArticle id LoadArticleResponseReceived
+
+
 
 -- Update
 
@@ -87,11 +99,16 @@ emptyInputs =
 update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
+        LoadArticleResponseReceived response ->
+            ( { model | inputs = Api.mapData toInputs (Api.fromNullableResponse response) }
+            , Effect.none
+            )
+
         InputsChanged inputs ->
-            ( { model | inputs = inputs }, Effect.none )
+            ( { model | inputs = Api.Success inputs }, Effect.none )
 
         PublishClicked toCreate ->
-            ( model, publishArticle toCreate )
+            ( model, publishArticle model.mode toCreate )
 
         PublishResponseReceived (Ok _) ->
             ( model, Effect.redirectHome )
@@ -102,10 +119,35 @@ update msg model =
         PublishClickedWithErrors ->
             ( { model | errorsVisible = True }, Effect.none )
 
+        EditResponseReceived id (Ok _) ->
+            ( model, Effect.goToArticle id )
 
-publishArticle : Article.ToCreate -> Effect Msg
-publishArticle =
-    Api.Articles.publish PublishResponseReceived
+        EditResponseReceived _ (Err _) ->
+            ( model, Effect.none )
+
+
+toInputs : Article -> Inputs
+toInputs article =
+    { title = Article.title article
+    , about = Article.about article
+    , content = Article.content article
+    , tags = tagsToString article
+    }
+
+
+tagsToString : Article -> String
+tagsToString =
+    Article.tags >> List.map Tag.value >> String.join " "
+
+
+publishArticle : Mode -> Article.ToCreate -> Effect Msg
+publishArticle mode =
+    case mode of
+        NewArticle ->
+            Api.Articles.publish PublishResponseReceived
+
+        EditArticle id ->
+            Api.Articles.edit (EditResponseReceived id) id
 
 
 
@@ -116,33 +158,52 @@ view : User.Profile -> Model -> Element Msg
 view user model =
     Layout.authenticated user
         |> Layout.measured
-        |> Layout.toPage
-            (column
-                [ width fill
-                , spacing Scale.medium
-                , paddingXY 0 Scale.large
-                ]
-                [ title model
-                , about model
-                , content model
-                , tags model.inputs
-                , showTags model.inputs.tags
-                , publishButton model
-                ]
-            )
+        |> Layout.toPage (page model)
 
 
-publishButton : Model -> Element Msg
-publishButton model =
-    el [ alignRight ] (publishButton_ model)
+page : Model -> Element Msg
+page model =
+    case model.inputs of
+        Api.Loading ->
+            Text.text [] "Loading..."
+
+        Api.NotFound ->
+            Text.text [] "No article found"
+
+        Api.Failure ->
+            Text.error [] "Error loading article"
+
+        Api.Success inputs_ ->
+            page_ inputs_ model
 
 
-publishButton_ : Model -> Element Msg
-publishButton_ model =
+page_ : Inputs -> Model -> Element Msg
+page_ inputs model =
+    column
+        [ width fill
+        , spacing Scale.medium
+        , paddingXY 0 Scale.large
+        ]
+        [ title inputs model
+        , about inputs model
+        , content inputs model
+        , tags inputs
+        , showTags inputs.tags
+        , publishButton inputs model
+        ]
+
+
+publishButton : Inputs -> Model -> Element Msg
+publishButton inputs model =
+    el [ alignRight ] (publishButton_ inputs model)
+
+
+publishButton_ : Inputs -> Model -> Element Msg
+publishButton_ inputs model =
     Button.validateOnSubmit
         { label = "Publish Article"
-        , validation = validation model.inputs
-        , inputs = model.inputs
+        , validation = validation inputs
+        , inputs = inputs
         , showError = model.errorsVisible
         , onSubmit = PublishClicked
         , onError = PublishClickedWithErrors
@@ -170,28 +231,28 @@ showTag tag_ =
     Text.text [ Text.green, Text.description "visible-tag" ] ("#" ++ Tag.value tag_)
 
 
-title : Model -> Element Msg
-title model =
+title : Inputs -> Model -> Element Msg
+title inputs model =
     title_
         |> Field.large
-        |> validate model
-        |> textInput model.inputs
+        |> validate inputs model
+        |> textInput inputs
 
 
-about : Model -> Element Msg
-about model =
+about : Inputs -> Model -> Element Msg
+about inputs model =
     about_
         |> Field.small
-        |> validate model
-        |> textInput model.inputs
+        |> validate inputs model
+        |> textInput inputs
 
 
-content : Model -> Element Msg
-content model =
+content : Inputs -> Model -> Element Msg
+content inputs model =
     content_
         |> Field.area
-        |> validate model
-        |> textInput model.inputs
+        |> validate inputs model
+        |> textInput inputs
 
 
 tags : Inputs -> Element Msg
@@ -201,9 +262,9 @@ tags inputs =
         |> textInput inputs
 
 
-validate : Model -> Field.View Inputs Article.ToCreate -> Field.View Inputs Article.ToCreate
-validate model =
-    Field.validateWith (validation model.inputs) >> Field.showErrorsIf model.errorsVisible
+validate : Inputs -> Model -> Field.View Inputs Article.ToCreate -> Field.View Inputs Article.ToCreate
+validate inputs model =
+    Field.validateWith (validation inputs) >> Field.showErrorsIf model.errorsVisible
 
 
 

@@ -19,6 +19,13 @@ import Hasura.Union
 import Json.Decode as Decode
 
 
+{-| An object relationship
+-}
+article : SelectionSet decodesTo Hasura.Object.Articles -> SelectionSet decodesTo Hasura.Object.Tags
+article object_ =
+    Object.selectionForCompositeField "article" [] object_ identity
+
+
 {-| A computed field, executes function "tag\_count"
 -}
 count : SelectionSet (Maybe Int) Hasura.Object.Tags

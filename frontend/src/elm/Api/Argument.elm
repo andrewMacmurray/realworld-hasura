@@ -1,6 +1,8 @@
 module Api.Argument exposing
-    ( author
+    ( article
+    , author
     , combine2
+    , combine3
     , combine4
     , comment_
     , created_at
@@ -45,9 +47,14 @@ type alias Prop a b =
 -- Combine
 
 
-combine2 : Field (input -> output) (c -> input) -> Prop (d -> c) d -> output
+combine2 : Field (a -> b) (c -> a) -> Prop (d -> c) d -> b
 combine2 a b =
     a.field (a.expression (b.field b.value))
+
+
+combine3 : Field (a -> b) (c -> a) -> Field (d -> c) (e -> d) -> Prop (f -> e) f -> b
+combine3 a b c =
+    a.field (a.expression (b.field (b.expression (c.field c.value))))
 
 
 combine4 : Field (a -> b) (c -> a) -> Field (d -> c) (e -> d) -> Field (f -> e) (j -> f) -> Prop (k -> j) k -> b
@@ -107,6 +114,10 @@ tags =
 
 author =
     field (\val args -> { args | author = Present val })
+
+
+article =
+    field (\val args -> { args | article = Present val })
 
 
 id =

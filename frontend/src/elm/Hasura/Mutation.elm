@@ -55,6 +55,57 @@ delete_follows_by_pk requiredArgs object_ =
     Object.selectionForCompositeField "delete_follows_by_pk" [ Argument.required "id" requiredArgs.id Encode.int ] object_ (identity >> Decode.nullable)
 
 
+type alias DeleteTagsRequiredArguments =
+    { where_ : Hasura.InputObject.Tags_bool_exp }
+
+
+{-| delete data from the table: "tags"
+
+  - where\_ - filter the rows which have to be deleted
+
+-}
+delete_tags : DeleteTagsRequiredArguments -> SelectionSet decodesTo Hasura.Object.Tags_mutation_response -> SelectionSet (Maybe decodesTo) RootMutation
+delete_tags requiredArgs object_ =
+    Object.selectionForCompositeField "delete_tags" [ Argument.required "where" requiredArgs.where_ Hasura.InputObject.encodeTags_bool_exp ] object_ (identity >> Decode.nullable)
+
+
+type alias DeleteTagsByPkRequiredArguments =
+    { id : Int }
+
+
+{-| delete single row from the table: "tags"
+-}
+delete_tags_by_pk : DeleteTagsByPkRequiredArguments -> SelectionSet decodesTo Hasura.Object.Tags -> SelectionSet (Maybe decodesTo) RootMutation
+delete_tags_by_pk requiredArgs object_ =
+    Object.selectionForCompositeField "delete_tags_by_pk" [ Argument.required "id" requiredArgs.id Encode.int ] object_ (identity >> Decode.nullable)
+
+
+type alias EditArticleOptionalArguments =
+    { set_ : OptionalArgument Hasura.InputObject.Articles_set_input }
+
+
+type alias EditArticleRequiredArguments =
+    { pk_columns : Hasura.InputObject.Articles_pk_columns_input }
+
+
+{-| update single row of the table: "articles"
+
+  - set\_ - sets the columns of the filtered rows to the given values
+
+-}
+edit_article : (EditArticleOptionalArguments -> EditArticleOptionalArguments) -> EditArticleRequiredArguments -> SelectionSet decodesTo Hasura.Object.Articles -> SelectionSet (Maybe decodesTo) RootMutation
+edit_article fillInOptionals requiredArgs object_ =
+    let
+        filledInOptionals =
+            fillInOptionals { set_ = Absent }
+
+        optionalArgs =
+            [ Argument.optional "_set" filledInOptionals.set_ Hasura.InputObject.encodeArticles_set_input ]
+                |> List.filterMap identity
+    in
+    Object.selectionForCompositeField "edit_article" (optionalArgs ++ [ Argument.required "pk_columns" requiredArgs.pk_columns Hasura.InputObject.encodeArticles_pk_columns_input ]) object_ (identity >> Decode.nullable)
+
+
 type alias FollowAuthorRequiredArguments =
     { object : Hasura.InputObject.Follows_insert_input }
 
@@ -324,32 +375,6 @@ update_articles fillInOptionals requiredArgs object_ =
                 |> List.filterMap identity
     in
     Object.selectionForCompositeField "update_articles" (optionalArgs ++ [ Argument.required "where" requiredArgs.where_ Hasura.InputObject.encodeArticles_bool_exp ]) object_ (identity >> Decode.nullable)
-
-
-type alias UpdateArticlesByPkOptionalArguments =
-    { set_ : OptionalArgument Hasura.InputObject.Articles_set_input }
-
-
-type alias UpdateArticlesByPkRequiredArguments =
-    { pk_columns : Hasura.InputObject.Articles_pk_columns_input }
-
-
-{-| update single row of the table: "articles"
-
-  - set\_ - sets the columns of the filtered rows to the given values
-
--}
-update_articles_by_pk : (UpdateArticlesByPkOptionalArguments -> UpdateArticlesByPkOptionalArguments) -> UpdateArticlesByPkRequiredArguments -> SelectionSet decodesTo Hasura.Object.Articles -> SelectionSet (Maybe decodesTo) RootMutation
-update_articles_by_pk fillInOptionals requiredArgs object_ =
-    let
-        filledInOptionals =
-            fillInOptionals { set_ = Absent }
-
-        optionalArgs =
-            [ Argument.optional "_set" filledInOptionals.set_ Hasura.InputObject.encodeArticles_set_input ]
-                |> List.filterMap identity
-    in
-    Object.selectionForCompositeField "update_articles_by_pk" (optionalArgs ++ [ Argument.required "pk_columns" requiredArgs.pk_columns Hasura.InputObject.encodeArticles_pk_columns_input ]) object_ (identity >> Decode.nullable)
 
 
 type alias UpdateCommentOptionalArguments =

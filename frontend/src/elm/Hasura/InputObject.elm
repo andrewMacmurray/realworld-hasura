@@ -1613,23 +1613,32 @@ encodeString_comparison_exp input =
 
 buildTags_arr_rel_insert_input : Tags_arr_rel_insert_inputRequiredFields -> Tags_arr_rel_insert_input
 buildTags_arr_rel_insert_input required =
-    { data = required.data }
+    Tags_arr_rel_insert_input { data = required.data }
 
 
 type alias Tags_arr_rel_insert_inputRequiredFields =
     { data : List Tags_insert_input }
 
 
+{-| Type alias for the `Tags_arr_rel_insert_input` attributes. Note that this type
+needs to use the `Tags_arr_rel_insert_input` type (not just a plain type alias) because it has
+references to itself either directly (recursive) or indirectly (circular). See
+<https://github.com/dillonkearns/elm-graphql/issues/33>.
+-}
+type alias Tags_arr_rel_insert_inputRaw =
+    { data : List Tags_insert_input }
+
+
 {-| Type for the Tags\_arr\_rel\_insert\_input input object.
 -}
-type alias Tags_arr_rel_insert_input =
-    { data : List Tags_insert_input }
+type Tags_arr_rel_insert_input
+    = Tags_arr_rel_insert_input Tags_arr_rel_insert_inputRaw
 
 
 {-| Encode a Tags\_arr\_rel\_insert\_input into a value that can be used as an argument.
 -}
 encodeTags_arr_rel_insert_input : Tags_arr_rel_insert_input -> Value
-encodeTags_arr_rel_insert_input input =
+encodeTags_arr_rel_insert_input (Tags_arr_rel_insert_input input) =
     Encode.maybeObject
         [ ( "data", (encodeTags_insert_input |> Encode.list) input.data |> Just ) ]
 
@@ -1639,15 +1648,16 @@ buildTags_bool_exp fillOptionals =
     let
         optionals =
             fillOptionals
-                { and_ = Absent, not_ = Absent, or_ = Absent, tag = Absent }
+                { and_ = Absent, not_ = Absent, or_ = Absent, article = Absent, tag = Absent }
     in
-    Tags_bool_exp { and_ = optionals.and_, not_ = optionals.not_, or_ = optionals.or_, tag = optionals.tag }
+    Tags_bool_exp { and_ = optionals.and_, not_ = optionals.not_, or_ = optionals.or_, article = optionals.article, tag = optionals.tag }
 
 
 type alias Tags_bool_expOptionalFields =
     { and_ : OptionalArgument (List (Maybe Tags_bool_exp))
     , not_ : OptionalArgument Tags_bool_exp
     , or_ : OptionalArgument (List (Maybe Tags_bool_exp))
+    , article : OptionalArgument Articles_bool_exp
     , tag : OptionalArgument String_comparison_exp
     }
 
@@ -1661,6 +1671,7 @@ type alias Tags_bool_expRaw =
     { and_ : OptionalArgument (List (Maybe Tags_bool_exp))
     , not_ : OptionalArgument Tags_bool_exp
     , or_ : OptionalArgument (List (Maybe Tags_bool_exp))
+    , article : OptionalArgument Articles_bool_exp
     , tag : OptionalArgument String_comparison_exp
     }
 
@@ -1676,7 +1687,7 @@ type Tags_bool_exp
 encodeTags_bool_exp : Tags_bool_exp -> Value
 encodeTags_bool_exp (Tags_bool_exp input) =
     Encode.maybeObject
-        [ ( "_and", (encodeTags_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.and_ ), ( "_not", encodeTags_bool_exp |> Encode.optional input.not_ ), ( "_or", (encodeTags_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.or_ ), ( "tag", encodeString_comparison_exp |> Encode.optional input.tag ) ]
+        [ ( "_and", (encodeTags_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.and_ ), ( "_not", encodeTags_bool_exp |> Encode.optional input.not_ ), ( "_or", (encodeTags_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.or_ ), ( "article", encodeArticles_bool_exp |> Encode.optional input.article ), ( "tag", encodeString_comparison_exp |> Encode.optional input.tag ) ]
 
 
 buildTags_insert_input : (Tags_insert_inputOptionalFields -> Tags_insert_inputOptionalFields) -> Tags_insert_input
@@ -1684,48 +1695,72 @@ buildTags_insert_input fillOptionals =
     let
         optionals =
             fillOptionals
-                { tag = Absent }
+                { article = Absent, article_id = Absent, tag = Absent }
     in
-    { tag = optionals.tag }
+    Tags_insert_input { article = optionals.article, article_id = optionals.article_id, tag = optionals.tag }
 
 
 type alias Tags_insert_inputOptionalFields =
-    { tag : OptionalArgument String }
+    { article : OptionalArgument Articles_obj_rel_insert_input
+    , article_id : OptionalArgument Int
+    , tag : OptionalArgument String
+    }
+
+
+{-| Type alias for the `Tags_insert_input` attributes. Note that this type
+needs to use the `Tags_insert_input` type (not just a plain type alias) because it has
+references to itself either directly (recursive) or indirectly (circular). See
+<https://github.com/dillonkearns/elm-graphql/issues/33>.
+-}
+type alias Tags_insert_inputRaw =
+    { article : OptionalArgument Articles_obj_rel_insert_input
+    , article_id : OptionalArgument Int
+    , tag : OptionalArgument String
+    }
 
 
 {-| Type for the Tags\_insert\_input input object.
 -}
-type alias Tags_insert_input =
-    { tag : OptionalArgument String }
+type Tags_insert_input
+    = Tags_insert_input Tags_insert_inputRaw
 
 
 {-| Encode a Tags\_insert\_input into a value that can be used as an argument.
 -}
 encodeTags_insert_input : Tags_insert_input -> Value
-encodeTags_insert_input input =
+encodeTags_insert_input (Tags_insert_input input) =
     Encode.maybeObject
-        [ ( "tag", Encode.string |> Encode.optional input.tag ) ]
+        [ ( "article", encodeArticles_obj_rel_insert_input |> Encode.optional input.article ), ( "article_id", Encode.int |> Encode.optional input.article_id ), ( "tag", Encode.string |> Encode.optional input.tag ) ]
 
 
 buildTags_obj_rel_insert_input : Tags_obj_rel_insert_inputRequiredFields -> Tags_obj_rel_insert_input
 buildTags_obj_rel_insert_input required =
-    { data = required.data }
+    Tags_obj_rel_insert_input { data = required.data }
 
 
 type alias Tags_obj_rel_insert_inputRequiredFields =
     { data : Tags_insert_input }
 
 
+{-| Type alias for the `Tags_obj_rel_insert_input` attributes. Note that this type
+needs to use the `Tags_obj_rel_insert_input` type (not just a plain type alias) because it has
+references to itself either directly (recursive) or indirectly (circular). See
+<https://github.com/dillonkearns/elm-graphql/issues/33>.
+-}
+type alias Tags_obj_rel_insert_inputRaw =
+    { data : Tags_insert_input }
+
+
 {-| Type for the Tags\_obj\_rel\_insert\_input input object.
 -}
-type alias Tags_obj_rel_insert_input =
-    { data : Tags_insert_input }
+type Tags_obj_rel_insert_input
+    = Tags_obj_rel_insert_input Tags_obj_rel_insert_inputRaw
 
 
 {-| Encode a Tags\_obj\_rel\_insert\_input into a value that can be used as an argument.
 -}
 encodeTags_obj_rel_insert_input : Tags_obj_rel_insert_input -> Value
-encodeTags_obj_rel_insert_input input =
+encodeTags_obj_rel_insert_input (Tags_obj_rel_insert_input input) =
     Encode.maybeObject
         [ ( "data", encodeTags_insert_input input.data |> Just ) ]
 
@@ -1735,27 +1770,40 @@ buildTags_order_by fillOptionals =
     let
         optionals =
             fillOptionals
-                { tag = Absent }
+                { article = Absent, tag = Absent }
     in
-    { tag = optionals.tag }
+    Tags_order_by { article = optionals.article, tag = optionals.tag }
 
 
 type alias Tags_order_byOptionalFields =
-    { tag : OptionalArgument Hasura.Enum.Order_by.Order_by }
+    { article : OptionalArgument Articles_order_by
+    , tag : OptionalArgument Hasura.Enum.Order_by.Order_by
+    }
+
+
+{-| Type alias for the `Tags_order_by` attributes. Note that this type
+needs to use the `Tags_order_by` type (not just a plain type alias) because it has
+references to itself either directly (recursive) or indirectly (circular). See
+<https://github.com/dillonkearns/elm-graphql/issues/33>.
+-}
+type alias Tags_order_byRaw =
+    { article : OptionalArgument Articles_order_by
+    , tag : OptionalArgument Hasura.Enum.Order_by.Order_by
+    }
 
 
 {-| Type for the Tags\_order\_by input object.
 -}
-type alias Tags_order_by =
-    { tag : OptionalArgument Hasura.Enum.Order_by.Order_by }
+type Tags_order_by
+    = Tags_order_by Tags_order_byRaw
 
 
 {-| Encode a Tags\_order\_by into a value that can be used as an argument.
 -}
 encodeTags_order_by : Tags_order_by -> Value
-encodeTags_order_by input =
+encodeTags_order_by (Tags_order_by input) =
     Encode.maybeObject
-        [ ( "tag", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.tag ) ]
+        [ ( "article", encodeArticles_order_by |> Encode.optional input.article ), ( "tag", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.tag ) ]
 
 
 buildTags_pk_columns_input : Tags_pk_columns_inputRequiredFields -> Tags_pk_columns_input
