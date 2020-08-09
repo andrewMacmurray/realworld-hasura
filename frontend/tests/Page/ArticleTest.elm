@@ -78,6 +78,14 @@ suite =
                     |> Program.start
                     |> ensureView (contains 2 "comment")
                     |> expectView (hasEditableCommentFor defaultUser)
+        , test "User can perform actions on their own article" <|
+            \_ ->
+                Program.withPage articlePage
+                    |> Program.loggedInWithDetails defaultUser
+                    |> withArticle (articleBy defaultUser.id "by me")
+                    |> Program.start
+                    |> ensureView (contains 1 "edit-article")
+                    |> expectView (contains 1 "delete-article")
         ]
 
 

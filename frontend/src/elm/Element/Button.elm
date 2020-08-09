@@ -8,6 +8,7 @@ module Element.Button exposing
     , edit
     , ellipsis
     , follow
+    , light
     , like
     , link
     , noText
@@ -54,6 +55,7 @@ type alias Options msg =
     , description : Maybe String
     , hover : Bool
     , onClick : Action msg
+    , shade : Shade
     }
 
 
@@ -96,6 +98,11 @@ type Icon
     | Ellipsis
 
 
+type Shade
+    = Light
+    | Dark
+
+
 
 -- Defaults
 
@@ -112,6 +119,7 @@ defaults action text =
         , onClick = action
         , description = Nothing
         , hover = True
+        , shade = Dark
         }
 
 
@@ -195,6 +203,11 @@ delete =
         >> withIcon_ Bin
         >> small
         >> red
+
+
+light : Button msg -> Button msg
+light (Button options) =
+    Button { options | shade = Light }
 
 
 red : Button msg -> Button msg
@@ -383,12 +396,12 @@ hoverStyles options =
             ]
 
         ( _, Hollow ) ->
-            [ Background.color (color options.color)
+            [ Background.color (regularColor options.color)
             , Font.color Palette.white
             ]
 
         ( _, Borderless ) ->
-            [ Background.color (color options.color)
+            [ Background.color (regularColor options.color)
             , Font.color Palette.white
             ]
 
@@ -399,17 +412,17 @@ hoverStyles options =
 
 fill_ : Options msg -> Attr decorative msg
 fill_ options =
-    case ( options.fill, options.color ) of
-        ( Solid, color_ ) ->
-            Background.color (color color_)
+    case options.fill of
+        Solid ->
+            Background.color (regularColor options.color)
 
-        ( Hollow, _ ) ->
+        Hollow ->
             Background.color Palette.transparent
 
-        ( Borderless, _ ) ->
+        Borderless ->
             Background.color Palette.transparent
 
-        ( NoFill, _ ) ->
+        NoFill ->
             Background.color Palette.transparent
 
 
@@ -423,7 +436,7 @@ borderColor options =
             Border.color Palette.transparent
 
         _ ->
-            Border.color (color options.color)
+            Border.color (regularColor options.color)
 
 
 fontColor : Options msg -> Attr decorative msg
@@ -433,17 +446,27 @@ fontColor options =
             Font.color Palette.white
 
         Hollow ->
-            Font.color (color options.color)
+            Font.color (fontColor_ options)
 
         Borderless ->
-            Font.color (color options.color)
+            Font.color (fontColor_ options)
 
         NoFill ->
-            Font.color (color options.color)
+            Font.color (fontColor_ options)
 
 
-color : Color -> Element.Color
-color color_ =
+fontColor_ : Options msg -> Element.Color
+fontColor_ options =
+    case options.shade of
+        Dark ->
+            regularColor options.color
+
+        Light ->
+            lighterColor options.color
+
+
+regularColor : Color -> Element.Color
+regularColor color_ =
     case color_ of
         Green ->
             Palette.green
@@ -466,6 +489,19 @@ darkerColor color_ =
 
         Grey ->
             Palette.black
+
+
+lighterColor : Color -> Element.Color
+lighterColor color_ =
+    case color_ of
+        Green ->
+            Palette.green
+
+        Red ->
+            Palette.lightRed
+
+        Grey ->
+            Palette.midGrey
 
 
 label : Options msg -> Element msg
@@ -521,18 +557,12 @@ icon icon_ options =
 
 iconColor : Options msg -> Element.Color
 iconColor options =
-    case ( options.color, options.fill ) of
-        ( _, Solid ) ->
+    case options.fill of
+        Solid ->
             Palette.white
 
-        ( Green, _ ) ->
-            Palette.green
-
-        ( Red, _ ) ->
-            Palette.red
-
-        ( Grey, _ ) ->
-            Palette.grey
+        _ ->
+            fontColor_ options
 
 
 text_ : Options msg -> Element msg

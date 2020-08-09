@@ -19,6 +19,31 @@ import Hasura.Union
 import Json.Decode as Decode exposing (Decoder)
 
 
+type alias DeleteArticleRequiredArguments =
+    { id : Int }
+
+
+{-| delete single row from the table: "articles"
+-}
+delete_article : DeleteArticleRequiredArguments -> SelectionSet decodesTo Hasura.Object.Articles -> SelectionSet (Maybe decodesTo) RootMutation
+delete_article requiredArgs object_ =
+    Object.selectionForCompositeField "delete_article" [ Argument.required "id" requiredArgs.id Encode.int ] object_ (identity >> Decode.nullable)
+
+
+type alias DeleteArticlesRequiredArguments =
+    { where_ : Hasura.InputObject.Articles_bool_exp }
+
+
+{-| delete data from the table: "articles"
+
+  - where\_ - filter the rows which have to be deleted
+
+-}
+delete_articles : DeleteArticlesRequiredArguments -> SelectionSet decodesTo Hasura.Object.Articles_mutation_response -> SelectionSet (Maybe decodesTo) RootMutation
+delete_articles requiredArgs object_ =
+    Object.selectionForCompositeField "delete_articles" [ Argument.required "where" requiredArgs.where_ Hasura.InputObject.encodeArticles_bool_exp ] object_ (identity >> Decode.nullable)
+
+
 type alias DeleteCommentRequiredArguments =
     { id : Int }
 

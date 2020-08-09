@@ -6,6 +6,8 @@ module Element.Palette exposing
     , green
     , grey
     , lightGrey
+    , lightRed
+    , midGrey
     , red
     , toRgbString
     , transparent
@@ -35,6 +37,11 @@ red =
     rgb255 201 45 20
 
 
+lightRed : Color
+lightRed =
+    rgb255 255 98 73
+
+
 darkRed : Color
 darkRed =
     rgb255 184 92 92
@@ -43,6 +50,11 @@ darkRed =
 grey : Color
 grey =
     rgb255 149 149 149
+
+
+midGrey : Color
+midGrey =
+    rgb255 188 188 188
 
 
 lightGrey : Color
