@@ -269,24 +269,29 @@ popularTags tags =
 
 
 popularTag : Tag.Popular -> Element msg
-popularTag t =
-    Route.el (Route.tagFeed t.tag)
+popularTag { tag, count } =
+    Route.el (Route.tagFeed tag)
         (row
             [ spacing 4
-            , Anchor.description ("popular-" ++ Tag.value t.tag)
+            , Anchor.description ("popular-" ++ Tag.value tag)
             ]
-            [ Text.link [] ("#" ++ Tag.value t.tag)
-            , el
-                [ Background.color Palette.deepGreen
-                , Border.rounded 10000
-                , alignTop
-                , moveUp 5
-                , width (px 18)
-                , height (px 18)
-                ]
-                (el [ centerX, centerY ] (whiteLabel (String.fromInt t.count)))
+            [ Text.link [] ("#" ++ Tag.value tag)
+            , tagCount count
             ]
         )
+
+
+tagCount : Int -> Element msg
+tagCount n =
+    el
+        [ Background.color Palette.deepGreen
+        , Border.rounded 10000
+        , alignTop
+        , moveUp 5
+        , width (px 18)
+        , height (px 18)
+        ]
+        (el [ centerX, centerY ] (whiteLabel (String.fromInt n)))
 
 
 whiteLabel : String -> Element msg
