@@ -1,0 +1,8 @@
+.build
+node_modules
+
+.gradle
+.idea
+.serverless
+build
+out

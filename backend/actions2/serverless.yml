@@ -1,0 +1,19 @@
+service: actions
+
+provider:
+  name: aws
+  runtime: java8
+  region: eu-west-1
+
+package:
+  artifact: build/libs/kotlin-serverless-functions-1.0-SNAPSHOT-all.jar
+
+functions:
+  server:
+    handler: org.http4k.serverless.lambda.LambdaFunction::handle
+    environment:
+      HTTP4K_BOOTSTRAP_CLASS: LambdaApplication
+    events:
+      - http:
+          path: /{proxy+}
+          method: ANY
