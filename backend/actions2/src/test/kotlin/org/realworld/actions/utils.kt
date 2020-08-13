@@ -15,9 +15,13 @@ fun <Err, Ok> assertOnOkValue(
 }
 
 fun <Left, Right> assertIsOk(result: Result<Left, Right>) {
-    when (result) {
-        is Result.Ok -> pass()
-        is Result.Err -> Assertions.fail("${result.err} is not Ok")
+    result.assertWhenOk { pass() }
+}
+
+fun <Left, Right> Result<Left, Right>.assertWhenOk(assertion: (Right) -> Unit) {
+    when (this) {
+        is Result.Ok -> assertion(this.value)
+        is Result.Err -> Assertions.fail("${this.err} is not Ok")
     }
 }
 

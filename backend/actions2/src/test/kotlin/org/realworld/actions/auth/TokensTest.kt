@@ -53,6 +53,6 @@ class TokenServiceTest {
         email = "a@b.com",
         passwordHash = "abc123£ashdajskd",
         bio = "about me",
-        profileUrl = "http://bread.png"
+        profileImage = "http://bread.png"
     )
 }

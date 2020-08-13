@@ -63,13 +63,11 @@ function toUserDetails({ users }): FindResponse {
 
 export async function create(variables: Create): Promise<CreateResponse> {
   return Client.execute(
-    `mutation($email: String!, $username: String!, $passwordHash: String!) {
-          insert_users(objects: {email: $email, password_hash: $passwordHash, username: $username}) {
-            returning {
-              id
-            }
-          }
-        }
+    `mutation MyMutation($email: String!, $password_hash: String!, $username: String!) {
+      create_user(object: {email: $email, username: $username, password_hash: $password_hash}) {
+        id
+      }
+    }
     `,
     variables
   )
@@ -81,7 +79,7 @@ export async function create(variables: Create): Promise<CreateResponse> {
 
 function toCreateResponse(variables, res): CreateResponse {
   return {
-    id: res.insert_users.returning[0].id,
+    id: res.create_user.id,
     email: variables.email,
     username: variables.username,
     bio: null,
