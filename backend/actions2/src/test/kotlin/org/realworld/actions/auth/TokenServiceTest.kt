@@ -4,9 +4,8 @@ import com.auth0.jwt.interfaces.DecodedJWT
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.realworld.actions.assertOnOkValue
+import org.realworld.actions.assertWhenOk
 import org.realworld.actions.auth.service.HasuraTokens
-import org.realworld.actions.auth.service.User
 import org.realworld.actions.utils.andThen
 
 class TokenServiceTest {
@@ -22,7 +21,7 @@ class TokenServiceTest {
             .generate(details)
             .andThen(tokenService::decode)
 
-        assertOnOkValue(token) {
+        token.assertWhenOk {
             assertEquals(details.username, claimValueFor("username", it))
             assertEquals(details.email, claimValueFor("email", it))
         }
@@ -35,7 +34,7 @@ class TokenServiceTest {
             .generate(details)
             .andThen(tokenService::decode)
 
-        assertOnOkValue(token) {
+        token.assertWhenOk {
             val hasuraClaim = claimValueFor(namespace, it)
 
             assertTrue(hasuraClaim.contains("\"x-hasura-user-id\": ${details.id}"))

@@ -35,6 +35,7 @@ dependencies {
 tasks {
     compileKotlin {
         kotlinOptions.jvmTarget = "1.8"
+        kotlinOptions.freeCompilerArgs += "-Xopt-in=io.ktor.util.KtorExperimentalAPI"
     }
     compileTestKotlin {
         kotlinOptions.jvmTarget = "1.8"

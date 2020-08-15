@@ -4,16 +4,6 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.realworld.actions.utils.Result
 
-fun <Err, Ok> assertOnOkValue(
-    result: Result<Err, Ok>,
-    assertWhenOk: (Ok) -> Unit
-) {
-    when (result) {
-        is Result.Ok -> assertWhenOk(result.value)
-        is Result.Err -> Assertions.fail("${result.err} is not Ok")
-    }
-}
-
 fun <Left, Right> assertIsOk(result: Result<Left, Right>) {
     result.assertWhenOk { pass() }
 }

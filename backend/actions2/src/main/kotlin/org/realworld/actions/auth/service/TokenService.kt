@@ -5,12 +5,13 @@ import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.exceptions.JWTCreationException
 import com.auth0.jwt.exceptions.JWTDecodeException
 import com.auth0.jwt.interfaces.DecodedJWT
+import org.realworld.actions.auth.User
 import org.realworld.actions.auth.service.TokenError.CreateFailed
 import org.realworld.actions.auth.service.TokenError.InvalidToken
-import org.realworld.actions.pipe
 import org.realworld.actions.utils.Result
 import org.realworld.actions.utils.Result.Err
 import org.realworld.actions.utils.Result.Ok
+import org.realworld.actions.utils.pipe
 
 // Token
 

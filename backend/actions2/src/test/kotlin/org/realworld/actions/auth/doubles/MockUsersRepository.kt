@@ -1,6 +1,6 @@
-package org.realworld.actions.auth
+package org.realworld.actions.auth.doubles
 
-import org.realworld.actions.auth.service.User
+import org.realworld.actions.auth.User
 import org.realworld.actions.auth.service.UsersRepository
 
 class MockUsersRepository : UsersRepository {
@@ -27,12 +27,13 @@ class MockUsersRepository : UsersRepository {
         users = emptyList()
     }
 
-    private fun newUser(user: User.ToCreate, id: Int) = User(
-        id = id,
-        username = user.username,
-        email = user.email,
-        passwordHash = user.passwordHash,
-        profileImage = null,
-        bio = null
-    )
+    private fun newUser(user: User.ToCreate, id: Int) =
+        User(
+            id = id,
+            username = user.username,
+            email = user.email,
+            passwordHash = user.passwordHash,
+            profileImage = null,
+            bio = null
+        )
 }
