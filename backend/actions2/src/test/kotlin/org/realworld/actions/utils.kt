@@ -15,10 +15,10 @@ fun <T : Any> Request.json(body: T): Request =
 // Result
 
 fun <Left, Right> assertIsOk(result: Result<Left, Right>) {
-    result.assertWhenOk { pass() }
+    result.whenOk { pass() }
 }
 
-fun <Left, Right> Result<Left, Right>.assertWhenOk(assertion: (Right) -> Unit) {
+fun <Left, Right> Result<Left, Right>.whenOk(assertion: (Right) -> Unit) {
     when (this) {
         is Result.Ok -> assertion(this.value)
         is Result.Err -> Assertions.fail("${this.err} is not Ok")
@@ -26,9 +26,13 @@ fun <Left, Right> Result<Left, Right>.assertWhenOk(assertion: (Right) -> Unit) {
 }
 
 fun <Err, Ok> assertIsError(result: Result<Err, Ok>) {
-    when (result) {
-        is Result.Ok -> Assertions.fail("${result.value} should be an Error")
-        is Result.Err -> pass()
+    result.whenError { pass() }
+}
+
+fun <Left, Right> Result<Left, Right>.whenError(assertion: (Left) -> Unit) {
+    when (this) {
+        is Result.Ok -> Assertions.fail("${this.value} should be Error")
+        is Result.Err -> assertion(this.err)
     }
 }
 

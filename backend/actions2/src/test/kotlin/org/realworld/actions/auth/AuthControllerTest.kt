@@ -18,16 +18,12 @@ class AuthControllerTest {
 
     private val token = "TOKEN"
     private val auth = MockAuth(token = TokensStub(token))
-    private val signup = Signup(auth)
-    private val controller: Controller = AuthController(signup)
+    private val actions = AuthActions(auth)
+    private val controller: Controller = AuthController(actions)
 
     @Test
     fun `handles signup`() {
-        SignupRequest(
-            username = "andrew",
-            email = "a@b.com",
-            password = "Abc12345!"
-        )
+        Requests.signup()
             .pipe { controller.post("/signup", it) }
             .pipe { it.bodyAs<SignupResponse>() }
             .pipe { assertEquals(token, it.token) }

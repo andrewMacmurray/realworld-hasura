@@ -2,7 +2,7 @@ package org.realworld.actions.auth.service
 
 import org.mindrot.jbcrypt.BCrypt
 import org.realworld.actions.auth.service.PasswordError.FailsCriteria
-import org.realworld.actions.auth.service.PasswordError.InvalidPassword
+import org.realworld.actions.auth.service.PasswordError.InvalidLogin
 import org.realworld.actions.utils.Result
 import org.realworld.actions.utils.Result.Err
 import org.realworld.actions.utils.Result.Ok
@@ -26,7 +26,7 @@ object StoredPassword : PasswordService {
             Err(FailsCriteria)
 
     override fun verify(password: String, hash: String): Result<PasswordError, Unit> =
-        if (password.matches(hash)) Ok(Unit) else Err(InvalidPassword)
+        if (password.matches(hash)) Ok(Unit) else Err(InvalidLogin)
 
     private fun hashWithSalt(password: String): String? =
         BCrypt.hashpw(password, BCrypt.gensalt())
@@ -53,7 +53,7 @@ private object Criteria {
 sealed class PasswordError {
     abstract val message: String
 
-    object InvalidPassword : PasswordError() {
+    object InvalidLogin : PasswordError() {
         override val message = "Invalid username / password combination"
     }
 

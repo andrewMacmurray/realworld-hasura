@@ -5,6 +5,7 @@ import org.http4k.core.HttpHandler
 import org.http4k.core.then
 import org.http4k.filter.RequestFilters
 import org.http4k.filter.ResponseFilters
+import org.http4k.filter.ServerFilters.CatchLensFailure
 import org.http4k.server.SunHttp
 import org.http4k.server.asServer
 
@@ -12,6 +13,7 @@ object DevServer {
     fun start(port: Int, handler: HttpHandler) {
         println("starting local server on $port")
         DebugFilter()
+            .then(CatchLensFailure())
             .then(handler)
             .asServer(SunHttp(port))
             .start()

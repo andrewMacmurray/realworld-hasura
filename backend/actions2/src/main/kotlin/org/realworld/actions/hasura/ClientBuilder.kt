@@ -13,8 +13,8 @@ typealias HasuraClient =
     GraphQLClient<CIOEngineConfig>
 
 class ClientBuilder(environment: Environment) {
-    private val url = environment.HASURA_GRAPHQL_URL
-    private val adminSecret = environment.HASURA_ADMIN_SECRET
+    private val url = environment.GRAPHQL_URL
+    private val adminSecret = environment.ADMIN_SECRET
 
     fun build(): HasuraClient = GraphQLClient(
         url = URL(url),

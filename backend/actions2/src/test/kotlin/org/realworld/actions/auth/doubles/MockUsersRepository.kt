@@ -16,6 +16,9 @@ class MockUsersRepository : UsersRepository {
         return Result.Ok(newUser)
     }
 
+    override fun find(username: String): User? =
+        users.find { it.username == username }
+
     private fun storeUser(newUser: User) {
         users = users + newUser
     }

@@ -2,7 +2,7 @@ actions:
 - name: login
   definition:
     kind: synchronous
-    handler: http://host.docker.internal:3000/login
+    handler: http://host.docker.internal:4000/login
   permissions:
   - role: anonymous
   - role: user
