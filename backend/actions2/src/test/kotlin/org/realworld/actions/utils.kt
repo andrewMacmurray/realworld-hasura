@@ -1,8 +1,18 @@
 package org.realworld.actions
 
+import org.http4k.core.Request
+import org.http4k.format.Jackson
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.realworld.actions.utils.Result
+
+// Web
+
+fun <T : Any> Request.json(body: T): Request =
+    this.body(Jackson.asJsonString(body))
+
+
+// Result
 
 fun <Left, Right> assertIsOk(result: Result<Left, Right>) {
     result.assertWhenOk { pass() }

@@ -61,10 +61,11 @@ function toUserDetails({ users }): FindResponse {
   }
 }
 
-export async function create(variables: Create): Promise<CreateResponse> {
+export function create(variables: Create): Promise<CreateResponse> {
+  console.log(variables);
   return Client.execute(
-    `mutation MyMutation($email: String!, $password_hash: String!, $username: String!) {
-      create_user(object: {email: $email, username: $username, password_hash: $password_hash}) {
+    `mutation MyMutation($email: String!, $passwordHash: String!, $username: String!) {
+      create_user(object: {email: $email, username: $username, password_hash: $passwordHash}) {
         id
       }
     }

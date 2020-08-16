@@ -9,7 +9,7 @@ actions:
 - name: signup
   definition:
     kind: synchronous
-    handler: http://host.docker.internal:3000/signup
+    handler: http://host.docker.internal:4000/signup
   permissions:
   - role: anonymous
   - role: user

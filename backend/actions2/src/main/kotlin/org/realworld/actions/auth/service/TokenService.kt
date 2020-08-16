@@ -15,7 +15,10 @@ import org.realworld.actions.utils.pipe
 
 // Token
 
-data class Token(val value: String)
+data class Token(
+    val userId: Int,
+    val value: String
+)
 
 // Tokens
 
@@ -46,7 +49,7 @@ class HasuraTokens(secret: String) : TokenService {
             .withClaim("email", user.email)
             .withClaim(namespace, hasuraClaims(user))
             .sign(algorithm)
-            .pipe(::Token)
+            .pipe { Token(user.id, it) }
             .pipe(::Ok)
 
     private fun hasuraClaims(user: User): String = """

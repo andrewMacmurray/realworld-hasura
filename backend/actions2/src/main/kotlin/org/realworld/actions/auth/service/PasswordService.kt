@@ -39,13 +39,13 @@ object StoredPassword : PasswordService {
 }
 
 private object Criteria {
-    private const val hasLowerCase = "(?=.*[a-z])"
-    private const val hasUpperCase = "(?=.*[A-Z])"
-    private const val hasNumbers = "(?=.*[0-9])"
-    private const val atLeast8Characters = "(?=.{8,})"
+    private const val lower = "(?=.*[a-z])"
+    private const val upper = "(?=.*[A-Z])"
+    private const val numbers = "(?=.*[0-9])"
+    private const val above8 = "(?=.{8,})"
 
     fun passes(password: String): Boolean =
-        password.contains("^$hasLowerCase$hasUpperCase$hasNumbers$atLeast8Characters".toRegex())
+        password.contains("^$lower$upper$numbers$above8".toRegex())
 }
 
 // Errors
