@@ -6,13 +6,13 @@ import org.http4k.routing.routes
 import org.realworld.actions.utils.Result
 import org.realworld.actions.utils.map
 import org.realworld.actions.web.Controller
-import org.realworld.actions.web.lambdaHandler
+import org.realworld.actions.web.actionHandler
 
 class AuthController(private val actions: AuthActions) : Controller {
 
     override val handle = routes(
-        "/signup" bind POST to lambdaHandler(::signup),
-        "/login" bind POST to lambdaHandler(::login)
+        "/signup" bind POST to actionHandler(::signup),
+        "/login" bind POST to actionHandler(::login)
     )
 
     private fun login(request: LoginRequest): Result<String, LoginResponse> =

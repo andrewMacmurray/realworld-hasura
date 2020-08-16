@@ -10,19 +10,16 @@ import org.realworld.actions.Environment
 import java.net.URL
 
 typealias HasuraClient =
-    GraphQLClient<CIOEngineConfig>
+        GraphQLClient<CIOEngineConfig>
 
-class ClientBuilder(environment: Environment) {
-    private val url = environment.GRAPHQL_URL
-    private val adminSecret = environment.ADMIN_SECRET
-
+class ClientBuilder(private val env: Environment) {
     fun build(): HasuraClient = GraphQLClient(
-        url = URL(url),
+        url = URL(env.GRAPHQL_URL),
         engineFactory = CIO,
         configuration = { configure() }
     )
 
     private fun HttpClientConfig<CIOEngineConfig>.configure() {
-        defaultRequest { header("X-Hasura-Admin-Secret", adminSecret) }
+        defaultRequest { header("X-Hasura-Admin-Secret", env.ADMIN_SECRET) }
     }
 }

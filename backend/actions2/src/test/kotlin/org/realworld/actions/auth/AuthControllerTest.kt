@@ -12,7 +12,7 @@ import org.realworld.actions.auth.doubles.TokensStub
 import org.realworld.actions.json
 import org.realworld.actions.utils.pipe
 import org.realworld.actions.web.Controller
-import org.realworld.actions.web.LambdaInput
+import org.realworld.actions.web.ActionInput
 
 class AuthControllerTest {
 
@@ -34,6 +34,6 @@ inline fun <reified T : Any> Response.bodyAs(): T =
     Body.auto<T>().toLens()(this)
 
 private fun <I : Any> Controller.post(url: String, input: I): Response =
-    LambdaInput(input)
+    ActionInput(input)
         .pipe { Request(Method.POST, url).json(it) }
         .pipe { this.handle(it) }

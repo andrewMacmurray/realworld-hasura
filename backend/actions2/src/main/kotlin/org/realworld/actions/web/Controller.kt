@@ -14,9 +14,9 @@ interface Controller {
     val handle: RoutingHttpHandler
 }
 
-inline fun <reified In : Any, Out : Any> lambdaHandler(crossinline handler: (In) -> Result<String, Out>) =
+inline fun <reified In : Any, Out : Any> actionHandler(crossinline handler: (In) -> Result<String, Out>) =
     { req: Request ->
-        Body.auto<LambdaInput<In>>().toLens()(req)
+        Body.auto<ActionInput<In>>().toLens()(req)
             .pipe { handler(it.input) }
             .pipe { it.jsonResponse() }
     }
@@ -24,16 +24,16 @@ inline fun <reified In : Any, Out : Any> lambdaHandler(crossinline handler: (In)
 fun <O : Any> Result<String, O>.jsonResponse(): Response {
     return when (this) {
         is Result.Ok -> Response(Status.OK).json(this.value)
-        is Result.Err -> toLambdaError(Status.BAD_REQUEST, this.err)
+        is Result.Err -> toActionError(Status.BAD_REQUEST, this.err)
     }
 }
 
-private fun toLambdaError(status: Status, message: String): Response =
-    LambdaErrorResponse(message, status).pipe { Response(status).json(it) }
+private fun toActionError(status: Status, message: String): Response =
+    ActionErrorResponse(message, status).pipe { Response(status).json(it) }
 
-data class LambdaInput<T>(val input: T)
+data class ActionInput<T>(val input: T)
 
-data class LambdaErrorResponse(val message: String, private val status: Status) {
+data class ActionErrorResponse(val message: String, private val status: Status) {
     val code: String = "${status.code}"
 }
 

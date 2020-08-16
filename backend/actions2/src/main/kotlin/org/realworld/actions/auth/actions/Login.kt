@@ -14,7 +14,7 @@ class Login(private val auth: Auth) : Action<LoginRequest, User.Login> {
 
     override fun process(input: LoginRequest): Result<String, User.Login> =
         findUser(input.username)
-            .andThen { verifyPassword(input.password, it) }
+            .andThen { checkPassword(input.password, it) }
             .andThen(::generateToken)
 
     private fun findUser(username: String): Result<String, User> =
@@ -22,13 +22,15 @@ class Login(private val auth: Auth) : Action<LoginRequest, User.Login> {
             .find(username)
             .toResult(InvalidLogin.message)
 
-    private fun verifyPassword(password: String, user: User): Result<String, User> =
-        auth.password.verify(password, user.passwordHash)
+    private fun checkPassword(password: String, user: User): Result<String, User> =
+        auth.password
+            .verify(password, user.passwordHash)
             .map { user }
             .mapError(PasswordError::message)
 
     private fun generateToken(user: User): Result<String, User.Login> =
-        auth.token.generate(user)
+        auth.token
+            .generate(user)
             .map { it.toLogin(user) }
             .mapError(TokenError::message)
 }
