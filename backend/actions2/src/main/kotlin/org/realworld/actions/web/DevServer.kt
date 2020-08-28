@@ -1,4 +1,4 @@
-package org.realworld.actions.utils
+package org.realworld.actions.web
 
 import org.http4k.core.Filter
 import org.http4k.core.HttpHandler

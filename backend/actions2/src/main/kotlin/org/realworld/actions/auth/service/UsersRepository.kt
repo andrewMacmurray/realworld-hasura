@@ -6,7 +6,7 @@ import org.realworld.actions.auth.User
 import org.realworld.actions.auth.service.Mappers.toUser
 import org.realworld.actions.auth.service.Mappers.variables
 import org.realworld.actions.auth.service.UsersError.UserCreateError
-import org.realworld.actions.hasura.HasuraClient
+import org.realworld.actions.HasuraClient
 import org.realworld.actions.utils.Result
 import org.realworld.actions.utils.pipe
 import org.realworld.actions.utils.toResult
@@ -19,6 +19,7 @@ interface UsersRepository {
 }
 
 class HasuraUsers(private val client: HasuraClient) : UsersRepository {
+
     override fun create(user: User.ToCreate): Result<UsersError, User> = runBlocking {
         user.variables()
             .pipe { CreateUserMutation(client).execute(it) }
@@ -78,4 +79,3 @@ private object Mappers {
         profileImage = profile_image
     )
 }
-

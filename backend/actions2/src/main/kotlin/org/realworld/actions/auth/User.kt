@@ -10,6 +10,8 @@ data class User(
     val bio: String?,
     val profileImage: String?
 ) {
+    data class Id(val value: Int)
+
     data class ToCreate(
         val username: String,
         val email: String,

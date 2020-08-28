@@ -19,6 +19,7 @@ interface PasswordService {
 // Hashed Password
 
 object StoredPassword : PasswordService {
+
     override fun hash(password: String): Result<PasswordError, String> =
         if (password.meetsCriteria())
             hashWithSalt(password).toResult(FailsCriteria)
