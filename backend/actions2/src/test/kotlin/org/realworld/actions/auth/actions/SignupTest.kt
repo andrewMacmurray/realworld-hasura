@@ -1,8 +1,10 @@
-package org.realworld.actions.auth
+package org.realworld.actions.auth.actions
 
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.realworld.actions.auth.AuthActions
+import org.realworld.actions.auth.Requests
 import org.realworld.actions.whenOk
 import org.realworld.actions.auth.doubles.MockAuth
 import org.realworld.actions.auth.doubles.MockUsersRepository
@@ -12,7 +14,7 @@ import org.realworld.actions.utils.andThen
 import org.realworld.actions.utils.mapError
 import org.realworld.actions.utils.pipe
 
-class LoginTest {
+class SignupTest {
 
     private val auth = MockAuth()
     private val actions = AuthActions(auth)

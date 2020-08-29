@@ -1,10 +1,8 @@
-package org.realworld.actions.auth
+package org.realworld.actions.auth.service
 
 import org.junit.jupiter.api.Test
 import org.realworld.actions.assertIsError
 import org.realworld.actions.assertIsOk
-import org.realworld.actions.auth.service.PasswordService
-import org.realworld.actions.auth.service.StoredPassword
 import org.realworld.actions.utils.map
 import org.realworld.actions.utils.pipe
 

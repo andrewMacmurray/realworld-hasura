@@ -1,11 +1,11 @@
-package org.realworld.actions.auth
+package org.realworld.actions.auth.service
 
 import com.auth0.jwt.interfaces.DecodedJWT
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.realworld.actions.auth.User
 import org.realworld.actions.whenOk
-import org.realworld.actions.auth.service.HasuraTokens
 import org.realworld.actions.utils.andThen
 
 class TokenServiceTest {

@@ -69,14 +69,14 @@ class HasuraTokens(secret: String) : TokenService {
 }
 
 data class HasuraClaims(
+    @JsonProperty("x-hasura-user-id")
+    val userId: Int,
+
     @JsonProperty("x-hasura-allowed-roles")
     val allowedRoles: List<String> = listOf("user"),
 
     @JsonProperty("x-hasura-default-role")
-    val defaultRole: String = "user",
-
-    @JsonProperty("x-hasura-user-id")
-    val userId: Int
+    val defaultRole: String = "user"
 )
 
 // Errors
