@@ -5,6 +5,7 @@ import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.exceptions.JWTCreationException
 import com.auth0.jwt.exceptions.JWTDecodeException
 import com.auth0.jwt.interfaces.DecodedJWT
+import com.fasterxml.jackson.annotation.JsonProperty
 import org.realworld.actions.auth.User
 import org.realworld.actions.auth.service.TokenError.CreateFailed
 import org.realworld.actions.auth.service.TokenError.InvalidToken
@@ -66,6 +67,17 @@ class HasuraTokens(secret: String) : TokenService {
         Err(InvalidToken)
     }
 }
+
+data class HasuraClaims(
+    @JsonProperty("x-hasura-allowed-roles")
+    val allowedRoles: List<String> = listOf("user"),
+
+    @JsonProperty("x-hasura-default-role")
+    val defaultRole: String = "user",
+
+    @JsonProperty("x-hasura-user-id")
+    val userId: Int
+)
 
 // Errors
 

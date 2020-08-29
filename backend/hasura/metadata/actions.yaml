@@ -16,7 +16,7 @@ actions:
 - name: unlike_article
   definition:
     kind: synchronous
-    handler: http://host.docker.internal:3000/unlike
+    handler: http://host.docker.internal:4000/unlike
     forward_client_headers: true
   permissions:
   - role: user
