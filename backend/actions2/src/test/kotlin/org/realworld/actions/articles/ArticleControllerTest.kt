@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.realworld.actions.articles.doubles.ArticlesStub
 import org.realworld.actions.bodyAs
-import org.realworld.actions.post
+import org.realworld.actions.postForUser
 import org.realworld.actions.utils.pipe
 
 class ArticleControllerTest {
@@ -13,10 +13,10 @@ class ArticleControllerTest {
 
     @Test
     fun `handles unlike article`() {
-        val userIdHeader = "X-Hasura-User-Id" to "1"
         val articleId = 1
+        val userId = 2
         UnlikeRequest(articleId)
-            .pipe { controller.post("/unlike", it, userIdHeader) }
+            .pipe { controller.postForUser("/unlike", userId, it) }
             .pipe { it.bodyAs<UnlikeResponse>() }
             .pipe { assertEquals(articleId, it.article_id) }
     }

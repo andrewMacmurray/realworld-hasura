@@ -6,7 +6,6 @@ import org.http4k.core.Response
 import org.http4k.core.Status
 import org.http4k.format.Jackson
 import org.http4k.format.Jackson.auto
-import org.http4k.lens.Header
 import org.realworld.actions.ActionResult
 import org.realworld.actions.auth.User
 import org.realworld.actions.utils.Result
@@ -15,16 +14,15 @@ import org.realworld.actions.utils.pipe
 object Action {
     inline fun <reified In : Any, Out : Any> handle(crossinline handler: (i: In) -> ActionResult<Out>) =
         { req: Request ->
-            Body.auto<ActionInput<In>>().toLens()(req)
+            Body.auto<ActionRequest<In>>().toLens()(req)
                 .pipe { handler(it.input) }
                 .pipe { it.json() }
         }
 
     inline fun <reified In : Any, Out : Any> handleForUser(crossinline handler: (In, User.Id) -> ActionResult<Out>) =
         { req: Request ->
-            val body = Body.auto<ActionInput<In>>().toLens()(req)
-            val userId = Header.required("X-Hasura-User-Id")(req)
-            handler(body.input, User.Id(userId.toInt())).json()
+            val body = Body.auto<UserActionRequest<In>>().toLens()(req)
+            handler(body.input, User.Id(body.session.userId.toInt())).json()
         }
 }
 

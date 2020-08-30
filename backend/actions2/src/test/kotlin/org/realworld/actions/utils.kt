@@ -10,18 +10,30 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.realworld.actions.utils.Result
 import org.realworld.actions.utils.pipe
-import org.realworld.actions.web.ActionInput
+import org.realworld.actions.web.ActionRequest
 import org.realworld.actions.web.Controller
+import org.realworld.actions.web.UserActionRequest
 
 // Web
 
 inline fun <reified T : Any> Response.bodyAs(): T =
     Body.auto<T>().toLens()(this)
 
-fun <I : Any> Controller.post(url: String, input: I, vararg headers: Pair<String, String>): Response =
-    ActionInput(input)
-        .pipe { Request(Method.POST, url).json(it).headers(headers.toList()) }
+fun <I : Any> Controller.post(url: String, input: I): Response =
+    ActionRequest(input)
+        .pipe { Request(Method.POST, url).json(it) }
         .pipe { this.handle(it) }
+
+fun <I : Any> Controller.postForUser(url: String, userId: Int, input: I): Response =
+    input.toUserAction(userId)
+        .pipe { Request(Method.POST, url).json(it) }
+        .pipe { this.handle(it) }
+
+private fun <I> I.toUserAction(userId: Int) =
+    UserActionRequest(
+        input = this,
+        session = UserActionRequest.Session(userId = "$userId")
+    )
 
 fun <T : Any> Request.json(body: T): Request =
     this.body(Jackson.asJsonString(body))

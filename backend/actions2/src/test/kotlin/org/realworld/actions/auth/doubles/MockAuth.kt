@@ -7,7 +7,7 @@ import org.realworld.actions.auth.service.StoredPassword
 import org.realworld.actions.auth.service.TokenService
 
 private val defaultTokens: TokenService =
-    HasuraTokens("secret")
+    HasuraTokens("3EK6FD+o0+c7tzBNVfjpMkNDi2yARAAKzQlk8O2IKoxQu4nF7EdAh8s3TwpHwrdWT6R")
 
 class MockAuth(override val token: TokenService = defaultTokens) : Auth {
     override val users: MockUsersRepository =

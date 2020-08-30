@@ -1,50 +1,42 @@
 package org.realworld.actions.auth.service
 
-import com.auth0.jwt.interfaces.DecodedJWT
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.realworld.actions.auth.User
-import org.realworld.actions.whenOk
 import org.realworld.actions.utils.andThen
+import org.realworld.actions.whenOk
 
 class TokenServiceTest {
 
-    private val namespace = "https://hasura.io/jwt/claims"
-    private val secret = "very-secret-secret"
-    private val tokenService = HasuraTokens(secret)
+    private val tokens: TokenService =
+        buildTokenService()
 
     @Test
     fun `generates a JWT with username and email claims`() {
         val details = userDetails()
-        val token = tokenService
+        tokens
             .generate(details)
-            .andThen(tokenService::decode)
-
-        token.whenOk {
-            assertEquals(details.username, claimValueFor("username", it))
-            assertEquals(details.email, claimValueFor("email", it))
-        }
+            .andThen(tokens::decode)
+            .whenOk {
+                assertEquals(details.username, it.username)
+                assertEquals(details.email, it.email)
+            }
     }
 
     @Test
     fun `generates a JWT with hasura claims`() {
         val details = userDetails()
-        val token = tokenService
+        tokens
             .generate(details)
-            .andThen(tokenService::decode)
-
-        token.whenOk {
-            val hasuraClaim = claimValueFor(namespace, it)
-
-            assertTrue(hasuraClaim.contains("\"x-hasura-user-id\": ${details.id}"))
-            assertTrue(hasuraClaim.contains("\"x-hasura-default-role\": \"user\""))
-            assertTrue(hasuraClaim.contains("\"x-hasura-allowed-roles\": [\"user\"]"))
-        }
+            .andThen(tokens::decode)
+            .whenOk {
+                assertTrue(it.permissions.contains(details.id.toString()))
+            }
     }
 
-    private fun claimValueFor(claimName: String, jwt: DecodedJWT) =
-        jwt.getClaim(claimName).asString()
+    private fun buildTokenService(): TokenService =
+        HasuraTokens("PTClNSJGXLA90wjPjzoz3hJCabHR8U16w")
 
     private fun userDetails() = User(
         id = 1,
