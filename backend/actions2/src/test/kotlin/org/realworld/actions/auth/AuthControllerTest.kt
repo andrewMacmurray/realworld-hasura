@@ -2,8 +2,8 @@ package org.realworld.actions.auth
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.realworld.actions.auth.doubles.MockAuth
 import org.realworld.actions.auth.doubles.TokensStub
+import org.realworld.actions.auth.doubles.mockAuth
 import org.realworld.actions.bodyAs
 import org.realworld.actions.post
 import org.realworld.actions.utils.pipe
@@ -22,9 +22,9 @@ class AuthControllerTest {
     }
 
     private fun buildController(token: String) =
-        TokensStub(token)
-            .pipe(::MockAuth)
-            .pipe(::AuthActions)
+        mockAuth
+            .copy(token = TokensStub(token))
+            .pipe(Auth::Actions)
             .pipe(::AuthController)
 }
 

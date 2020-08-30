@@ -2,7 +2,7 @@ package org.realworld.actions.articles
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.realworld.actions.articles.doubles.ArticlesStub
+import org.realworld.actions.articles.doubles.articlesStub
 import org.realworld.actions.bodyAs
 import org.realworld.actions.postForUser
 import org.realworld.actions.utils.pipe
@@ -22,7 +22,7 @@ class ArticleControllerTest {
     }
 
     private fun buildController() =
-        ArticlesStub()
-            .pipe(::ArticlesActions)
+        articlesStub
+            .pipe(Articles::Actions)
             .pipe(::ArticlesController)
 }

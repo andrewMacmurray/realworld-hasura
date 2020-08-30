@@ -3,12 +3,12 @@ package org.realworld.actions.auth.actions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.realworld.actions.auth.AuthActions
+import org.realworld.actions.auth.Auth
 import org.realworld.actions.auth.Requests
 import org.realworld.actions.auth.SignupRequest
 import org.realworld.actions.auth.User
-import org.realworld.actions.auth.doubles.MockAuth
 import org.realworld.actions.auth.doubles.MockUsersRepository
+import org.realworld.actions.auth.doubles.mockAuth
 import org.realworld.actions.auth.service.PasswordError.InvalidLogin
 import org.realworld.actions.utils.Result
 import org.realworld.actions.utils.pipe
@@ -17,8 +17,8 @@ import org.realworld.actions.whenOk
 
 class LoginTest {
 
-    private val auth = MockAuth()
-    private val actions = AuthActions(auth)
+    private val auth = mockAuth
+    private val actions = Auth.Actions(auth)
 
     @BeforeEach
     fun setup() {
@@ -65,5 +65,5 @@ class LoginTest {
     }
 
     private val repository: MockUsersRepository
-        get() = auth.users
+        get() = auth.users as MockUsersRepository
 }

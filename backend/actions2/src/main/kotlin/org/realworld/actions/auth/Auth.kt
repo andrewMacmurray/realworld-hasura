@@ -6,30 +6,25 @@ import org.realworld.actions.auth.actions.Login
 import org.realworld.actions.auth.actions.Signup
 import org.realworld.actions.auth.service.*
 
-interface Auth {
-    val password: PasswordService
-    val token: TokenService
+data class Auth(
+    val password: PasswordService,
+    val token: TokenService,
     val users: UsersRepository
-}
+) {
+    class Actions(auth: Auth) {
+        val login = Login(auth)
+        val signup = Signup(auth)
+    }
 
-class AuthActions(auth: Auth) {
-    val login = Login(auth)
-    val signup = Signup(auth)
-}
-
-class AuthComponents(
-    override val password: PasswordService,
-    override val token: TokenService,
-    override val users: UsersRepository
-) : Auth
-
-object AuthModule {
-    fun build() = module {
-        single { StoredPassword as PasswordService }
-        single { HasuraUsers(get()) as UsersRepository }
-        single { HasuraTokens((get() as Environment).JWT_SECRET) as TokenService }
-        single { AuthComponents(get(), get(), get()) as Auth }
-        single { AuthActions(get()) }
-        single { AuthController(get()) }
+    object Module {
+        fun build() = module {
+            single { StoredPassword as PasswordService }
+            single { HasuraUsers(get()) as UsersRepository }
+            single { HasuraTokens((get() as Environment).JWT_SECRET) as TokenService }
+            single { Auth(get(), get(), get()) }
+            single { Actions(get()) }
+            single { AuthController(get()) }
+        }
     }
 }
+

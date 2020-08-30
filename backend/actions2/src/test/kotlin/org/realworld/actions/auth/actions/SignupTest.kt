@@ -3,10 +3,10 @@ package org.realworld.actions.auth.actions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.realworld.actions.auth.AuthActions
+import org.realworld.actions.auth.Auth
 import org.realworld.actions.auth.Requests
-import org.realworld.actions.auth.doubles.MockAuth
 import org.realworld.actions.auth.doubles.MockUsersRepository
+import org.realworld.actions.auth.doubles.mockAuth
 import org.realworld.actions.auth.service.Token
 import org.realworld.actions.auth.service.TokenError
 import org.realworld.actions.utils.andThen
@@ -16,8 +16,8 @@ import org.realworld.actions.whenOk
 
 class SignupTest {
 
-    private val auth = MockAuth()
-    private val actions = AuthActions(auth)
+    private val auth = mockAuth
+    private val actions = Auth.Actions(auth)
 
     @BeforeEach
     fun setup() {
@@ -44,5 +44,5 @@ class SignupTest {
         auth.token.decode(token).mapError(TokenError::message)
 
     private val repository: MockUsersRepository
-        get() = auth.users
+        get() = auth.users as MockUsersRepository
 }
