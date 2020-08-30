@@ -10,7 +10,7 @@ import org.http4k.server.SunHttp
 import org.http4k.server.asServer
 
 object DevServer {
-    fun start(port: Int, handler: HttpHandler) {
+    fun listenOn(port: Int, handler: HttpHandler) {
         println("starting local server on $port")
         DebugFilter()
             .then(CatchLensFailure())

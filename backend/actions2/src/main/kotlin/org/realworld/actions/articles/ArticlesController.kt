@@ -12,7 +12,7 @@ import org.realworld.actions.web.Controller
 
 class ArticlesController(private val actions: ArticlesActions) : Controller {
 
-    override val handle: RoutingHttpHandler =
+    override val handler: RoutingHttpHandler =
         "/unlike" bind Method.POST to Action.handleForUser(::unlikeArticle)
 
     private fun unlikeArticle(request: UnlikeRequest, userId: User.Id): ActionResult<UnlikeResponse> =

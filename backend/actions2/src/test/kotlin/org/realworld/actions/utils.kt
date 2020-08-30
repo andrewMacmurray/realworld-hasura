@@ -22,12 +22,12 @@ inline fun <reified T : Any> Response.bodyAs(): T =
 fun <I : Any> Controller.post(url: String, input: I): Response =
     ActionRequest(input)
         .pipe { Request(Method.POST, url).json(it) }
-        .pipe { this.handle(it) }
+        .pipe { this.handler(it) }
 
 fun <I : Any> Controller.postForUser(url: String, userId: Int, input: I): Response =
     input.toUserAction(userId)
         .pipe { Request(Method.POST, url).json(it) }
-        .pipe { this.handle(it) }
+        .pipe { this.handler(it) }
 
 private fun <I> I.toUserAction(userId: Int) =
     UserActionRequest(

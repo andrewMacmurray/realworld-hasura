@@ -10,7 +10,7 @@ import org.realworld.actions.web.Controller
 
 class AuthController(private val actions: AuthActions) : Controller {
 
-    override val handle = routes(
+    override val handler = routes(
         "/signup" bind POST to Action.handle(::signup),
         "/login" bind POST to Action.handle(::login)
     )

@@ -1,6 +1,6 @@
 package org.realworld.actions.articles
 
-import org.realworld.actions.HasuraClient
+import org.koin.dsl.module
 import org.realworld.actions.articles.actions.Unlike
 import org.realworld.actions.articles.service.ArticlesRepository
 import org.realworld.actions.articles.service.HasuraArticles
@@ -9,11 +9,19 @@ interface Articles {
     val repository: ArticlesRepository
 }
 
+class ArticlesComponents(
+    override val repository: ArticlesRepository
+) : Articles
+
 class ArticlesActions(articles: Articles) {
     val unlike = Unlike(articles)
 }
 
-class ArticlesComponents(client: HasuraClient) : Articles {
-    override val repository: ArticlesRepository =
-        HasuraArticles(client)
+object ArticlesModule {
+    fun build() = module {
+        single { HasuraArticles(get()) as ArticlesRepository }
+        single { ArticlesComponents(get()) as Articles }
+        single { ArticlesActions(get()) }
+        single { ArticlesController(get()) }
+    }
 }
