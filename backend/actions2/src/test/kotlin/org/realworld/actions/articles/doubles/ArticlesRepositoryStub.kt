@@ -5,9 +5,6 @@ import org.realworld.actions.articles.Articles
 import org.realworld.actions.articles.service.ArticlesRepository
 import org.realworld.actions.utils.Result
 
-val articlesStub =
-    Articles(ArticlesRepositoryStub())
-
 class ArticlesRepositoryStub : ArticlesRepository {
     override fun unlike(article: Article.Unlike): Result<String, Article.Id> =
         Result.Ok(article.id)
