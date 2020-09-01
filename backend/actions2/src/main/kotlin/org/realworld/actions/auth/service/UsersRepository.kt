@@ -22,9 +22,12 @@ class HasuraUsers(private val client: HasuraClient) : UsersRepository {
 
     override fun create(user: User.ToCreate): Result<UsersError, User> = runBlocking {
         user.variables()
-            .pipe { CreateUserMutation(client).execute(it) }
+            .pipe { createMutation(it) }
             .pipe(::toUser)
     }
+
+    private suspend fun createMutation(it: CreateUserMutation.Variables) =
+        CreateUserMutation(client).execute(it)
 
     override fun find(username: String): User? = runBlocking {
         FindUserQuery.Variables(username)
