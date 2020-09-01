@@ -3,21 +3,16 @@ package org.realworld.actions.auth.actions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.realworld.actions.auth.Auth
 import org.realworld.actions.auth.Requests
-import org.realworld.actions.auth.doubles.MockUsersRepository
-import org.realworld.actions.auth.doubles.mockAuth
-import org.realworld.actions.auth.service.Token
-import org.realworld.actions.auth.service.TokenError
-import org.realworld.actions.utils.andThen
-import org.realworld.actions.utils.mapError
+import org.realworld.actions.auth.doubles.AuthDoubles
 import org.realworld.actions.utils.pipe
 import org.realworld.actions.whenOk
 
 class SignupTest {
 
-    private val auth = mockAuth
-    private val actions = Auth.Actions(auth)
+    private val doubles = AuthDoubles()
+    private val actions = doubles.actions
+    private val repository = doubles.users
 
     @BeforeEach
     fun setup() {
@@ -33,16 +28,13 @@ class SignupTest {
 
     @Test
     fun `generates a token for the user`() {
-        val request = Requests.signup(username = "andrew")
+        val request = Requests.signup()
 
-        actions.signup.process(request)
-            .andThen { decodeToken(it) }
-            .whenOk { assertEquals(request.username, it.username) }
+        actions.signup
+            .process(request)
+            .whenOk { assertEquals(userId(request.username), it.userId) }
     }
 
-    private fun decodeToken(token: Token) =
-        auth.token.decode(token).mapError(TokenError::message)
-
-    private val repository: MockUsersRepository
-        get() = auth.users as MockUsersRepository
+    private fun userId(username: String): Int =
+        repository.find(username)!!.id
 }

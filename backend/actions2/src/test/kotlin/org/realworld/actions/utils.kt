@@ -16,7 +16,7 @@ import org.realworld.actions.web.UserActionRequest
 
 // Web
 
-inline fun <reified T : Any> Response.bodyAs(): T =
+inline fun <reified T : Any> Response.parseBody(): T =
     Body.auto<T>().toLens()(this)
 
 fun <I : Any> Controller.post(url: String, input: I): Response =

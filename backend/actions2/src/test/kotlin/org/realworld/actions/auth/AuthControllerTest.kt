@@ -2,29 +2,45 @@ package org.realworld.actions.auth
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.realworld.actions.auth.doubles.TokensStub
-import org.realworld.actions.auth.doubles.mockAuth
-import org.realworld.actions.bodyAs
+import org.realworld.actions.auth.doubles.AuthDoubles
+import org.realworld.actions.parseBody
 import org.realworld.actions.post
 import org.realworld.actions.utils.pipe
 
 class AuthControllerTest {
 
-    private val token = "TOKEN"
-    private val controller = buildController(token)
+    private val doubles = AuthDoubles()
+    private val token = doubles.tokens.token
+    private val controller = doubles.controller
 
     @Test
     fun `handles signup`() {
-        Requests.signup()
-            .pipe { controller.post("/signup", it) }
-            .pipe { it.bodyAs<SignupResponse>() }
-            .pipe { assertEquals(token, it.token) }
+        val request = Requests.signup()
+
+        signupUser(request).pipe {
+            assertEquals(request.username, it.username)
+            assertEquals(token, it.token)
+        }
     }
 
-    private fun buildController(token: String) =
-        mockAuth
-            .copy(token = TokensStub(token))
-            .pipe(Auth::Actions)
-            .pipe(::AuthController)
-}
+    @Test
+    fun `handles login`() {
+        val username = "anne.onymous"
+        val password = "Abc12345!"
+        val request = Requests.login(username, password)
 
+        Requests.signup(username, password)
+            .pipe { signupUser(it) }
+            .pipe { loginUser(request) }
+            .pipe {
+                assertEquals(request.username, it.username)
+                assertEquals(token, it.token)
+            }
+    }
+
+    private fun loginUser(request: LoginRequest): LoginResponse =
+        controller.post("/login", request).parseBody()
+
+    private fun signupUser(request: SignupRequest): SignupResponse =
+        controller.post("/signup", request).parseBody()
+}

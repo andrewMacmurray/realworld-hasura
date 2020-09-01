@@ -3,7 +3,7 @@ package org.realworld.actions.articles
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.realworld.actions.articles.doubles.articlesStub
-import org.realworld.actions.bodyAs
+import org.realworld.actions.parseBody
 import org.realworld.actions.postForUser
 import org.realworld.actions.utils.pipe
 
@@ -17,7 +17,7 @@ class ArticleControllerTest {
         val userId = 2
         UnlikeRequest(articleId)
             .pipe { controller.postForUser("/unlike", userId, it) }
-            .pipe { it.bodyAs<UnlikeResponse>() }
+            .pipe { it.parseBody<UnlikeResponse>() }
             .pipe { assertEquals(articleId, it.article_id) }
     }
 

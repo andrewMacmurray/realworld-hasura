@@ -24,7 +24,7 @@ class HasuraArticles(private val client: HasuraClient) : ArticlesRepository {
     private fun toResponse(response: GraphQLResponse<UnlikeArticleMutation.Result>) =
         articleId(response)
             ?.pipe(Article::Id)
-            .toResult("Error")
+            .toResult("Error deleting article likes")
 
     private fun articleId(response: GraphQLResponse<UnlikeArticleMutation.Result>) =
         response.data?.delete_likes?.returning?.get(0)?.article_id

@@ -31,7 +31,7 @@ class TokenServiceTest {
             .generate(details)
             .andThen(tokens::decode)
             .whenOk {
-                assertTrue(it.permissions.contains(details.id.toString()))
+                assertTrue(it.permissions.contains("${details.id}"))
             }
     }
 
@@ -42,7 +42,7 @@ class TokenServiceTest {
         id = 1,
         username = "andrew",
         email = "a@b.com",
-        passwordHash = "abc123£ashdajskd",
+        passwordHash = "password_hash",
         bio = "about me",
         profileImage = "http://bread.png"
     )

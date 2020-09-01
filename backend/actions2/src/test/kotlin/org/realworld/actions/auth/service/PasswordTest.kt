@@ -6,10 +6,10 @@ import org.realworld.actions.assertIsOk
 import org.realworld.actions.utils.map
 import org.realworld.actions.utils.pipe
 
-private val password: PasswordService =
-    StoredPassword
-
 class PasswordServiceServiceTest {
+
+    private val password: PasswordService =
+        StoredPassword
 
     @Test
     fun `hashes and verifies a password`() {
