@@ -280,6 +280,7 @@
     name: users
   configuration:
     custom_root_fields:
+      insert_one: create_user
       select_by_pk: user
       update_by_pk: update_user
     custom_column_names: {}

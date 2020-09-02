@@ -5,9 +5,9 @@
     "migrate": "npm run migrate:db && npm run migrate:metadata",
     "migrate:db": "cd hasura && hasura migrate apply",
     "migrate:metadata": "cd hasura && hasura metadata apply",
-    "console": "cd hasura && hasura console",
-    "backend": "npm run actions & npm run hasura",
+    "console": "npm run load-env && cd hasura && hasura console",
     "hasura": "cd hasura && docker-compose up",
-    "actions": "cd actions && npm run dev"
+    "actions": "npm run load-env && cd actions && ./gradlew run -q",
+    "load-env": "source .env.local"
   }
 }

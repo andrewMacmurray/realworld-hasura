@@ -2,21 +2,21 @@ actions:
 - name: login
   definition:
     kind: synchronous
-    handler: http://host.docker.internal:3000/login
+    handler: http://host.docker.internal:4000/login
   permissions:
   - role: anonymous
   - role: user
 - name: signup
   definition:
     kind: synchronous
-    handler: http://host.docker.internal:3000/signup
+    handler: http://host.docker.internal:4000/signup
   permissions:
   - role: anonymous
   - role: user
 - name: unlike_article
   definition:
     kind: synchronous
-    handler: http://host.docker.internal:3000/unlike
+    handler: http://host.docker.internal:4000/unlike
     forward_client_headers: true
   permissions:
   - role: user

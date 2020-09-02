@@ -1,0 +1,10 @@
+mutation CreateUserMutation($email: String!, $password_hash: String!, $username: String!) {
+    create_user(object: {email: $email, username: $username, password_hash: $password_hash}) {
+        id,
+        username,
+        email,
+        password_hash,
+        bio,
+        profile_image
+    }
+}

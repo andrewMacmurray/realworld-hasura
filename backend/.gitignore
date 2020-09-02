@@ -1,0 +1,10 @@
+.build
+node_modules
+
+.gradle
+.idea
+.serverless
+out
+
+actions/build/*
+!schema.graphql

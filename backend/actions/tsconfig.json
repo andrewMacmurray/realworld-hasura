@@ -1,6 +1,0 @@
-{
-  "compiler": {
-    "types": ["node", "jsonwebtoken", "bcrypt", "node-fetch"],
-    "lib": ["es2015"]
-  }
-}
