@@ -7,10 +7,6 @@ import org.realworld.actions.auth.service.TokenService
 import org.realworld.actions.utils.Result
 
 class TokensStub(val token: String) : TokenService {
-
     override fun generate(user: User): Result<TokenError, Token> =
         Result.Ok(Token(user.id, token))
-
-    override fun decode(token: Token): Result<TokenError, Token.Decoded> =
-        TODO()
 }

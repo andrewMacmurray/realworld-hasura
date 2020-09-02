@@ -1,23 +1,26 @@
 package org.realworld.actions.auth.service
 
+import io.jsonwebtoken.Claims
+import io.jsonwebtoken.Jwts
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.realworld.actions.auth.User
-import org.realworld.actions.utils.andThen
+import org.realworld.actions.utils.map
+import org.realworld.actions.utils.pipe
 import org.realworld.actions.whenOk
 
 class TokenServiceTest {
 
-    private val tokens: TokenService =
-        buildTokenService()
+    private val tokens: HasuraTokens =
+        hasuraTokens()
 
     @Test
     fun `generates a JWT with username and email claims`() {
         val details = userDetails()
         tokens
             .generate(details)
-            .andThen(tokens::decode)
+            .map(::decodeToken)
             .whenOk {
                 assertEquals(details.username, it.username)
                 assertEquals(details.email, it.email)
@@ -29,13 +32,32 @@ class TokenServiceTest {
         val details = userDetails()
         tokens
             .generate(details)
-            .andThen(tokens::decode)
+            .map(::decodeToken)
             .whenOk {
                 assertTrue(it.permissions.contains("${details.id}"))
             }
     }
 
-    private fun buildTokenService(): TokenService =
+    private fun decodeToken(token: Token): Decoded =
+        Jwts.parserBuilder()
+            .setSigningKey(tokens.key)
+            .build()
+            .parseClaimsJws(token.value)
+            .pipe { toDecoded(it.body) }
+
+    private fun toDecoded(claims: Claims) = Decoded(
+        username = claims["username"].toString(),
+        email = claims["email"].toString(),
+        permissions = claims[Hasura.namespace].toString()
+    )
+
+    data class Decoded(
+        val username: String,
+        val email: String,
+        val permissions: String
+    )
+
+    private fun hasuraTokens() =
         HasuraTokens("PTClNSJGXLA90wjPjzoz3hJCabHR8U16w")
 
     private fun userDetails() = User(

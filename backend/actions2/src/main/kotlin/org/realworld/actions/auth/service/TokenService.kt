@@ -2,7 +2,6 @@ package org.realworld.actions.auth.service
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import io.jsonwebtoken.Claims
 import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.io.Serializer
@@ -10,7 +9,6 @@ import io.jsonwebtoken.jackson.io.JacksonSerializer
 import io.jsonwebtoken.security.Keys
 import org.realworld.actions.auth.User
 import org.realworld.actions.auth.service.TokenError.CreateFailed
-import org.realworld.actions.auth.service.TokenError.InvalidToken
 import org.realworld.actions.utils.Result
 import org.realworld.actions.utils.Result.Err
 import org.realworld.actions.utils.Result.Ok
@@ -20,26 +18,22 @@ import javax.crypto.SecretKey
 
 // Token
 
-data class Token(val userId: Int, val value: String) {
-    data class Decoded(
-        val username: String,
-        val email: String,
-        val permissions: String
-    )
-}
+data class Token(
+    val userId: Int,
+    val value: String
+)
 
 // Tokens
 
 interface TokenService {
     fun generate(user: User): Result<TokenError, Token>
-    fun decode(token: Token): Result<TokenError, Token.Decoded>
 }
 
 // JWT
 
 class HasuraTokens(secret: String) : TokenService {
 
-    private val key: SecretKey =
+    val key: SecretKey =
         StandardCharsets.UTF_8
             .pipe(secret::toByteArray)
             .pipe(Keys::hmacShaKeyFor)
@@ -61,25 +55,8 @@ class HasuraTokens(secret: String) : TokenService {
             .pipe { Token(user.id, it) }
             .pipe(::Ok)
 
-    override fun decode(token: Token): Result<TokenError, Token.Decoded> = try {
-        Jwts.parserBuilder()
-            .setSigningKey(key)
-            .build()
-            .parseClaimsJws(token.value)
-            .pipe { toDecoded(it.body) }
-            .pipe(::Ok)
-    } catch (e: JwtException) {
-        Err(InvalidToken)
-    }
-
     private val serializer: Serializer<Map<String, *>> =
         JacksonSerializer(jacksonObjectMapper())
-
-    private fun toDecoded(claims: Claims) = Token.Decoded(
-        username = claims["username"].toString(),
-        email = claims["email"].toString(),
-        permissions = claims[Hasura.namespace].toString()
-    )
 }
 
 object Hasura {
@@ -107,9 +84,5 @@ sealed class TokenError {
 
     object CreateFailed : TokenError() {
         override val message: String = "Could not create token"
-    }
-
-    object InvalidToken : TokenError() {
-        override val message: String = "Token is invalid"
     }
 }
