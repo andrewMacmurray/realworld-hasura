@@ -4,5 +4,7 @@ node_modules
 .gradle
 .idea
 .serverless
-build
 out
+
+actions/build/*
+!schema.graphql
