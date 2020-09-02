@@ -2,32 +2,18 @@ service: actions
 
 provider:
   name: aws
-  runtime: nodejs10.x
-  environment:
-    JWT_SECRET: 3EK6FD+o0+c7tzBNVfjpMkNDi2yARAAKzQlk8O2IKoxQu4nF7EdAh8s3TwpHwrdWT6R
-    HASURA_ADMIN_SECRET: ilovebread
-    HASURA_GRAPHQL_ENDPOINT: http://localhost:8080/v1/graphql
+  runtime: java8
+  region: eu-west-1
+
+package:
+  artifact: build/libs/kotlin-serverless-functions-1.0-SNAPSHOT-all.jar
 
 functions:
-  login:
-    handler: src/auth/login.handler
+  server:
+    handler: org.http4k.serverless.lambda.LambdaFunction::handle
+    environment:
+      HTTP4K_BOOTSTRAP_CLASS: Application
     events:
       - http:
-          path: login
-          method: post
-  signup:
-    handler: src/auth/signup.handler
-    events:
-      - http:
-          path: signup
-          method: post
-  unlike:
-    handler: src/articles/unlike.handler
-    events:
-      - http:
-          path: unlike
-          method: post
-
-plugins:
-  - serverless-offline
-  - serverless-plugin-typescript
+          path: /{proxy+}
+          method: ANY

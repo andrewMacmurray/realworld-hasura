@@ -1,11 +1,16 @@
 plugins {
     kotlin("jvm") version "1.3.72"
+    application
     id("com.github.johnrengelman.shadow") version "5.2.0"
     id("com.expediagroup.graphql") version "3.6.1"
 }
 
 group = "org.realworld"
 version = "1.0-SNAPSHOT"
+
+application {
+    mainClassName = "$group.actions.ApplicationKt"
+}
 
 repositories {
     jcenter()
@@ -15,7 +20,7 @@ repositories {
 graphql {
     client {
         endpoint = "http://localhost:8080/v1/graphql"
-        packageName = "org.realworld.generated"
+        packageName = "$group.generated"
         headers["X-Hasura-Admin-Secret"] = "ilovebread"
     }
 }
@@ -45,7 +50,7 @@ tasks {
     }
 }
 
-val deploy = task<Exec>("deploy") {
+task<Exec>("deploy") {
     dependsOn("shadowJar")
     commandLine("sls", "deploy")
 }
