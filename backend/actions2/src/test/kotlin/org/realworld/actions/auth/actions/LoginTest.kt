@@ -15,9 +15,9 @@ import org.realworld.actions.whenOk
 
 class LoginTest {
 
-    private val doubles = AuthDoubles()
-    private val actions = doubles.actions
-    private val repository = doubles.users
+    private val auth = AuthDoubles()
+    private val actions = auth.actions
+    private val repository = auth.users
 
     @BeforeEach
     fun setup() {

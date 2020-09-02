@@ -33,8 +33,6 @@ dependencies {
     implementation("org.koin:koin-core:2.1.6")
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.6.2")
-    testImplementation("org.http4k:http4k-testing-hamkrest:3.247.0")
-    testImplementation("org.koin:koin-test:2.1.6")
 }
 
 tasks {

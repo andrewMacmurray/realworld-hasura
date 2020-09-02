@@ -10,9 +10,9 @@ import org.realworld.actions.whenOk
 
 class SignupTest {
 
-    private val doubles = AuthDoubles()
-    private val actions = doubles.actions
-    private val repository = doubles.users
+    private val auth = AuthDoubles()
+    private val repository = auth.users
+    private val actions = auth.actions
 
     @BeforeEach
     fun setup() {

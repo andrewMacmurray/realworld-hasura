@@ -9,9 +9,9 @@ import org.realworld.actions.utils.pipe
 
 class AuthControllerTest {
 
-    private val doubles = AuthDoubles()
-    private val token = doubles.tokens.token
-    private val controller = doubles.controller
+    private val auth = AuthDoubles()
+    private val token = auth.tokens.token
+    private val controller = auth.controller
 
     @Test
     fun `handles signup`() {
