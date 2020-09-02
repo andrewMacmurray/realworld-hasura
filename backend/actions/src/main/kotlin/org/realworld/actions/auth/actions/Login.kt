@@ -8,7 +8,6 @@ import org.realworld.actions.auth.User
 import org.realworld.actions.auth.service.PasswordError
 import org.realworld.actions.auth.service.PasswordError.InvalidLogin
 import org.realworld.actions.auth.service.Token
-import org.realworld.actions.auth.service.TokenError
 import org.realworld.actions.utils.andThen
 import org.realworld.actions.utils.map
 import org.realworld.actions.utils.mapError
@@ -19,7 +18,7 @@ class Login(private val auth: Auth) : Action<LoginRequest, User.Login> {
     override fun process(input: LoginRequest): ActionResult<User.Login> =
         findUser(input.username)
             .andThen { checkPassword(input.password, it) }
-            .andThen(::generateToken)
+            .map(::generateToken)
 
     private fun findUser(username: String): ActionResult<User> =
         auth.users
@@ -32,11 +31,8 @@ class Login(private val auth: Auth) : Action<LoginRequest, User.Login> {
             .map { user }
             .mapError(PasswordError::message)
 
-    private fun generateToken(user: User): ActionResult<User.Login> =
-        auth.token
-            .generate(user)
-            .map { it.toLogin(user) }
-            .mapError(TokenError::message)
+    private fun generateToken(user: User): User.Login =
+        auth.token.generate(user).toLogin(user)
 }
 
 private fun Token.toLogin(user: User) = User.Login(

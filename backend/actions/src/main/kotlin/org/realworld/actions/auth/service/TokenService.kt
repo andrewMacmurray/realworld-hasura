@@ -2,16 +2,11 @@ package org.realworld.actions.auth.service
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.io.Serializer
 import io.jsonwebtoken.jackson.io.JacksonSerializer
 import io.jsonwebtoken.security.Keys
 import org.realworld.actions.auth.User
-import org.realworld.actions.auth.service.TokenError.CreateFailed
-import org.realworld.actions.utils.Result
-import org.realworld.actions.utils.Result.Err
-import org.realworld.actions.utils.Result.Ok
 import org.realworld.actions.utils.pipe
 import java.nio.charset.StandardCharsets
 import javax.crypto.SecretKey
@@ -26,7 +21,7 @@ data class Token(
 // Tokens
 
 interface TokenService {
-    fun generate(user: User): Result<TokenError, Token>
+    fun generate(user: User): Token
 }
 
 // JWT
@@ -38,13 +33,7 @@ class HasuraTokens(secret: String) : TokenService {
             .pipe(secret::toByteArray)
             .pipe(Keys::hmacShaKeyFor)
 
-    override fun generate(user: User): Result<TokenError, Token> = try {
-        createToken(user)
-    } catch (e: JwtException) {
-        Err(CreateFailed)
-    }
-
-    private fun createToken(user: User): Result<TokenError, Token> =
+    override fun generate(user: User): Token =
         Jwts.builder()
             .claim("username", user.username)
             .claim("email", user.email)
@@ -53,7 +42,6 @@ class HasuraTokens(secret: String) : TokenService {
             .signWith(key)
             .compact()
             .pipe { Token(user.id, it) }
-            .pipe(::Ok)
 
     private val serializer: Serializer<Map<String, *>> =
         JacksonSerializer(jacksonObjectMapper())
@@ -74,15 +62,5 @@ object Hasura {
     ) {
         @JsonProperty("x-hasura-user-id")
         val userId: String = "${user.id}"
-    }
-}
-
-// Errors
-
-sealed class TokenError {
-    abstract val message: String
-
-    object CreateFailed : TokenError() {
-        override val message: String = "Could not create token"
     }
 }

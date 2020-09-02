@@ -6,9 +6,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.realworld.actions.auth.User
-import org.realworld.actions.utils.map
 import org.realworld.actions.utils.pipe
-import org.realworld.actions.whenOk
 
 class TokenServiceTest {
 
@@ -20,8 +18,8 @@ class TokenServiceTest {
         val details = userDetails()
         tokens
             .generate(details)
-            .map(::decodeToken)
-            .whenOk {
+            .pipe(::decodeToken)
+            .pipe {
                 assertEquals(details.username, it.username)
                 assertEquals(details.email, it.email)
             }
@@ -32,8 +30,8 @@ class TokenServiceTest {
         val details = userDetails()
         tokens
             .generate(details)
-            .map(::decodeToken)
-            .whenOk {
+            .pipe(::decodeToken)
+            .pipe {
                 assertTrue(it.permissions.contains("${details.id}"))
             }
     }
