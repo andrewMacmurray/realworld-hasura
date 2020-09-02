@@ -54,3 +54,8 @@ task<Exec>("deploy") {
     dependsOn("shadowJar")
     commandLine("sls", "deploy")
 }
+
+task("testCI") {
+    tasks.getByName("graphqlIntrospectSchema").enabled = false
+    dependsOn("test")
+}
