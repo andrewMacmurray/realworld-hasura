@@ -5,6 +5,7 @@ import org.realworld.actions.Environment
 import org.realworld.actions.auth.actions.Login
 import org.realworld.actions.auth.actions.Signup
 import org.realworld.actions.auth.service.*
+import org.realworld.actions.auth.web.AuthController
 
 data class Auth(
     val password: PasswordService,
@@ -15,16 +16,15 @@ data class Auth(
         val login = Login(auth)
         val signup = Signup(auth)
     }
-
-    object Module {
-        fun build() = module {
-            single { StoredPassword as PasswordService }
-            single { HasuraUsers(get()) as UsersRepository }
-            single { HasuraTokens((get() as Environment).JWT_SECRET) as TokenService }
-            single { Auth(get(), get(), get()) }
-            single { Actions(get()) }
-            single { AuthController(get()) }
-        }
-    }
 }
 
+object AuthModule {
+    fun build() = module {
+        single { StoredPassword as PasswordService }
+        single { HasuraUsers(get()) as UsersRepository }
+        single { HasuraTokens((get() as Environment).JWT_SECRET) as TokenService }
+        single { Auth(get(), get(), get()) }
+        single { Auth.Actions(get()) }
+        single { AuthController(get()) }
+    }
+}

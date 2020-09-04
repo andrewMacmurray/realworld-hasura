@@ -1,9 +1,6 @@
 package org.realworld.actions.web
 
-import org.http4k.core.Body
-import org.http4k.core.Request
-import org.http4k.core.Response
-import org.http4k.core.Status
+import org.http4k.core.*
 import org.http4k.format.Jackson
 import org.http4k.format.Jackson.auto
 import org.realworld.actions.ActionResult
@@ -11,18 +8,21 @@ import org.realworld.actions.auth.User
 import org.realworld.actions.utils.Result
 import org.realworld.actions.utils.pipe
 
-object Action {
-    inline fun <reified In : Any, Out : Any> handle(crossinline handler: (i: In) -> ActionResult<Out>) =
+object UserHandler {
+    inline operator fun <reified In : Any, Out : Any> invoke(crossinline handler: (In, User.Id) -> ActionResult<Out>) =
         { req: Request ->
-            Body.auto<ActionRequest<In>>().toLens()(req)
-                .pipe { handler(it.input) }
+            req.parseBody<UserActionRequest<In>>()
+                .pipe { handler(it.input, User.Id(it.session.userId.toInt())) }
                 .pipe { it.json() }
         }
+}
 
-    inline fun <reified In : Any, Out : Any> handleForUser(crossinline handler: (In, User.Id) -> ActionResult<Out>) =
+object Handler {
+    inline operator fun <reified In : Any, Out : Any> invoke(crossinline handler: (In) -> ActionResult<Out>) =
         { req: Request ->
-            val body = Body.auto<UserActionRequest<In>>().toLens()(req)
-            handler(body.input, User.Id(body.session.userId.toInt())).json()
+            req.parseBody<ActionRequest<In>>()
+                .pipe { handler(it.input) }
+                .pipe { it.json() }
         }
 }
 
@@ -32,6 +32,9 @@ fun <O : Any> ActionResult<O>.json(): Response {
         is Result.Err -> error(Status.BAD_REQUEST, err)
     }
 }
+
+inline fun <reified A : Any> HttpMessage.parseBody(): A =
+    Body.auto<A>().toLens()(this)
 
 private fun error(status: Status, message: String): Response =
     ActionError(message, status).pipe { Response(status).json(it) }

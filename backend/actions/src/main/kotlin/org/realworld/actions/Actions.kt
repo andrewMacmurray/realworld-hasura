@@ -3,8 +3,8 @@ package org.realworld.actions
 import org.http4k.routing.routes
 import org.koin.core.KoinComponent
 import org.koin.core.inject
-import org.realworld.actions.articles.ArticlesController
-import org.realworld.actions.auth.AuthController
+import org.realworld.actions.articles.web.ArticlesController
+import org.realworld.actions.auth.web.AuthController
 import org.realworld.actions.utils.Result
 
 typealias ActionResult<Output> =

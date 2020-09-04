@@ -1,11 +1,9 @@
 package org.realworld.actions
 
-import org.http4k.core.Body
 import org.http4k.core.Method
 import org.http4k.core.Request
 import org.http4k.core.Response
 import org.http4k.format.Jackson
-import org.http4k.format.Jackson.auto
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.realworld.actions.utils.Result
@@ -15,9 +13,6 @@ import org.realworld.actions.web.Controller
 import org.realworld.actions.web.UserActionRequest
 
 // Web
-
-inline fun <reified T : Any> Response.parseBody(): T =
-    Body.auto<T>().toLens()(this)
 
 fun <I : Any> Controller.post(url: String, input: I): Response =
     ActionRequest(input)

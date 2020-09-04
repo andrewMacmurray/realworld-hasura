@@ -3,7 +3,6 @@ package org.realworld.actions.auth.actions
 import org.realworld.actions.Action
 import org.realworld.actions.ActionResult
 import org.realworld.actions.auth.Auth
-import org.realworld.actions.auth.LoginRequest
 import org.realworld.actions.auth.User
 import org.realworld.actions.auth.service.PasswordError
 import org.realworld.actions.auth.service.PasswordError.InvalidLogin
@@ -13,9 +12,14 @@ import org.realworld.actions.utils.map
 import org.realworld.actions.utils.mapError
 import org.realworld.actions.utils.toResult
 
-class Login(private val auth: Auth) : Action<LoginRequest, User.Login> {
+class Login(private val auth: Auth) : Action<Login.Input, User.Login> {
 
-    override fun process(input: LoginRequest): ActionResult<User.Login> =
+    interface Input {
+        val username: String
+        val password: String
+    }
+
+    override fun process(input: Input): ActionResult<User.Login> =
         findUser(input.username)
             .andThen { checkPassword(input.password, it) }
             .map(::generateToken)

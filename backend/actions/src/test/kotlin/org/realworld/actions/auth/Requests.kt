@@ -1,5 +1,8 @@
 package org.realworld.actions.auth
 
+import org.realworld.actions.auth.web.LoginRequest
+import org.realworld.actions.auth.web.SignupRequest
+
 object Requests {
     fun signup(
         username: String = "username",

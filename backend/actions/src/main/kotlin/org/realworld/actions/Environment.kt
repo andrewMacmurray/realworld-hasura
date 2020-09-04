@@ -3,8 +3,8 @@ package org.realworld.actions
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.dsl.module
-import org.realworld.actions.articles.Articles
-import org.realworld.actions.auth.Auth
+import org.realworld.actions.articles.ArticlesModule
+import org.realworld.actions.auth.AuthModule
 
 object Environment {
     val JWT_SECRET = System.getenv("HASURA_GRAPHQL_JWT_SECRET")!!
@@ -27,7 +27,7 @@ object Context {
 
     private val allModules: Array<Module> = arrayOf(
         globalModule,
-        Auth.Module.build(),
-        Articles.Module.build()
+        AuthModule.build(),
+        ArticlesModule.build()
     )
 }
