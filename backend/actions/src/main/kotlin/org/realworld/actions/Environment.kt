@@ -7,10 +7,16 @@ import org.realworld.actions.articles.ArticlesModule
 import org.realworld.actions.auth.AuthModule
 
 object Environment {
-    val JWT_SECRET = System.getenv("HASURA_GRAPHQL_JWT_SECRET")!!
-    val ADMIN_SECRET = System.getenv("HASURA_GRAPHQL_ADMIN_SECRET")!!
-    val GRAPHQL_URL = System.getenv("HASURA_GRAPHQL_URL")!!
-    val ACTIONS_SECRET = System.getenv("ACTIONS_SECRET")!!
+    val JWT_SECRET = load("HASURA_GRAPHQL_JWT_SECRET")
+    val ADMIN_SECRET = load("HASURA_GRAPHQL_ADMIN_SECRET")
+    val GRAPHQL_URL = load("HASURA_GRAPHQL_URL")
+    val ACTIONS_SECRET = load("ACTIONS_SECRET")
+
+    private fun load(key: String): String = try {
+        System.getenv(key)!!
+    } catch (e: Exception) {
+        throw Exception("ERROR LOADING $key")
+    }
 }
 
 object Context {

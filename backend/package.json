@@ -8,6 +8,6 @@
     "console": "npm run load-env && cd hasura && hasura console",
     "hasura": "cd hasura && docker-compose up",
     "actions": "npm run load-env && cd actions && ./gradlew run -q",
-    "load-env": "source .env.local"
+    "load-env": "set -o allexport && source .env.local"
   }
 }
