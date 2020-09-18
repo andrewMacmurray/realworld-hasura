@@ -3,9 +3,13 @@ package org.realworld.actions.auth
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.realworld.actions.auth.doubles.AuthDoubles
-import org.realworld.actions.parseBody
+import org.realworld.actions.auth.web.LoginRequest
+import org.realworld.actions.auth.web.LoginResponse
+import org.realworld.actions.auth.web.SignupRequest
+import org.realworld.actions.auth.web.SignupResponse
 import org.realworld.actions.post
 import org.realworld.actions.utils.pipe
+import org.realworld.actions.web.parseBody
 
 class AuthControllerTest {
 

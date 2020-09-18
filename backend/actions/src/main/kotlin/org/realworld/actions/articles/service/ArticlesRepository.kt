@@ -12,9 +12,13 @@ import org.realworld.actions.utils.pipe
 import org.realworld.actions.utils.toResult
 import org.realworld.generated.UnlikeArticleMutation
 
+// Articles
+
 interface ArticlesRepository {
     fun unlike(article: Unlike): Result<String, Id>
 }
+
+// Hasura Articles
 
 class HasuraArticles(private val client: HasuraClient) : ArticlesRepository {
 
@@ -41,9 +45,8 @@ class HasuraArticles(private val client: HasuraClient) : ArticlesRepository {
 }
 
 private object Mappers {
-    fun Unlike.variables() =
-        UnlikeArticleMutation.Variables(
-            userId = userId.value,
-            articleId = id.value
-        )
+    fun Unlike.variables() = UnlikeArticleMutation.Variables(
+        userId = userId.value,
+        articleId = id.value
+    )
 }

@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.realworld.actions.auth.Requests
-import org.realworld.actions.auth.SignupRequest
+import org.realworld.actions.auth.web.SignupRequest
 import org.realworld.actions.auth.User
 import org.realworld.actions.auth.doubles.AuthDoubles
 import org.realworld.actions.auth.service.PasswordError.InvalidLogin

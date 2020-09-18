@@ -1,5 +1,8 @@
-package org.realworld.actions.auth
+package org.realworld.actions.auth.web
 
+import org.realworld.actions.auth.User
+import org.realworld.actions.auth.actions.Login
+import org.realworld.actions.auth.actions.Signup
 import org.realworld.actions.auth.service.Token
 
 data class SignupResponse(
@@ -12,15 +15,15 @@ data class SignupResponse(
 )
 
 data class SignupRequest(
-    val username: String,
-    val email: String,
-    val password: String
-)
+    override val username: String,
+    override val email: String,
+    override val password: String
+) : Signup.Input
 
 data class LoginRequest(
-    val username: String,
-    val password: String
-)
+    override val username: String,
+    override val password: String
+) : Login.Input
 
 data class LoginResponse(
     val token: String,

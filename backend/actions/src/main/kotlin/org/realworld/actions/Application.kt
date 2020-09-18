@@ -3,7 +3,7 @@ package org.realworld.actions
 import org.http4k.core.HttpHandler
 import org.http4k.serverless.AppLoader
 import org.realworld.actions.utils.pipe
-import org.realworld.actions.web.DevServer
+import org.realworld.actions.utils.DevServer
 
 fun main() {
     DevServer.listenOn(4000, Application.handler)
@@ -14,5 +14,5 @@ object Application : AppLoader {
         handler
 
     val handler: HttpHandler =
-        Context.create().pipe { Actions().handler }
+        Context.create().pipe { ActionsServer().handler }
 }

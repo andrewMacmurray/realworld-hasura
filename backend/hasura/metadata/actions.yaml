@@ -2,22 +2,31 @@ actions:
 - name: login
   definition:
     kind: synchronous
-    handler: http://host.docker.internal:4000/login
+    handler: '{{ACTIONS_BASE_URL}}/login'
+    headers:
+    - name: actions-secret
+      value_from_env: ACTIONS_SECRET
   permissions:
   - role: anonymous
   - role: user
 - name: signup
   definition:
     kind: synchronous
-    handler: http://host.docker.internal:4000/signup
+    handler: '{{ACTIONS_BASE_URL}}/signup'
+    headers:
+    - name: actions-secret
+      value_from_env: ACTIONS_SECRET
   permissions:
   - role: anonymous
   - role: user
 - name: unlike_article
   definition:
     kind: synchronous
-    handler: http://host.docker.internal:4000/unlike
+    handler: '{{ACTIONS_BASE_URL}}/unlike'
     forward_client_headers: true
+    headers:
+    - name: actions-secret
+      value_from_env: ACTIONS_SECRET
   permissions:
   - role: user
 custom_types:
