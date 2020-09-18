@@ -1,5 +1,5 @@
-# Realworld Hasura Elm
+# Realworld Hasura
 
 ![CI](https://github.com/andrewMacmurray/realworld-hasura-elm/workflows/CI/badge.svg)
 
-Realworld like blogging platform using Hasura + Elm
+Realworld inspired blogging platform using Hasura + Kotlin + Elm
