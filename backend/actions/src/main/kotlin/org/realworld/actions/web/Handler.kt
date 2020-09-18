@@ -29,14 +29,14 @@ object Handler {
 fun <O : Any> ActionResult<O>.json(): Response {
     return when (this) {
         is Result.Ok -> Response(Status.OK).json(this.value)
-        is Result.Err -> error(Status.BAD_REQUEST, err)
+        is Result.Err -> actionError(Status.BAD_REQUEST, err)
     }
 }
 
 inline fun <reified A : Any> HttpMessage.parseBody(): A =
     Body.auto<A>().toLens()(this)
 
-private fun error(status: Status, message: String): Response =
+fun actionError(status: Status, message: String): Response =
     ActionError(message, status).pipe { Response(status).json(it) }
 
 private fun <T : Any> Response.json(body: T): Response =

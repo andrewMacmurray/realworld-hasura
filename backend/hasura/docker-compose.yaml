@@ -17,5 +17,8 @@ services:
       HASURA_GRAPHQL_ENABLE_CONSOLE: "false"
       HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
       HASURA_GRAPHQL_ADMIN_SECRET: ilovebread
+      HASURA_GRAPHQL_ACTION_SECRET: ilovebread
       HASURA_GRAPHQL_UNAUTHORIZED_ROLE: anonymous
       HASURA_GRAPHQL_JWT_SECRET: '{"type":"HS256","key":"3EK6FD+o0+c7tzBNVfjpMkNDi2yARAAKzQlk8O2IKoxQu4nF7EdAh8s3TwpHwrdWT6R"}'
+      ACTIONS_BASE_URL: http://host.docker.internal:4000
+      ACTIONS_SECRET: ilovebread

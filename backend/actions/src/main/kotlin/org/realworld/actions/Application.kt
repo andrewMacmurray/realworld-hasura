@@ -14,5 +14,5 @@ object Application : AppLoader {
         handler
 
     val handler: HttpHandler =
-        Context.create().pipe { Actions().handler }
+        Context.create().pipe { ActionsServer().handler }
 }
