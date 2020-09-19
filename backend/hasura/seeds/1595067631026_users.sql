@@ -1,3 +1,0 @@
-INSERT INTO public.users (id, username, email, password_hash, bio, profile_image) VALUES (2, 'amacmurray2', 'a@b.com', '$2b$10$tHgky04y/05wV3Xqh.KOF.CbH5kysRy/Tsz1SmAKMXpEo4xe8xvNm', 'I LOVE BREAD!', 'https://www.bbcgoodfood.com/sites/default/files/styles/recipe/public/recipe/recipe-image/2008/01/easy-bread.jpg?itok=raq7Qdim');
-INSERT INTO public.users (id, username, email, password_hash, bio, profile_image) VALUES (1, 'amacmurray', 'a@b.com', '$2b$10$NdPFRCC7T8snBCXd2MbX6eE33t45oXs/b44/CVPbxiplYw23Nqr1G', 'You''ve met a terrible fate haven''t you', 'https://www.pngfind.com/pngs/m/433-4334493_illustration-of-majoras-mask-from-the-legend-of.png');
-SELECT pg_catalog.setval('public.users_id_seq', 2, true);

@@ -15,7 +15,7 @@ object Environment {
     private fun load(key: String): String = try {
         System.getenv(key)!!
     } catch (e: Exception) {
-        throw Exception("ERROR LOADING $key")
+        throw Exception("Error loading $key")
     }
 }
 
