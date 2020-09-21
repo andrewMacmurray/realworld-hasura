@@ -6,13 +6,13 @@ provider:
   region: eu-west-1
 
 package:
-  artifact: build/libs/kotlin-serverless-functions-1.0-SNAPSHOT-all.jar
+  artifact: build/libs/actions-serrver-1.0.0-all.jar
 
 functions:
   server:
     handler: org.http4k.serverless.lambda.LambdaFunction::handle
     environment:
-      HTTP4K_BOOTSTRAP_CLASS: Application
+      HTTP4K_BOOTSTRAP_CLASS: org.realworld.actions.Application
     events:
       - http:
           path: /{proxy+}

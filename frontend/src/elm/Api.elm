@@ -179,4 +179,4 @@ prepend str s =
 
 endpoint : String
 endpoint =
-    "http://localhost:8080/v1/graphql"
+    "https://realworld-hasura.herokuapp.com/v1/graphql"

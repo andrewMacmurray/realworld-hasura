@@ -36,6 +36,6 @@ class ActionsServer : KoinComponent {
 
     private fun buildFilters(): Filter =
         AuthorizationFilter(env.ACTIONS_SECRET)
-            .then(CatchLensFailure())
             .then(LogFilter())
+            .then(CatchLensFailure())
 }
