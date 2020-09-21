@@ -2,11 +2,14 @@ package org.realworld.actions
 
 import org.http4k.core.HttpHandler
 import org.http4k.serverless.AppLoader
-import org.realworld.actions.utils.pipe
 import org.realworld.actions.utils.DevServer
+import org.realworld.actions.utils.pipe
 
-fun main() {
-    DevServer.listenOn(4000, Application.handler)
+fun main(args: Array<String>) {
+    DevServer.listenOn(
+        port = System.getenv("PORT")?.toInt() ?: 4000,
+        handler = Application.handler
+    )
 }
 
 object Application : AppLoader {

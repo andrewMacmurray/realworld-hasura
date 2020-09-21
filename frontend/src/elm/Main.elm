@@ -69,19 +69,21 @@ performInit flags url key =
 
 init : Flags -> Url -> key -> ( Model key, Effect Msg )
 init flags url key =
-    updatePageWith (initialModel flags key) (Page.changeTo url (handleUser flags.user) Page.init)
+    Page.init
+        |> Page.changeTo url (userFromFlags flags.user)
+        |> updatePageWith (initialModel flags key)
 
 
 initialModel : Flags -> key -> Page -> Model key
 initialModel flags key page =
     { page = page
-    , user = handleUser flags.user
+    , user = userFromFlags flags.user
     , navKey = key
     }
 
 
-handleUser : Maybe Ports.User -> User
-handleUser =
+userFromFlags : Maybe Ports.User -> User
+userFromFlags =
     Maybe.map Ports.toLoggedIn >> Maybe.withDefault User.Guest
 
 

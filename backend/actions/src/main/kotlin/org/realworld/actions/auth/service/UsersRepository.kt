@@ -2,11 +2,11 @@ package org.realworld.actions.auth.service
 
 import com.expediagroup.graphql.types.GraphQLResponse
 import kotlinx.coroutines.runBlocking
+import org.realworld.actions.HasuraClient
 import org.realworld.actions.auth.User
 import org.realworld.actions.auth.service.Mappers.toUser
 import org.realworld.actions.auth.service.Mappers.variables
 import org.realworld.actions.auth.service.UsersError.UserCreateError
-import org.realworld.actions.HasuraClient
 import org.realworld.actions.utils.Result
 import org.realworld.actions.utils.pipe
 import org.realworld.actions.utils.toResult
@@ -26,8 +26,11 @@ class HasuraUsers(private val client: HasuraClient) : UsersRepository {
             .pipe(::toUser)
     }
 
-    private suspend fun createMutation(it: CreateUserMutation.Variables) =
+    private suspend fun createMutation(it: CreateUserMutation.Variables) = try {
         CreateUserMutation(client).execute(it)
+    } catch (e: Exception) {
+        throw Exception("creating went wrong $e")
+    }
 
     override fun find(username: String): User? = runBlocking {
         FindUserQuery.Variables(username)
@@ -35,11 +38,12 @@ class HasuraUsers(private val client: HasuraClient) : UsersRepository {
             .pipe(::toUser)
     }
 
-    private fun toUser(response: GraphQLResponse<CreateUserMutation.Result>): Result<UsersError, User> =
-        response.data
+    private fun toUser(response: GraphQLResponse<CreateUserMutation.Result>): Result<UsersError, User> {
+        return response.data
             ?.create_user
             ?.toUser()
             .toResult(UserCreateError)
+    }
 
     private fun toUser(response: GraphQLResponse<FindUserQuery.Result>): User? =
         response.data

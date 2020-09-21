@@ -28,7 +28,7 @@ object LogFilter {
         logRequest().then(logResponse())
 
     private fun logRequest(): Filter =
-        RequestFilters.Tap { print("${it.method} ${it.uri}") }
+        RequestFilters.Tap { print("${it.method} ${it.uri} ${it.body} ${it.headers}") }
 
     private fun logResponse(): Filter =
         Filter { next: HttpHandler -> { printResponse(next, it) } }
