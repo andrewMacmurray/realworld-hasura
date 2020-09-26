@@ -5,6 +5,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
 import io.ktor.client.features.*
+import io.ktor.client.features.logging.*
 import io.ktor.client.request.*
 import java.net.URL
 
@@ -22,5 +23,9 @@ class ClientBuilder(private val env: Environment) {
 
     private fun HttpClientConfig<OkHttpConfig>.configure() {
         defaultRequest { header("X-Hasura-Admin-Secret", env.ADMIN_SECRET) }
+        install(Logging) {
+            logger = Logger.DEFAULT
+            level = LogLevel.BODY
+        }
     }
 }

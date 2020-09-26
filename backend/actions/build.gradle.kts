@@ -28,6 +28,7 @@ graphql {
         headers["X-Hasura-Admin-Secret"] = "ilovebread"
     }
 }
+
 val log4jVersion = "2.12.1"
 val http4kVersion = "3.247.0"
 val graphqlVersion = "4.0.0-alpha.4"
@@ -48,8 +49,6 @@ dependencies {
     implementation("io.ktor:ktor-client-okhttp:$ktorVersion")
     implementation("io.ktor:ktor-client-logging-jvm:$ktorVersion")
     implementation("org.koin:koin-core:2.1.6")
-    implementation("org.apache.logging.log4j:log4j-core:$log4jVersion")
-    implementation("org.apache.logging.log4j:log4j-api:$log4jVersion")
     implementation("org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion")
     testImplementation("org.junit.jupiter:junit-jupiter:5.6.2")
 }
@@ -64,12 +63,10 @@ tasks {
     }
 }
 
-task<Exec>("deploy") {
-    dependsOn("shadowJar")
-    commandLine("sls", "deploy")
+tasks.graphqlIntrospectSchema {
+    enabled = !isRemoteEnv()
 }
 
-task("testCI") {
-    tasks.graphqlIntrospectSchema { enabled = true }
-    dependsOn("test")
-}
+fun isRemoteEnv(): Boolean =
+    System.getenv("CI") == "true"
+
