@@ -8,6 +8,7 @@ module Main exposing
     , view
     )
 
+import Api
 import Browser exposing (Document, UrlRequest)
 import Browser.Navigation as Nav
 import Effect exposing (Effect)
@@ -17,7 +18,7 @@ import Page exposing (Page)
 import Ports
 import Url exposing (Url)
 import User exposing (User)
-import Utils.Update exposing (updateWith)
+import Utils.Update exposing (updateWith, withCmd)
 
 
 
@@ -51,6 +52,7 @@ type Msg
     = UrlRequest UrlRequest
     | UrlChange Url
     | PageMsg Page.Msg
+    | WakeupResponseReceived Api.WakeupResponse
 
 
 type alias Flags =
@@ -64,7 +66,9 @@ type alias Flags =
 
 performInit : Flags -> Url -> Nav.Key -> ( Model Nav.Key, Cmd Msg )
 performInit flags url key =
-    Effect.perform Nav.pushUrl (init flags url key)
+    init flags url key
+        |> Effect.perform Nav.pushUrl
+        |> withCmd wakeup
 
 
 init : Flags -> Url -> key -> ( Model key, Effect Msg )
@@ -72,6 +76,11 @@ init flags url key =
     Page.init
         |> Page.changeTo url (userFromFlags flags.user)
         |> updatePageWith (initialModel flags key)
+
+
+wakeup : Cmd Msg
+wakeup =
+    Api.wakeup WakeupResponseReceived
 
 
 initialModel : Flags -> key -> Page -> Model key
@@ -107,6 +116,9 @@ update msg model =
 
         PageMsg msg_ ->
             updatePage model (Page.update msg_ model.page)
+
+        WakeupResponseReceived _ ->
+            ( model, Effect.none )
 
 
 handleUrl : Model key -> UrlRequest -> ( Model key, Effect Msg )

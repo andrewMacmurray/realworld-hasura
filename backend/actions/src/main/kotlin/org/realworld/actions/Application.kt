@@ -6,7 +6,10 @@ import org.realworld.actions.utils.Server
 import org.realworld.actions.utils.pipe
 
 fun main(args: Array<String>) {
-    Server.listenOn(Environment.PORT, Application.handler)
+    Server.listenOn(
+        Environment.PORT,
+        Application.handler
+    )
 }
 
 object Application : AppLoader {
