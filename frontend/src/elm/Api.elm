@@ -15,6 +15,7 @@ module Api exposing
     )
 
 import Api.Token as Token
+import Constants
 import Graphql.Http
 import Graphql.Operation exposing (RootMutation, RootQuery)
 import Graphql.SelectionSet exposing (SelectionSet)
@@ -179,4 +180,4 @@ prepend str s =
 
 endpoint : String
 endpoint =
-    "https://realworld-hasura.herokuapp.com/v1/graphql"
+    Constants.apiUrl

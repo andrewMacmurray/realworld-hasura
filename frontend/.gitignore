@@ -6,3 +6,5 @@ node_modules
 .cache
 dist
 .idea
+
+src/elm/Constants.elm
