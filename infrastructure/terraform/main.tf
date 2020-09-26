@@ -11,7 +11,3 @@ terraform {
 provider "heroku" {
   version = "~> 2.6.1"
 }
-
-provider "aws" {
-  region = "eu-west-1"
-}

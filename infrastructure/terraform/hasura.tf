@@ -22,15 +22,6 @@ resource "heroku_app" "hasura" {
     HASURA_GRAPHQL_UNAUTHORIZED_ROLE = local.hasura_unauthorized_role
     ACTIONS_BASE_URL                 = local.actions_api_url
   }
-  depends_on            = [
-    aws_api_gateway_deployment.actions_api]
-}
-
-resource "heroku_build" "hasura" {
-  app    = heroku_app.hasura.name
-  source = {
-    path = "../../backend/hasura/"
-  }
 }
 
 resource "heroku_addon" "hasura_db" {

@@ -11,7 +11,6 @@ import org.realworld.actions.articles.web.ArticlesController
 import org.realworld.actions.auth.web.AuthController
 import org.realworld.actions.utils.Result
 import org.realworld.actions.web.AuthorizationFilter
-import org.realworld.actions.web.LogFilter
 
 typealias ActionResult<Output> =
         Result<String, Output>
@@ -20,7 +19,7 @@ interface Action<Input, Output> {
     fun process(input: Input): ActionResult<Output>
 }
 
-class ActionsServer : KoinComponent {
+class Actions : KoinComponent {
     private val auth by inject<AuthController>()
     private val articles by inject<ArticlesController>()
     private val env by inject<Environment>()
@@ -36,6 +35,5 @@ class ActionsServer : KoinComponent {
 
     private fun buildFilters(): Filter =
         AuthorizationFilter(env.ACTIONS_SECRET)
-            .then(LogFilter())
             .then(CatchLensFailure())
 }
