@@ -4,7 +4,7 @@
   "description": "Frontend for realworld hasura app",
   "scripts": {
     "dev": "elm-typescript-interop && elm-constants -p .env.local && parcel src/index.html",
-    "build": "NODE_ENV=prod elm-constants -p .env.prod && parcel build src/index.html",
+    "build": "elm-constants -p .env.prod && parcel build src/index.html",
     "schema": "elm-graphql http://localhost:8080/v1/graphql --base Hasura --header 'x-hasura-role: user' --header 'x-hasura-admin-secret: ilovebread' --output src/elm",
     "test": "elm-test",
     "deploy": "npm run build && npm run surge:push",
