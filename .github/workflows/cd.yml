@@ -48,13 +48,14 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 12.x
+      - run: npm ci
       - run: npm run build
       - uses: actions/upload-artifact@v2
         with:
           name: frontend-build
           path: ./frontend/dist
   deploy-backend:
-    needs: [build-hasura, build-actions]
+    needs: [build-hasura, build-actions, build-frontend]
     env:
       HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
     runs-on: ubuntu-latest
@@ -66,7 +67,7 @@ jobs:
       - run: heroku container:push -app realworld-hasura web
         working-directory: ./backend/hasura
   deploy-frontend:
-    needs: [deploy-backend, build-frontend]
+    needs: [deploy-backend]
     defaults:
       run:
         working-directory: ./frontend
