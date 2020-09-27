@@ -1,0 +1,20 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - test
+
+jobs:
+  defaults:
+    env:
+      HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+  build-hasura:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - run: heroku container:login
+      - run: heroku container:push -a realworld-hasura web
+        working-directory: ./backend/hasura
+      - run: heroku container:push -a realworld-actions web
+        working-directory: ./backend/actions
