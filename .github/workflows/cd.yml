@@ -28,7 +28,7 @@ jobs:
           java-version: 8
       - run: ./gradlew shadowJar
       - run: heroku container:login
-      - run: heroku container:push -app realworld-actions web
+      - run: heroku container:push --app realworld-actions web
   build-hasura:
     runs-on: ubuntu-latest
     env:
@@ -36,7 +36,7 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - run: heroku container:login
-      - run: heroku container:push -app realworld-hasura web
+      - run: heroku container:push --app realworld-hasura web
         working-directory: ./backend/hasura
   build-frontend:
     defaults:
@@ -62,9 +62,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: heroku container:login
-      - run: heroku container:push -app realworld-actions web
+      - run: heroku container:push --app realworld-actions web
         working-directory: ./backend/actions
-      - run: heroku container:push -app realworld-hasura web
+      - run: heroku container:push --app realworld-hasura web
         working-directory: ./backend/hasura
   deploy-frontend:
     needs: [deploy-backend]
