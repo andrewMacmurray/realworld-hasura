@@ -1,6 +1,6 @@
 locals {
   actions_api_name = "realworld-actions"
-  actions_api_url  = "https://${local.actions_api_name}.herokuapp.com"
+  actions_api_url  = "https://${local.actions_api_name}.herokuapp.com/api"
 }
 
 resource "heroku_app" "actions" {
