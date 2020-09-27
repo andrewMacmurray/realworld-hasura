@@ -3,17 +3,17 @@ name: Build
 on:
   push:
     branches:
-      - test
+      - foo
 
 jobs:
-  build-hasura:
+  push-containers:
     runs-on: ubuntu-latest
     env:
       HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
     steps:
       - uses: actions/checkout@v1
       - run: heroku container:login
-      - run: heroku container:push -a realworld-hasura web
+      - run: heroku container:push -app realworld-hasura web
         working-directory: ./backend/hasura
-      - run: heroku container:push -a realworld-actions web
+      - run: heroku container:push -app realworld-actions web
         working-directory: ./backend/actions
