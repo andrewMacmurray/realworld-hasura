@@ -52,7 +52,7 @@ type Msg
     = UrlRequest UrlRequest
     | UrlChange Url
     | PageMsg Page.Msg
-    | WakeupResponseReceived Api.WakeupResponse
+    | WakeupResponseReceived
 
 
 type alias Flags =
@@ -117,7 +117,7 @@ update msg model =
         PageMsg msg_ ->
             updatePage model (Page.update msg_ model.page)
 
-        WakeupResponseReceived _ ->
+        WakeupResponseReceived ->
             ( model, Effect.none )
 
 

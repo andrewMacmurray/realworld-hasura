@@ -3,7 +3,6 @@ module Api exposing
     , Mutation
     , Query
     , Response
-    , WakeupResponse
     , doMutation
     , doQuery
     , errorMessage
@@ -181,15 +180,11 @@ prepend str s =
 -- Wakeup
 
 
-type alias WakeupResponse =
-    Result Http.Error ()
-
-
-wakeup : (WakeupResponse -> msg) -> Cmd msg
+wakeup : msg -> Cmd msg
 wakeup msg =
     Http.get
         { url = Constants.wakeupUrl
-        , expect = Http.expectWhatever msg
+        , expect = Http.expectWhatever (always msg)
         }
 
 

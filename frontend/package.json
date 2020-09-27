@@ -6,7 +6,7 @@
     "dev": "elm-typescript-interop && elm-constants -p .env.local && parcel src/index.html",
     "build": "elm-constants -p .env.prod && parcel build src/index.html",
     "schema": "elm-graphql http://localhost:8080/v1/graphql --base Hasura --header 'x-hasura-role: user' --header 'x-hasura-admin-secret: ilovebread' --output src/elm",
-    "test": "elm-test",
+    "test": "elm-constants -p .env.local && elm-test",
     "deploy": "npm run build && npm run surge:push",
     "surge:push": "surge --project dist --domain realworld-hasura.surge.sh"
   },
