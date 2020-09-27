@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, test]
+    branches: [main]
   pull_request:
     branches: [main]
 
@@ -19,13 +19,6 @@ jobs:
           node-version: 12.x
       - run: npm ci
       - run: npm test
-      - run: npm run build
-        if: github.event_name == 'push'
-      - uses: actions/upload-artifact@v2
-        if: github.event_name == 'push'
-        with:
-          name: frontend-build
-          path: ./frontend/dist
   test-actions:
     defaults:
       run:
@@ -45,10 +38,3 @@ jobs:
         with:
           java-version: 8
       - run: ./gradlew test
-      - run: ./gradlew shadowJar
-        if: github.event_name == 'push'
-      - uses: actions/upload-artifact@v2
-        if: github.event_name == 'push'
-        with:
-          name: actions-jar
-          path: ./backend/actions/build/libs/actions-server-1.0.0-all.jar
