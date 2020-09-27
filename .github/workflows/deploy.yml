@@ -1,0 +1,63 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy-hasura:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: akhileshns/heroku-deploy@v3.5.6
+        with:
+          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+          heroku_app_name: realworld-hasura
+          heroku_email: ${{secrets.HEROKU_EMAIL}}
+          usedocker: true
+          appdir: ./backend/hasura
+          healthcheck: https://realworld-hasura.herokuapp.com/healthz
+          checkstring: OK
+  deploy-actions:
+    runs-on: ubuntu-latest
+    env:
+      working-directory: ./backend/actions
+    steps:
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 8
+      - run: ./gradlew shadowJar
+        working-directory: ${{env.working-directory}}
+      - uses: akhileshns/heroku-deploy@v3.5.6
+        with:
+          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+          heroku_app_name: realworld-actions
+          heroku_email: ${{secrets.HEROKU_EMAIL}}
+          usedocker: true
+          appdir: ${{env.working-directory}}
+          healthcheck: https://realworld-actions.herokuapp.com/wakeup
+  deploy-frontend:
+    defaults:
+      run:
+        working-directory: ./frontend
+    env:
+      SURGE_TOKEN: ${{secrets.SURGE_TOKEN}}
+      SURGE_LOGIN: ${{secrets.SURGE_LOGIN}}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - run: npm ci
+      - run: npm run deploy
