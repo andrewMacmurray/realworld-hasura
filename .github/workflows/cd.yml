@@ -1,0 +1,88 @@
+name: CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-actions:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend/actions
+    env:
+      HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+    steps:
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 8
+      - run: ./gradlew shadowJar
+      - run: heroku container:login
+      - run: heroku container:push --app realworld-actions web
+  build-hasura:
+    runs-on: ubuntu-latest
+    env:
+      HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+    steps:
+      - uses: actions/checkout@v1
+      - run: heroku container:login
+      - run: heroku container:push --app realworld-hasura web
+        working-directory: ./backend/hasura
+  build-frontend:
+    defaults:
+      run:
+        working-directory: ./frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/upload-artifact@v2
+        with:
+          name: frontend-build
+          path: ./frontend/dist
+  deploy-backend:
+    needs: [build-hasura, build-actions, build-frontend]
+    env:
+      HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: heroku container:login
+      - run: heroku container:release --app realworld-actions web
+        working-directory: ./backend/actions
+      - run: heroku container:release --app realworld-hasura web
+        working-directory: ./backend/hasura
+  deploy-frontend:
+    needs: [deploy-backend]
+    defaults:
+      run:
+        working-directory: ./frontend
+    env:
+      SURGE_TOKEN: ${{secrets.SURGE_TOKEN}}
+      SURGE_LOGIN: ${{secrets.SURGE_LOGIN}}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: frontend-build
+          path: ./frontend/dist
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - run: npm ci
+      - run: npm run surge:push
