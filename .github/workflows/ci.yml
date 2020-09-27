@@ -25,7 +25,7 @@ jobs:
         if: github.event_name == 'push'
         with:
           name: frontend-build
-          path: ./dist
+          path: ./frontend/dist
   test-actions:
     defaults:
       run:
@@ -51,4 +51,4 @@ jobs:
         if: github.event_name == 'push'
         with:
           name: actions-jar
-          path: ./build/libs/actions-server-1.0.0-all.jar
+          path: ./backend/actions/build/libs/actions-server-1.0.0-all.jar
