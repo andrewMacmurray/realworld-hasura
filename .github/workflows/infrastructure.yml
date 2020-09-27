@@ -1,9 +1,9 @@
-name: INFRASTRUCTURE
+name: Infrastructure
 
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
 
 jobs:
