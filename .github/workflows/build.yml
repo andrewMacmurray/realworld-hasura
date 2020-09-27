@@ -6,11 +6,11 @@ on:
       - test
 
 jobs:
-  defaults:
-    env:
-      HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
   build-hasura:
     runs-on: ubuntu-latest
+    defaults:
+      env:
+        HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
     steps:
       - uses: actions/checkout@v1
       - run: heroku container:login
