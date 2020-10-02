@@ -49,12 +49,18 @@ type Width
 -- Defaults
 
 
+default_ : Maybe User.Profile -> Layout msg
 default_ profile =
     Layout
         { profile = profile
         , banner = Nothing
         , width = Full
         }
+
+
+pageXPadding : number
+pageXPadding =
+    Scale.small
 
 
 
@@ -134,7 +140,7 @@ toPage page (Layout options) =
         [ toNavBar options
         , toBanner options
         , el
-            [ paddingXY Scale.medium Scale.large
+            [ paddingXY pageXPadding Scale.large
             , constrainBy (toWidth_ options)
             , centerX
             ]
@@ -205,7 +211,7 @@ navBar links =
     el
         [ centerX
         , constrainWidth
-        , paddingXY Scale.medium 0
+        , paddingXY pageXPadding 0
         ]
         (row [ width fill ]
             [ Route.el (Route.Home Nothing)

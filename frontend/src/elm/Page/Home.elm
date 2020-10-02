@@ -23,6 +23,7 @@ import Element.Text as Text
 import Route
 import Tag exposing (Tag)
 import User exposing (User(..))
+import Utils.Element as Element
 
 
 
@@ -237,7 +238,7 @@ pageContents user model =
             [ tabs user model.activeTab
             , viewFeed user model.feed
             ]
-        , column
+        , Element.desktopOnly column
             [ Anchor.description "popular-tags"
             , alignTop
             , spacing Scale.extraLarge

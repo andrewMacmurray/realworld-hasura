@@ -17,3 +17,13 @@
 .icon-black-hover:hover .icon-hover-target {
   fill: black;
 }
+
+.show-on-desktop {
+  display: none !important;
+}
+
+@media (min-width: 1000px) {
+  .show-on-desktop {
+    display: initial !important;
+  }
+}
