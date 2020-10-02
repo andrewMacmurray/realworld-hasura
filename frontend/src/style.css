@@ -27,3 +27,9 @@
     display: initial !important;
   }
 }
+
+@media (min-width: 999px) {
+  .hide-on-desktop {
+    display: none !important;
+  }
+}

@@ -31,6 +31,7 @@ import Route
 import Tag exposing (Tag)
 import User exposing (User(..))
 import User.Element as Element
+import Utils.Element as Element
 import Utils.String as String
 
 
@@ -232,7 +233,7 @@ loadedBanner model user article =
                 ]
             , actionButtons model user article
             ]
-        , el [ alignRight, alignBottom ] (tags article)
+        , Element.desktopOnly el [ alignRight, alignBottom ] (tags article)
         ]
 
 
@@ -349,7 +350,8 @@ articleBody user model =
 showArticleBody : User -> Model -> Article -> Element Msg
 showArticleBody user model article =
     column [ spacing Scale.large, width fill, height fill ]
-        [ paragraph [] [ Text.title [] (Article.about article) ]
+        [ Element.mobileOnly el [] (tags article)
+        , paragraph [] [ Text.title [] (Article.about article) ]
         , paragraph [ Font.color Palette.black ] [ Text.text [] (Article.content article) ]
         , el [ width fill, paddingEach { edges | top = Scale.extraLarge } ]
             (comments user model article)
