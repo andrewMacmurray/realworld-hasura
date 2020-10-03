@@ -233,7 +233,7 @@ loadedBanner model user article =
                 ]
             , actionButtons model user article
             ]
-        , Element.desktopOnly el [ alignRight, alignBottom ] (tags article)
+        , Element.desktopOnly el [ alignRight, alignBottom ] (tags Text.white article)
         ]
 
 
@@ -292,14 +292,14 @@ followButton user article =
         }
 
 
-tags : Article -> Element msg
-tags article =
-    row [ spacing Scale.small ] (List.map viewTag <| Article.tags article)
+tags : Text.Option -> Article -> Element msg
+tags textOption article =
+    row [ spacing Scale.small ] (List.map (viewTag textOption) <| Article.tags article)
 
 
-viewTag : Tag -> Element msg
-viewTag tag =
-    Route.el (Route.tagFeed tag) (Text.link [] ("#" ++ Tag.value tag))
+viewTag : Text.Option -> Tag -> Element msg
+viewTag textOption tag =
+    Route.el (Route.tagFeed tag) (Text.link [ textOption ] ("#" ++ Tag.value tag))
 
 
 headline : Article -> Element msg
@@ -350,7 +350,7 @@ articleBody user model =
 showArticleBody : User -> Model -> Article -> Element Msg
 showArticleBody user model article =
     column [ spacing Scale.large, width fill, height fill, paddingEach { edges | bottom = Scale.extraLarge } ]
-        [ Element.mobileOnly el [] (tags article)
+        [ Element.mobileOnly el [] (tags Text.grey article)
         , paragraph [] [ Text.title [] (Article.about article) ]
         , paragraph [ Font.color Palette.black ] [ Text.text [] (Article.content article) ]
         , el [ width fill, paddingEach { edges | top = Scale.extraLarge } ]
@@ -364,7 +364,7 @@ showArticleBody user model article =
 
 comments : User -> Model -> Article -> Element Msg
 comments user model article =
-    Block.halfWidth
+    Block.halfWidthPlus 100
         (column
             [ spacing Scale.large
             , width fill
@@ -373,10 +373,14 @@ comments user model article =
             ]
             [ Text.title [ Text.green ] (commentsTitle (Article.comments article))
             , newComment article model user
-            , column [ spacing Scale.large, width fill ]
-                (List.map (showComment model.commentAction user) (Article.comments article))
+            , column [ spacing Scale.large, width fill ] (showComments user model article)
             ]
         )
+
+
+showComments : User -> Model -> Article -> List (Element Msg)
+showComments user model article =
+    List.map (showComment model.commentAction user) (Article.comments article)
 
 
 newComment : Article -> Model -> User -> Element Msg
@@ -388,12 +392,12 @@ newComment_ : Article -> Model -> Element Msg
 newComment_ article model =
     row
         [ width fill
-        , spacing Scale.medium
+        , spacing Scale.extraSmall
         , height fill
         , onClick CommentEditUnfocused
-        , onRight (el [ alignBottom, moveRight Scale.small ] (postCommentButton article))
         ]
         [ commentInput model.newComment
+        , postCommentButton article
         ]
 
 
@@ -424,13 +428,18 @@ commentsTitle comments_ =
 showComment : CommentAction -> User -> Comment -> Element Msg
 showComment edit user comment =
     row
-        [ spacing Scale.extraLarge
-        , onRight (commentActions edit comment user)
+        [ width fill
+        , spacing Scale.extraSmall
         , Anchor.description "comment"
-        , width fill
         ]
-        [ el [ alignTop ] (commentAuthor comment)
-        , toCommentText user edit comment
+        [ row
+            [ width fill
+            , spacing Scale.large
+            ]
+            [ el [ alignTop ] (commentAuthor comment)
+            , toCommentText user edit comment
+            ]
+        , commentActions edit comment user
         ]
 
 
@@ -487,10 +496,7 @@ commentActions edit comment user =
 
 editComment : CommentAction -> Comment -> Element Msg
 editComment edit comment =
-    el
-        [ moveRight Scale.small
-        , Anchor.description "comment-actions"
-        ]
+    el [ Anchor.description "comment-actions" ]
         (editComment_ edit comment)
 
 
@@ -511,7 +517,7 @@ editComment_ edit comment =
 
         ConfirmDelete comment_ ->
             if Comment.equals comment comment_ then
-                row [ spacing Scale.extraSmall ]
+                row []
                     [ Button.button (SubmitEditClicked comment_) "Update"
                         |> Button.edit
                         |> Button.noText
@@ -526,7 +532,7 @@ editComment_ edit comment =
 
         Editing comment_ ->
             if Comment.equals comment comment_ then
-                row [ spacing Scale.extraSmall ]
+                row []
                     [ Button.button (SubmitEditClicked comment_) "Update"
                         |> Button.edit
                         |> Button.noText

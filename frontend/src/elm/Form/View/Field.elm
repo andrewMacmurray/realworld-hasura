@@ -162,7 +162,7 @@ toAreaStyle border =
     case border of
         Borderless ->
             [ Border.widthEach { edges | bottom = 2 }
-            , padding Scale.small
+            , paddingXY 3 Scale.small
             , Border.rounded 0
             , Border.color Palette.lightGrey
             ]
