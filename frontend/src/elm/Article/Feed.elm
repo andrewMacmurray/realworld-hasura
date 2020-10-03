@@ -6,10 +6,13 @@ module Article.Feed exposing
     , fromResponse
     , load
     , loading
+    , loadingMessage
     , update
     , view
     )
 
+import Animation exposing (Animation)
+import Animation.Named as Animation
 import Api
 import Api.Articles
 import Article exposing (Article)
@@ -19,6 +22,7 @@ import Element.Anchor as Anchor
 import Element.Avatar as Avatar
 import Element.Button as Button
 import Element.Divider as Divider
+import Element.Loader as Loader
 import Element.Scale as Scale exposing (edges)
 import Element.Text as Text
 import Graphql.Operation exposing (RootQuery)
@@ -138,20 +142,34 @@ view : Options msg -> Element msg
 view options =
     case options.feed of
         Api.Loading ->
-            Text.text [] "Loading Feed"
+            loadingMessage
 
         Api.Success articles ->
-            column
-                [ spacing Scale.large
-                , width fill
-                ]
+            Animation.element fadeIn
+                column
+                [ spacing Scale.large, width fill ]
                 (List.map (viewArticle options) articles)
 
         Api.Failure ->
-            Text.error [] "Something went wrong"
+            Text.error [] "Error loading feed."
 
         Api.NotFound ->
             none
+
+
+fadeIn : Animation
+fadeIn =
+    Animation.fadeIn 200 [ Animation.linear ]
+
+
+loadingMessage : Element msg
+loadingMessage =
+    el [ moveLeft Scale.small, moveUp Scale.small ]
+        (Loader.black
+            { message = "Loading..."
+            , visible = True
+            }
+        )
 
 
 viewArticle : Options msg -> Article -> Element msg
@@ -181,7 +199,7 @@ likes options article =
     el [ alignRight, alignTop ]
         (case options.user of
             User.Guest ->
-                Button.decorative likeCount
+                Route.button Route.SignIn likeCount
                     |> Button.like
                     |> Button.toElement
 

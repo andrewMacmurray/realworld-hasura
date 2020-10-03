@@ -1,9 +1,9 @@
-module Element.Layout.Block exposing (halfWidth)
+module Element.Layout.Block exposing (halfWidthPlus)
 
 import Element exposing (..)
 import Element.Layout as Layout
 
 
-halfWidth : Element msg -> Element msg
-halfWidth =
-    el [ width (fill |> maximum (Layout.maxWidth // 2)) ]
+halfWidthPlus : Int -> Element msg -> Element msg
+halfWidthPlus extra =
+    el [ width (fill |> maximum ((Layout.maxWidth // 2) + extra)) ]

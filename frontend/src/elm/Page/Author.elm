@@ -228,7 +228,7 @@ feed : User -> Model -> Element Msg
 feed user model =
     case model.author of
         Api.Loading ->
-            Text.text [] "Loading..."
+            Feed.loadingMessage
 
         Api.Failure ->
             Text.error [ Text.description "error-message" ] "Something went wrong"

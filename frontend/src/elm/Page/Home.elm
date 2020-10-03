@@ -6,6 +6,8 @@ module Page.Home exposing
     , view
     )
 
+import Animation
+import Animation.Named as Animation
 import Api
 import Api.Articles
 import Article exposing (Article)
@@ -16,6 +18,7 @@ import Element.Anchor as Anchor
 import Element.Background as Background
 import Element.Border as Border
 import Element.Layout as Layout
+import Element.Loader as Loader
 import Element.Palette as Palette
 import Element.Scale as Scale
 import Element.Tab as Tab
@@ -23,6 +26,7 @@ import Element.Text as Text
 import Route
 import Tag exposing (Tag)
 import User exposing (User(..))
+import Utils.Element as Element
 
 
 
@@ -30,7 +34,8 @@ import User exposing (User(..))
 
 
 type alias Model =
-    { popularTags : Api.Data (List Tag.Popular)
+    { pageLoad : PageLoad
+    , popularTags : Api.Data (List Tag.Popular)
     , feed : Feed.Model
     , activeTab : Tab
     }
@@ -41,6 +46,11 @@ type Msg
     | GlobalFeedClicked
     | YourFeedClicked User.Profile
     | FeedMsg Feed.Msg
+
+
+type PageLoad
+    = Loading
+    | Loaded
 
 
 type Tab
@@ -75,7 +85,8 @@ fetchFeed user tag =
 
 initialModel : User -> Maybe Tag -> Model
 initialModel user tag =
-    { activeTab = initTab user tag
+    { pageLoad = Loading
+    , activeTab = initTab user tag
     , feed = Feed.loading
     , popularTags = Api.Loading
     }
@@ -121,6 +132,7 @@ handleFeedResponse model res =
     { model
         | popularTags = Api.mapData .popularTags (Api.fromResponse res)
         , feed = Feed.fromResponse res
+        , pageLoad = Loaded
     }
 
 
@@ -149,16 +161,42 @@ loadYourFeed profile_ model =
 view : User -> Model -> Element Msg
 view user model =
     Layout.user user
-        |> Layout.withBanner [ Background.color Palette.green ] banner
+        |> Layout.withBanner [ Background.color Palette.green ] (banner model)
         |> Layout.toPage (pageContents user model)
 
 
-banner : Element msg
-banner =
+banner : Model -> Element msg
+banner model =
     column [ spacing Scale.medium, centerX ]
         [ el [ centerX ] (whiteHeadline "conduit")
-        , el [ centerX ] (whiteSubtitle "A place to share your knowledge")
+        , el
+            [ centerX
+            , inFront
+                (el [ centerX ]
+                    (Loader.white
+                        { message = "Loading..."
+                        , visible = pageIsLoading model.pageLoad
+                        }
+                    )
+                )
+            ]
+            (fadeInWhenPageLoaded model.pageLoad (whiteSubtitle "A place to share your knowledge"))
         ]
+
+
+pageIsLoading : PageLoad -> Bool
+pageIsLoading page =
+    case page of
+        Loading ->
+            True
+
+        Loaded ->
+            False
+
+
+isLoaded : Feed.Model -> Bool
+isLoaded =
+    not << Api.isLoading
 
 
 whiteSubtitle : String -> Element msg
@@ -232,19 +270,20 @@ tagTab tag =
 
 pageContents : User -> Model -> Element Msg
 pageContents user model =
-    row [ width fill, spacing Scale.large ]
+    row
+        [ width fill, spacing Scale.large ]
         [ column [ width fill, alignTop, spacing Scale.large ]
             [ tabs user model.activeTab
             , viewFeed user model.feed
             ]
-        , column
+        , Element.desktopOnly column
             [ Anchor.description "popular-tags"
             , alignTop
             , spacing Scale.extraLarge
             , width (fill |> maximum 300)
             ]
             [ Text.title [] "Popular Tags"
-            , popularTags model.popularTags
+            , fadeInWhenLoaded model.feed (popularTags model.popularTags)
             ]
         ]
 
@@ -297,3 +336,40 @@ tagCount n =
 whiteLabel : String -> Element msg
 whiteLabel =
     Text.label [ Text.white ]
+
+
+
+-- Conditional Fades
+
+
+fadeInWhenPageLoaded : PageLoad -> Element msg -> Element msg
+fadeInWhenPageLoaded page element =
+    case page of
+        Loaded ->
+            fadeIn element
+
+        Loading ->
+            hide element
+
+
+fadeInWhenLoaded : Feed.Model -> Element msg -> Element msg
+fadeInWhenLoaded feed element =
+    if isLoaded feed then
+        fadeIn element
+
+    else
+        hide element
+
+
+fadeIn : Element msg -> Element msg
+fadeIn =
+    Animation.embed
+        (Animation.fadeIn 200
+            [ Animation.linear
+            ]
+        )
+
+
+hide : Element msg -> Element msg
+hide =
+    el [ width fill, alpha 0 ]

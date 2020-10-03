@@ -27,6 +27,7 @@ import User exposing (SettingsUpdate, User(..))
 
 type alias Model =
     { inputs : Inputs
+    , request : Request
     }
 
 
@@ -34,6 +35,13 @@ type Msg
     = InputsChanged Inputs
     | UpdateSettingsClicked User.SettingsUpdate
     | UpdateSettingsResponseReceived User.SettingsUpdate (Api.Response ())
+
+
+type Request
+    = Idle
+    | Loading
+    | Success
+    | Failure
 
 
 type alias Inputs =
@@ -55,7 +63,9 @@ init profile =
 
 initialModel : User.Profile -> Model
 initialModel profile =
-    { inputs = initInputs profile }
+    { inputs = initInputs profile
+    , request = Idle
+    }
 
 
 initInputs : User.Profile -> Inputs
@@ -80,16 +90,16 @@ update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
         InputsChanged inputs ->
-            ( { model | inputs = inputs }, Effect.none )
+            ( { model | inputs = inputs, request = Idle }, Effect.none )
 
         UpdateSettingsClicked settingsUpdate ->
-            ( model, updateSettings settingsUpdate )
+            ( { model | request = Loading }, updateSettings settingsUpdate )
 
         UpdateSettingsResponseReceived settings (Ok _) ->
-            ( model, Effect.updateSettings settings )
+            ( { model | request = Success }, Effect.updateSettings settings )
 
         UpdateSettingsResponseReceived _ (Err _) ->
-            ( model, Effect.none )
+            ( { model | request = Failure }, Effect.none )
 
 
 updateSettings : SettingsUpdate -> Effect Msg
@@ -121,7 +131,10 @@ settingsFields profile model =
         , email profile model.inputs
         , bio profile model.inputs
         , Divider.divider
-        , updateButton profile model
+        , row [ spacing Scale.medium ]
+            [ updateButton profile model
+            , requestMessage model.request
+            ]
         ]
 
 
@@ -160,6 +173,26 @@ textField profile style field =
     style field
         |> Field.validateWith (validation profile)
         |> Field.toElement InputsChanged
+
+
+
+-- Request Message
+
+
+requestMessage : Request -> Element msg
+requestMessage request =
+    case request of
+        Idle ->
+            none
+
+        Loading ->
+            Text.fadeIn (Text.text [] "Updating...")
+
+        Success ->
+            Text.text [ Text.green ] "Settings updated"
+
+        Failure ->
+            Text.error [] "Error updating settings"
 
 
 

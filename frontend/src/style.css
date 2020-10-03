@@ -17,3 +17,44 @@
 .icon-black-hover:hover .icon-hover-target {
   fill: black;
 }
+
+/* responsive */
+
+.show-on-desktop {
+  display: none !important;
+}
+
+@media (min-width: 1000px) {
+  .show-on-desktop {
+    display: initial !important;
+  }
+}
+
+@media (min-width: 999px) {
+  .hide-on-desktop {
+    display: none !important;
+  }
+}
+
+/* animations */
+
+@keyframes yoyo {
+  0% {
+    transform: translateX(0px)
+  }
+  50% {
+    transform: translateX(90px)
+  }
+  100% {
+    transform: translateX(0px)
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

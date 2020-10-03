@@ -7,6 +7,7 @@ module Element.Text exposing
     , date
     , description
     , error
+    , fadeIn
     , green
     , grey
     , headline
@@ -24,6 +25,8 @@ module Element.Text exposing
     , white
     )
 
+import Animation
+import Animation.Named as Animation
 import Date exposing (Date)
 import Element exposing (Attribute, Element)
 import Element.Anchor as Anchor
@@ -221,10 +224,19 @@ date options =
 
 
 
+-- Animation Utils
+
+
+fadeIn : Element msg -> Element msg
+fadeIn =
+    Animation.embed (Animation.fadeIn 300 [ Animation.delay 100 ])
+
+
+
 -- Render
 
 
-toElement : Properties_ -> String -> Element.Element msg
+toElement : Properties_ -> String -> Element msg
 toElement properties content =
     Element.el
         (List.concat
