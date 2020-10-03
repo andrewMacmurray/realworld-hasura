@@ -18,7 +18,7 @@ import Element.Anchor as Anchor
 import Element.Background as Background
 import Element.Border as Border
 import Element.Layout as Layout
-import Element.Loading as Loading
+import Element.Loader as Loader
 import Element.Palette as Palette
 import Element.Scale as Scale
 import Element.Tab as Tab
@@ -173,7 +173,7 @@ banner model =
             [ centerX
             , inFront
                 (el [ centerX ]
-                    (Loading.white
+                    (Loader.white
                         { message = "Loading..."
                         , visible = pageIsLoading model.pageLoad
                         }

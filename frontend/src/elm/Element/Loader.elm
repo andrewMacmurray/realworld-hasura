@@ -1,4 +1,4 @@
-module Element.Loading exposing
+module Element.Loader exposing
     ( black
     , white
     )
@@ -17,9 +17,9 @@ type alias Options =
     }
 
 
-type Size
-    = Small
-    | Large
+type Align
+    = Left
+    | Right
 
 
 type Color
@@ -29,15 +29,15 @@ type Color
 
 white : Options -> Element msg
 white =
-    loader Large White
+    loader Right White
 
 
 black : Options -> Element msg
 black =
-    loader Small Black
+    loader Left Black
 
 
-loader : Size -> Color -> Options -> Element msg
+loader : Align -> Color -> Options -> Element msg
 loader size color { message, visible } =
     column []
         [ html (dots_ color visible)
@@ -56,12 +56,13 @@ loader size color { message, visible } =
         ]
 
 
-alignText size =
-    case size of
-        Large ->
+alignText : Align -> List (Element.Attr decorative msg)
+alignText align =
+    case align of
+        Right ->
             []
 
-        Small ->
+        Left ->
             [ moveLeft 10, moveDown 5 ]
 
 
@@ -90,6 +91,7 @@ dots_ color visible =
         ]
 
 
+textColor : Color -> Text.Option
 textColor color =
     case color of
         White ->

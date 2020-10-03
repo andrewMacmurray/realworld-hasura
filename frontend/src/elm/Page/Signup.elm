@@ -140,7 +140,7 @@ statusMessage request =
             none
 
         InProgress ->
-            Text.text [] "Signing Up"
+            Text.fadeIn (Text.text [] "Signing Up")
 
         Failed reason ->
             Text.error [] reason

@@ -36,7 +36,7 @@
   }
 }
 
-/* meta ball animation */
+/* animations */
 
 @keyframes yoyo {
   0% {
@@ -58,22 +58,3 @@
     opacity: 1;
   }
 }
-
-@keyframes fade-out {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
-}
-
-.meta {
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  display: inline-block;
-  filter: blur(5px);
-  margin: 0 5px;
-}
-

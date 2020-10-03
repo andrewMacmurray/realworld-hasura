@@ -22,7 +22,7 @@ import Element.Anchor as Anchor
 import Element.Avatar as Avatar
 import Element.Button as Button
 import Element.Divider as Divider
-import Element.Loading as Loading
+import Element.Loader as Loader
 import Element.Scale as Scale exposing (edges)
 import Element.Text as Text
 import Graphql.Operation exposing (RootQuery)
@@ -162,7 +162,12 @@ view options =
 
 loadingMessage : Element msg
 loadingMessage =
-    el [ moveLeft Scale.small, moveUp Scale.small ] (Loading.black { message = "Loading...", visible = True })
+    el [ moveLeft Scale.small, moveUp Scale.small ]
+        (Loader.black
+            { message = "Loading..."
+            , visible = True
+            }
+        )
 
 
 viewArticle : Options msg -> Article -> Element msg
