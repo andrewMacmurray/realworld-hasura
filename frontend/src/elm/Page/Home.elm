@@ -173,7 +173,7 @@ banner model =
             [ centerX
             , inFront
                 (el [ centerX ]
-                    (Loading.dots
+                    (Loading.white
                         { message = "Loading..."
                         , visible = pageIsLoading model.pageLoad
                         }
@@ -274,7 +274,7 @@ pageContents user model =
         [ width fill, spacing Scale.large ]
         [ column [ width fill, alignTop, spacing Scale.large ]
             [ tabs user model.activeTab
-            , fadeInWhenLoaded model.feed (viewFeed user model.feed)
+            , viewFeed user model.feed
             ]
         , Element.desktopOnly column
             [ Anchor.description "popular-tags"

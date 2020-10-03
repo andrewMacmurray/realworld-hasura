@@ -68,15 +68,10 @@
   }
 }
 
-.wrap {
-  background: inherit;
-}
-
 .meta {
   border-radius: 50%;
   width: 20px;
   height: 20px;
-  background: #b8b8b8;
   display: inline-block;
   filter: blur(5px);
   margin: 0 5px;

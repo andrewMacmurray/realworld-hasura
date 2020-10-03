@@ -349,7 +349,7 @@ articleBody user model =
 
 showArticleBody : User -> Model -> Article -> Element Msg
 showArticleBody user model article =
-    column [ spacing Scale.large, width fill, height fill ]
+    column [ spacing Scale.large, width fill, height fill, paddingEach { edges | bottom = Scale.extraLarge } ]
         [ Element.mobileOnly el [] (tags article)
         , paragraph [] [ Text.title [] (Article.about article) ]
         , paragraph [ Font.color Palette.black ] [ Text.text [] (Article.content article) ]

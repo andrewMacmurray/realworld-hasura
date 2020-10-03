@@ -6,10 +6,13 @@ module Article.Feed exposing
     , fromResponse
     , load
     , loading
+    , loadingMessage
     , update
     , view
     )
 
+import Animation
+import Animation.Named as Animation
 import Api
 import Api.Articles
 import Article exposing (Article)
@@ -19,6 +22,7 @@ import Element.Anchor as Anchor
 import Element.Avatar as Avatar
 import Element.Button as Button
 import Element.Divider as Divider
+import Element.Loading as Loading
 import Element.Scale as Scale exposing (edges)
 import Element.Text as Text
 import Graphql.Operation exposing (RootQuery)
@@ -138,10 +142,12 @@ view : Options msg -> Element msg
 view options =
     case options.feed of
         Api.Loading ->
-            Text.text [] "Loading Feed"
+            loadingMessage
 
         Api.Success articles ->
-            column
+            Animation.node
+                (Animation.fadeIn 200 [ Animation.linear ])
+                column
                 [ spacing Scale.large
                 , width fill
                 ]
@@ -152,6 +158,11 @@ view options =
 
         Api.NotFound ->
             none
+
+
+loadingMessage : Element msg
+loadingMessage =
+    el [ moveLeft Scale.small, moveUp Scale.small ] (Loading.black { message = "Loading...", visible = True })
 
 
 viewArticle : Options msg -> Article -> Element msg
