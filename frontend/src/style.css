@@ -18,6 +18,8 @@
   fill: black;
 }
 
+/* responsive */
+
 .show-on-desktop {
   display: none !important;
 }
@@ -33,3 +35,58 @@
     display: none !important;
   }
 }
+
+/* meta ball animation */
+
+.meta-container {
+  filter: contrast(100);
+  mix-blend-mode: color-dodge;
+  background: black;
+  padding: 10px 20px;
+}
+
+.meta-move {
+  animation: meta-move 1.4s cubic-bezier(0.79, 0.1, 0.3, 0.79) infinite;
+  position: absolute;
+}
+
+@keyframes meta-move {
+  0% {
+    transform: translateX(0px)
+  }
+  50% {
+    transform: translateX(90px)
+  }
+  100% {
+    transform: translateX(0px)
+  }
+}
+
+.fade-in {
+  animation: fade-in 0.8s linear both;
+  animation-delay: 0.3s;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.wrap {
+  background: inherit;
+}
+
+.meta {
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  background: #b8b8b8;
+  display: inline-block;
+  filter: blur(5px);
+  margin: 0 5px;
+}
+

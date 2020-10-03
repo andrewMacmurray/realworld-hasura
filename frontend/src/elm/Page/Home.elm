@@ -6,6 +6,8 @@ module Page.Home exposing
     , view
     )
 
+import Animation
+import Animation.Named as Animation
 import Api
 import Api.Articles
 import Article exposing (Article)
@@ -16,6 +18,7 @@ import Element.Anchor as Anchor
 import Element.Background as Background
 import Element.Border as Border
 import Element.Layout as Layout
+import Element.Loading as Loading
 import Element.Palette as Palette
 import Element.Scale as Scale
 import Element.Tab as Tab
@@ -158,7 +161,11 @@ banner : Element msg
 banner =
     column [ spacing Scale.medium, centerX ]
         [ el [ centerX ] (whiteHeadline "conduit")
-        , el [ centerX ] (whiteSubtitle "A place to share your knowledge")
+        , el
+            [ centerX
+            , inFront (el [ centerX ] Loading.spinner)
+            ]
+            (el [ alpha 0 ] (whiteSubtitle "A place to share your knowledge"))
         ]
 
 
@@ -233,7 +240,14 @@ tagTab tag =
 
 pageContents : User -> Model -> Element Msg
 pageContents user model =
-    row [ width fill, spacing Scale.large ]
+    Animation.node
+        (Animation.fadeIn 500
+            [ Animation.delay 500
+            , Animation.linear
+            ]
+        )
+        row
+        [ width fill, spacing Scale.large ]
         [ column [ width fill, alignTop, spacing Scale.large ]
             [ tabs user model.activeTab
             , viewFeed user model.feed
