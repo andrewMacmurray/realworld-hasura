@@ -34,7 +34,8 @@ import Utils.Element as Element
 
 
 type alias Model =
-    { popularTags : Api.Data (List Tag.Popular)
+    { pageLoad : PageLoad
+    , popularTags : Api.Data (List Tag.Popular)
     , feed : Feed.Model
     , activeTab : Tab
     }
@@ -45,6 +46,11 @@ type Msg
     | GlobalFeedClicked
     | YourFeedClicked User.Profile
     | FeedMsg Feed.Msg
+
+
+type PageLoad
+    = Loading
+    | Loaded
 
 
 type Tab
@@ -79,7 +85,8 @@ fetchFeed user tag =
 
 initialModel : User -> Maybe Tag -> Model
 initialModel user tag =
-    { activeTab = initTab user tag
+    { pageLoad = Loading
+    , activeTab = initTab user tag
     , feed = Feed.loading
     , popularTags = Api.Loading
     }
@@ -125,6 +132,7 @@ handleFeedResponse model res =
     { model
         | popularTags = Api.mapData .popularTags (Api.fromResponse res)
         , feed = Feed.fromResponse res
+        , pageLoad = Loaded
     }
 
 
@@ -153,20 +161,42 @@ loadYourFeed profile_ model =
 view : User -> Model -> Element Msg
 view user model =
     Layout.user user
-        |> Layout.withBanner [ Background.color Palette.green ] banner
+        |> Layout.withBanner [ Background.color Palette.green ] (banner model)
         |> Layout.toPage (pageContents user model)
 
 
-banner : Element msg
-banner =
+banner : Model -> Element msg
+banner model =
     column [ spacing Scale.medium, centerX ]
         [ el [ centerX ] (whiteHeadline "conduit")
         , el
             [ centerX
-            , inFront (el [ centerX ] Loading.spinner)
+            , inFront
+                (el [ centerX ]
+                    (Loading.dots
+                        { message = "Loading..."
+                        , visible = pageIsLoading model.pageLoad
+                        }
+                    )
+                )
             ]
-            (el [ alpha 0 ] (whiteSubtitle "A place to share your knowledge"))
+            (fadeInWhenPageLoaded model.pageLoad (whiteSubtitle "A place to share your knowledge"))
         ]
+
+
+pageIsLoading : PageLoad -> Bool
+pageIsLoading page =
+    case page of
+        Loading ->
+            True
+
+        Loaded ->
+            False
+
+
+isLoaded : Feed.Model -> Bool
+isLoaded =
+    not << Api.isLoading
 
 
 whiteSubtitle : String -> Element msg
@@ -240,17 +270,11 @@ tagTab tag =
 
 pageContents : User -> Model -> Element Msg
 pageContents user model =
-    Animation.node
-        (Animation.fadeIn 500
-            [ Animation.delay 500
-            , Animation.linear
-            ]
-        )
-        row
+    row
         [ width fill, spacing Scale.large ]
         [ column [ width fill, alignTop, spacing Scale.large ]
             [ tabs user model.activeTab
-            , viewFeed user model.feed
+            , fadeInWhenLoaded model.feed (viewFeed user model.feed)
             ]
         , Element.desktopOnly column
             [ Anchor.description "popular-tags"
@@ -259,9 +283,33 @@ pageContents user model =
             , width (fill |> maximum 300)
             ]
             [ Text.title [] "Popular Tags"
-            , popularTags model.popularTags
+            , fadeInWhenLoaded model.feed (popularTags model.popularTags)
             ]
         ]
+
+
+fadeInWhenPageLoaded page element =
+    case page of
+        Loaded ->
+            Animation.embed
+                (Animation.fadeIn 200 [ Animation.linear ])
+                element
+
+        Loading ->
+            el [ width fill, alpha 0 ] element
+
+
+fadeInWhenLoaded feed element =
+    if isLoaded feed then
+        Animation.embed
+            (Animation.fadeIn 200
+                [ Animation.linear
+                ]
+            )
+            element
+
+    else
+        el [ width fill, alpha 0 ] element
 
 
 viewFeed : User -> Feed.Model -> Element Msg

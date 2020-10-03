@@ -2,9 +2,12 @@ module Animation exposing
     ( Animation
     , Ease
     , Option
+    , cubic
     , delay
     , div
     , el
+    , embed
+    , infinite
     , linear
     , named
     , node
@@ -38,6 +41,10 @@ type Ease
     | Cubic Float Float Float Float
 
 
+embed anim =
+    el anim [ Element.width Element.fill ]
+
+
 node (Animation { name, duration, options }) node_ attrs =
     node_ (attrs ++ List.map htmlAttribute (toAnimation name duration options))
 
@@ -63,6 +70,16 @@ delay =
 linear : Option
 linear =
     Timing Linear
+
+
+cubic : Float -> Float -> Float -> Float -> Option
+cubic a b c d =
+    Timing (Cubic a b c d)
+
+
+infinite : Option
+infinite =
+    Infinite
 
 
 toAnimation name duration options =

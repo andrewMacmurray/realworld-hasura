@@ -148,7 +148,7 @@ view options =
                 (List.map (viewArticle options) articles)
 
         Api.Failure ->
-            Text.error [] "Something went wrong"
+            Text.error [] "Error loading feed."
 
         Api.NotFound ->
             none
@@ -181,7 +181,7 @@ likes options article =
     el [ alignRight, alignTop ]
         (case options.user of
             User.Guest ->
-                Button.decorative likeCount
+                Route.button Route.SignIn likeCount
                     |> Button.like
                     |> Button.toElement
 

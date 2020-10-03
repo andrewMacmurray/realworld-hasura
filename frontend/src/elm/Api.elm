@@ -8,6 +8,7 @@ module Api exposing
     , errorMessage
     , fromNullableResponse
     , fromResponse
+    , isLoading
     , map
     , mapData
     , mutation
@@ -87,6 +88,16 @@ mapData f data =
 
         Failure ->
             Failure
+
+
+isLoading : Data a -> Bool
+isLoading data =
+    case data of
+        Loading ->
+            True
+
+        _ ->
+            False
 
 
 

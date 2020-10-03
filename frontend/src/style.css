@@ -38,19 +38,7 @@
 
 /* meta ball animation */
 
-.meta-container {
-  filter: contrast(100);
-  mix-blend-mode: color-dodge;
-  background: black;
-  padding: 10px 20px;
-}
-
-.meta-move {
-  animation: meta-move 1.4s cubic-bezier(0.79, 0.1, 0.3, 0.79) infinite;
-  position: absolute;
-}
-
-@keyframes meta-move {
+@keyframes yoyo {
   0% {
     transform: translateX(0px)
   }
@@ -62,17 +50,21 @@
   }
 }
 
-.fade-in {
-  animation: fade-in 0.8s linear both;
-  animation-delay: 0.3s;
-}
-
 @keyframes fade-in {
   from {
     opacity: 0;
   }
   to {
     opacity: 1;
+  }
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
   }
 }
 
