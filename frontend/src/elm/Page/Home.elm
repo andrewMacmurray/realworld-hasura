@@ -288,30 +288,6 @@ pageContents user model =
         ]
 
 
-fadeInWhenPageLoaded page element =
-    case page of
-        Loaded ->
-            Animation.embed
-                (Animation.fadeIn 200 [ Animation.linear ])
-                element
-
-        Loading ->
-            el [ width fill, alpha 0 ] element
-
-
-fadeInWhenLoaded feed element =
-    if isLoaded feed then
-        Animation.embed
-            (Animation.fadeIn 200
-                [ Animation.linear
-                ]
-            )
-            element
-
-    else
-        el [ width fill, alpha 0 ] element
-
-
 viewFeed : User -> Feed.Model -> Element Msg
 viewFeed user feed =
     Feed.view
@@ -360,3 +336,40 @@ tagCount n =
 whiteLabel : String -> Element msg
 whiteLabel =
     Text.label [ Text.white ]
+
+
+
+-- Conditional Fades
+
+
+fadeInWhenPageLoaded : PageLoad -> Element msg -> Element msg
+fadeInWhenPageLoaded page element =
+    case page of
+        Loaded ->
+            fadeIn element
+
+        Loading ->
+            hide element
+
+
+fadeInWhenLoaded : Feed.Model -> Element msg -> Element msg
+fadeInWhenLoaded feed element =
+    if isLoaded feed then
+        fadeIn element
+
+    else
+        hide element
+
+
+fadeIn : Element msg -> Element msg
+fadeIn =
+    Animation.embed
+        (Animation.fadeIn 200
+            [ Animation.linear
+            ]
+        )
+
+
+hide : Element msg -> Element msg
+hide =
+    el [ width fill, alpha 0 ]
