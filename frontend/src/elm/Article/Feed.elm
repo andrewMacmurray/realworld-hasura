@@ -11,7 +11,7 @@ module Article.Feed exposing
     , view
     )
 
-import Animation
+import Animation exposing (Animation)
 import Animation.Named as Animation
 import Api
 import Api.Articles
@@ -145,12 +145,9 @@ view options =
             loadingMessage
 
         Api.Success articles ->
-            Animation.node
-                (Animation.fadeIn 200 [ Animation.linear ])
+            Animation.element fadeIn
                 column
-                [ spacing Scale.large
-                , width fill
-                ]
+                [ spacing Scale.large, width fill ]
                 (List.map (viewArticle options) articles)
 
         Api.Failure ->
@@ -158,6 +155,11 @@ view options =
 
         Api.NotFound ->
             none
+
+
+fadeIn : Animation
+fadeIn =
+    Animation.fadeIn 200 [ Animation.linear ]
 
 
 loadingMessage : Element msg
