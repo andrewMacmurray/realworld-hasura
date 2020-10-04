@@ -41,7 +41,12 @@ type Request
     = Idle
     | Loading
     | Success
-    | Failure
+    | Failure Reason
+
+
+type Reason
+    = UsernameTaken
+    | Unknown
 
 
 type alias Inputs =
@@ -98,8 +103,17 @@ update msg model =
         UpdateSettingsResponseReceived settings (Ok _) ->
             ( { model | request = Success }, Effect.updateSettings settings )
 
-        UpdateSettingsResponseReceived _ (Err _) ->
-            ( { model | request = Failure }, Effect.none )
+        UpdateSettingsResponseReceived _ (Err err) ->
+            ( { model | request = Failure (toFailureReason err) }, Effect.none )
+
+
+toFailureReason : Api.Error a -> Reason
+toFailureReason err =
+    if String.contains "Uniqueness violation" (Api.errorMessage err) then
+        UsernameTaken
+
+    else
+        Unknown
 
 
 updateSettings : SettingsUpdate -> Effect Msg
@@ -191,8 +205,18 @@ requestMessage request =
         Success ->
             Text.text [ Text.green ] "Settings updated"
 
-        Failure ->
-            Text.error [] "Error updating settings"
+        Failure reason ->
+            Text.error [] (toFailureMessage reason)
+
+
+toFailureMessage : Reason -> String
+toFailureMessage reason =
+    case reason of
+        UsernameTaken ->
+            "Username already taken"
+
+        Unknown ->
+            "Error updating settings"
 
 
 

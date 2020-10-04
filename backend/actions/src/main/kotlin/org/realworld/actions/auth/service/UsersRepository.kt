@@ -4,12 +4,14 @@ import com.expediagroup.graphql.types.GraphQLResponse
 import kotlinx.coroutines.runBlocking
 import org.realworld.actions.HasuraClient
 import org.realworld.actions.auth.User
+import org.realworld.actions.auth.UsersError
+import org.realworld.actions.auth.UsersError.DuplicateUser
+import org.realworld.actions.auth.service.Mappers.toNewUser
 import org.realworld.actions.auth.service.Mappers.toUser
 import org.realworld.actions.auth.service.Mappers.variables
-import org.realworld.actions.auth.service.UsersError.UserCreateError
 import org.realworld.actions.utils.Result
+import org.realworld.actions.utils.Result.Ok
 import org.realworld.actions.utils.pipe
-import org.realworld.actions.utils.toResult
 import org.realworld.generated.CreateUserMutation
 import org.realworld.generated.FindUserQuery
 
@@ -23,7 +25,7 @@ class HasuraUsers(private val client: HasuraClient) : UsersRepository {
     override fun create(user: User.ToCreate): Result<UsersError, User> = runBlocking {
         user.variables()
             .pipe { createMutation(it) }
-            .pipe(::toUser)
+            .pipe(::toNewUser)
     }
 
     private suspend fun createMutation(it: CreateUserMutation.Variables) = try {
@@ -35,29 +37,27 @@ class HasuraUsers(private val client: HasuraClient) : UsersRepository {
     override fun find(username: String): User? = runBlocking {
         FindUserQuery.Variables(username)
             .pipe { FindUserQuery(client).execute(it) }
-            .pipe(::toUser)
+            .pipe(::toFoundUser)
     }
 
-    private fun toUser(response: GraphQLResponse<CreateUserMutation.Result>): Result<UsersError, User> {
-        return response.data
-            ?.create_user
-            ?.toUser()
-            .toResult(UserCreateError)
-    }
+    private fun toNewUser(response: GraphQLResponse<CreateUserMutation.Result>): Result<UsersError, User> =
+        if (response.hasDuplicateUserError) {
+            Result.Err(DuplicateUser)
+        } else {
+            response.data!!
+                .create_user!!
+                .toNewUser()
+                .pipe(::Ok)
+        }
 
-    private fun toUser(response: GraphQLResponse<FindUserQuery.Result>): User? =
+    private val GraphQLResponse<CreateUserMutation.Result>.hasDuplicateUserError
+        get() = this.errors?.any { it.message.contains("Uniqueness violation") } == true
+
+    private fun toFoundUser(response: GraphQLResponse<FindUserQuery.Result>): User? =
         response.data
             ?.users
             ?.get(0)
             ?.toUser()
-}
-
-sealed class UsersError {
-    abstract val message: String
-
-    object UserCreateError : UsersError() {
-        override val message: String = "Error creating user"
-    }
 }
 
 private object Mappers {
@@ -77,7 +77,7 @@ private object Mappers {
         bio = bio
     )
 
-    fun CreateUserMutation.users.toUser() = User(
+    fun CreateUserMutation.users.toNewUser() = User(
         id = id,
         username = username,
         email = email,

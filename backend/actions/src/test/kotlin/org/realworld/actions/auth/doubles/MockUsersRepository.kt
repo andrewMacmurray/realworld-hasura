@@ -1,7 +1,7 @@
 package org.realworld.actions.auth.doubles
 
 import org.realworld.actions.auth.User
-import org.realworld.actions.auth.service.UsersError
+import org.realworld.actions.auth.UsersError
 import org.realworld.actions.auth.service.UsersRepository
 import org.realworld.actions.utils.Result
 
