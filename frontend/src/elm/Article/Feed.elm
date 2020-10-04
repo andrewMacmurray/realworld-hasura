@@ -30,6 +30,7 @@ import Graphql.SelectionSet exposing (SelectionSet)
 import Route
 import Tag exposing (Tag)
 import User exposing (User)
+import Utils.Element as Element
 import Utils.Update as Update
 
 
@@ -183,7 +184,10 @@ viewArticle options article =
             [ column [ spacing Scale.medium, width fill ]
                 [ row [ width fill ] [ profile article, likes options article ]
                 , articleSummary article
-                , row [ width fill ] [ readMore article, tags article ]
+                , row [ width fill ]
+                    [ readMore article
+                    , Element.desktopOnly el [ alignRight ] (tags article)
+                    ]
                 ]
             ]
         , Divider.divider
@@ -259,14 +263,11 @@ authorLink =
 
 tags : Article -> Element msg
 tags article =
-    el [ width fill, alignBottom ]
-        (wrappedRow
-            [ spacing Scale.small
-            , alignRight
-            , paddingEach { edges | left = Scale.medium }
-            ]
-            (List.map viewTag (Article.tags article))
-        )
+    wrappedRow
+        [ spacing Scale.small
+        , paddingEach { edges | left = Scale.medium }
+        ]
+        (List.map viewTag (Article.tags article))
 
 
 viewTag : Tag -> Element msg
