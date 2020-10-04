@@ -233,25 +233,24 @@ loadedBanner model user article =
                 ]
             , actionButtons model user article
             ]
-        , Element.desktopOnly el [ alignRight, alignBottom ] (tags Text.white article)
+        , Element.desktopOnly el [ paddingXY 0 0, alignRight, alignBottom ] (tags Text.white article)
         ]
 
 
 actionButtons : Model -> User -> Article -> Element Msg
 actionButtons model user article =
-    row []
-        [ editArticleButton user article
-        , deleteArticleButton model user article
-        ]
+    Element.showIfMe
+        (row []
+            [ editArticleButton article
+            , deleteArticleButton model article
+            ]
+        )
+        user
+        (Article.author article)
 
 
-deleteArticleButton : Model -> User -> Article -> Element Msg
-deleteArticleButton model user article =
-    Element.showIfMe (deleteArticleButton_ model article) user (Article.author article)
-
-
-deleteArticleButton_ : Model -> Article -> Element Msg
-deleteArticleButton_ model article =
+deleteArticleButton : Model -> Article -> Element Msg
+deleteArticleButton model article =
     let
         delete =
             Button.delete
@@ -270,17 +269,13 @@ deleteArticleButton_ model article =
             delete (Button.decorative "Deleting...")
 
 
-editArticleButton : User -> Article -> Element msg
-editArticleButton user article =
-    Element.showIfMe
-        (Route.button (Route.editArticle article) "Edit Article"
-            |> Button.edit
-            |> Button.light
-            |> Button.description "edit-article"
-            |> Button.toElement
-        )
-        user
-        (Article.author article)
+editArticleButton : Article -> Element msg
+editArticleButton article =
+    Route.button (Route.editArticle article) "Edit Article"
+        |> Button.edit
+        |> Button.light
+        |> Button.description "edit-article"
+        |> Button.toElement
 
 
 followButton : User -> Article -> Element Msg

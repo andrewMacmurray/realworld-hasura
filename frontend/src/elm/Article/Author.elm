@@ -49,12 +49,17 @@ id =
 
 username : Author -> String
 username =
-    author_ >> .username
+    author_ >> .username >> trimLegacyLongUsernames
 
 
 profileImage : Author -> Maybe String
 profileImage =
     author_ >> .profileImage
+
+
+trimLegacyLongUsernames : String -> String
+trimLegacyLongUsernames =
+    String.left 16
 
 
 

@@ -1,5 +1,6 @@
 module Api exposing
     ( Data(..)
+    , Error
     , Mutation
     , Query
     , Response
@@ -30,7 +31,11 @@ import User exposing (User)
 
 
 type alias Response a =
-    Result (Graphql.Http.Error a) a
+    Result (Error a) a
+
+
+type alias Error a =
+    Graphql.Http.Error a
 
 
 type alias Mutation a msg =
@@ -132,7 +137,7 @@ map toMsg m =
 -- Errors
 
 
-errorMessage : Graphql.Http.Error a -> String
+errorMessage : Error a -> String
 errorMessage err =
     case err of
         Graphql.Http.GraphqlError _ errors ->
