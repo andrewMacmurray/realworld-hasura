@@ -11,6 +11,7 @@ import Api
 import Api.Articles
 import Article exposing (Article)
 import Article.Feed as Feed
+import Context exposing (Context)
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Layout as Layout
@@ -155,11 +156,11 @@ publishArticle mode =
 -- View
 
 
-view : User.Profile -> Model -> Element Msg
-view user model =
-    Layout.authenticated user
+view : User.Profile -> Context -> Model -> Element Msg
+view user context model =
+    Layout.layout
         |> Layout.measured
-        |> Layout.toPage (page model)
+        |> Layout.authenticated user context (page model)
 
 
 page : Model -> Element Msg

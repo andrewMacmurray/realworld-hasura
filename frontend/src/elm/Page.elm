@@ -7,6 +7,7 @@ module Page exposing
     , view
     )
 
+import Context exposing (Context)
 import Effect exposing (Effect)
 import Element exposing (..)
 import Page.Article as Article
@@ -57,18 +58,18 @@ init =
     NotFound
 
 
-changeTo : Url -> User -> Page -> ( Page, Effect Msg )
-changeTo url user page =
+changeTo : Url -> Context -> Page -> ( Page, Effect Msg )
+changeTo url context page =
     Route.fromUrl url
-        |> Maybe.map (changeTo_ user page)
+        |> Maybe.map (changeTo_ context page)
         |> Maybe.withDefault ( NotFound, Effect.none )
 
 
-changeTo_ : User -> Page -> Route -> ( Page, Effect Msg )
-changeTo_ user page route =
+changeTo_ : Context -> Page -> Route -> ( Page, Effect Msg )
+changeTo_ context page route =
     case route of
         Route.Home tag ->
-            updateWith Home HomeMsg (Home.init user tag)
+            updateWith Home HomeMsg (Home.init context.user tag)
 
         Route.SignUp ->
             updateWith SignUp SignUpMsg SignUp.init
@@ -83,7 +84,7 @@ changeTo_ user page route =
             updateWith Editor EditorMsg (Editor.init (Editor.EditArticle id_))
 
         Route.Settings ->
-            authenticated Settings SettingsMsg Settings.init user
+            authenticated Settings SettingsMsg Settings.init context.user
 
         Route.Article id_ ->
             updateWith Article ArticleMsg (Article.init id_)
@@ -153,39 +154,39 @@ update msg page =
 -- View
 
 
-view : User -> Page -> Element Msg
-view user model =
+view : Context -> Page -> Element Msg
+view context model =
     case model of
         Home model_ ->
-            Element.map HomeMsg (Home.view user model_)
+            Element.map HomeMsg (Home.view context model_)
 
         SignUp model_ ->
-            Element.map SignUpMsg (SignUp.view model_)
+            Element.map SignUpMsg (SignUp.view context model_)
 
         SignIn model_ ->
-            Element.map SignInMsg (SignIn.view model_)
+            Element.map SignInMsg (SignIn.view context model_)
 
         Editor model_ ->
-            Element.map EditorMsg (whenLoggedIn Editor.view model_ user)
+            Element.map EditorMsg (whenLoggedIn Editor.view model_ context)
 
         Settings model_ ->
-            Element.map SettingsMsg (whenLoggedIn Settings.view model_ user)
+            Element.map SettingsMsg (whenLoggedIn Settings.view model_ context)
 
         Article model_ ->
-            Element.map ArticleMsg (Article.view user model_)
+            Element.map ArticleMsg (Article.view context model_)
 
         Author model_ ->
-            Element.map AuthorMsg (Author.view user model_)
+            Element.map AuthorMsg (Author.view context model_)
 
         NotFound ->
-            NotFound.view
+            NotFound.view context
 
 
-whenLoggedIn : (User.Profile -> subModel -> Element msg) -> subModel -> User -> Element msg
-whenLoggedIn view__ subModel user =
-    case user of
+whenLoggedIn : (User.Profile -> Context -> subModel -> Element msg) -> subModel -> Context -> Element msg
+whenLoggedIn view__ subModel context =
+    case context.user of
         User.Guest ->
-            NotFound.view
+            NotFound.view context
 
         User.Author profile ->
-            view__ profile subModel
+            view__ profile context subModel

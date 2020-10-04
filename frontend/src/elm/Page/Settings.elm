@@ -8,6 +8,7 @@ module Page.Settings exposing
 
 import Api
 import Api.Users
+import Context exposing (Context)
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Divider as Divider
@@ -125,11 +126,12 @@ updateSettings settings =
 -- View
 
 
-view : User.Profile -> Model -> Element Msg
-view user model =
-    Layout.authenticated user
+view : User.Profile -> Context -> Model -> Element Msg
+view user context model =
+    Layout.layout
         |> Layout.halfWidth
-        |> Layout.toPage
+        |> Layout.authenticated user
+            context
             (column [ spacing Scale.large, width fill ]
                 [ el [ centerX ] (Text.title [ Text.description "settings-title" ] "Your Settings")
                 , settingsFields user model

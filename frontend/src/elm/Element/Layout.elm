@@ -1,18 +1,18 @@
 module Element.Layout exposing
     ( Layout
     , authenticated
-    , guest
     , halfWidth
+    , layout
     , maxWidth
     , measured
     , toHtml
     , toPage
-    , user
     , withBanner
     )
 
 import Element exposing (..)
 import Element.Avatar as Avatar
+import Element.Layout.Menu exposing (Menu)
 import Element.Scale as Scale
 import Element.Text as Text
 import Html exposing (Html)
@@ -29,14 +29,17 @@ type Layout msg
 
 
 type alias Options msg =
-    { profile : Maybe User.Profile
-    , banner : Maybe (Banner msg)
+    { banner : Maybe (Banner msg)
     , width : Width
     }
 
 
 type alias Banner msg =
     ( List (Attribute msg), Element msg )
+
+
+type alias Context context =
+    { context | user : User, menu : Menu }
 
 
 type Width
@@ -49,11 +52,10 @@ type Width
 -- Defaults
 
 
-default_ : Maybe User.Profile -> Layout msg
-default_ profile =
+default_ : Layout msg
+default_ =
     Layout
-        { profile = profile
-        , banner = Nothing
+        { banner = Nothing
         , width = Full
         }
 
@@ -67,24 +69,9 @@ pageXPadding =
 -- Construct
 
 
-guest : Layout msg
-guest =
-    default_ Nothing
-
-
-authenticated : User.Profile -> Layout msg
-authenticated profile =
-    default_ (Just profile)
-
-
-user : User -> Layout msg
-user user_ =
-    case user_ of
-        User.Guest ->
-            guest
-
-        User.Author profile ->
-            authenticated profile
+layout : Layout msg
+layout =
+    default_
 
 
 
@@ -134,10 +121,15 @@ layoutOptions =
 -- Render
 
 
-toPage : Element msg -> Layout msg -> Element msg
-toPage page (Layout options) =
+authenticated : User.Profile -> Context context -> Element msg -> Layout msg -> Element msg
+authenticated user context =
+    toPage { context | user = User.Author user }
+
+
+toPage : Context context -> Element msg -> Layout msg -> Element msg
+toPage context page (Layout options) =
     column [ width fill, height fill ]
-        [ toNavBar options
+        [ toNavBar context
         , toBanner options
         , el
             [ paddingXY pageXPadding Scale.large
@@ -178,10 +170,10 @@ banner_ options ( attrs, content ) =
         )
 
 
-toNavBar : Options msg -> Element msg
-toNavBar options =
-    case options.profile of
-        Just profile_ ->
+toNavBar : Context context -> Element msg
+toNavBar context =
+    case context.user of
+        User.Author profile_ ->
             navBar
                 [ Route.link (Route.Home Nothing) [] "Home"
                 , Route.link Route.NewArticle [] "New Post"
@@ -190,7 +182,7 @@ toNavBar options =
                 , Route.link Route.Logout [] "Logout"
                 ]
 
-        Nothing ->
+        User.Guest ->
             navBar
                 [ Route.link (Route.Home Nothing) [] "Home"
                 , Route.link Route.SignIn [] "Sign In"

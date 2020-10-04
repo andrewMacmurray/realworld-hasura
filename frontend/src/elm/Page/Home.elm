@@ -12,6 +12,7 @@ import Api
 import Api.Articles
 import Article exposing (Article)
 import Article.Feed as Feed
+import Context exposing (Context)
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Anchor as Anchor
@@ -158,11 +159,11 @@ loadYourFeed profile_ model =
 -- View
 
 
-view : User -> Model -> Element Msg
-view user model =
-    Layout.user user
+view : Context -> Model -> Element Msg
+view context model =
+    Layout.layout
         |> Layout.withBanner [ Background.color Palette.green ] (banner model)
-        |> Layout.toPage (pageContents user model)
+        |> Layout.toPage context (pageContents context.user model)
 
 
 banner : Model -> Element msg

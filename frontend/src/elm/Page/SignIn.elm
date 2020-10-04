@@ -8,6 +8,7 @@ module Page.SignIn exposing
 
 import Api
 import Api.Users
+import Context exposing (Context)
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Button as Button
@@ -105,11 +106,11 @@ signIn inputs =
 -- View
 
 
-view : Model -> Element Msg
-view model =
-    Layout.guest
+view : Context -> Model -> Element Msg
+view context model =
+    Layout.layout
         |> Layout.halfWidth
-        |> Layout.toPage (signup model)
+        |> Layout.toPage context (signup model)
 
 
 signup : Model -> Element Msg
