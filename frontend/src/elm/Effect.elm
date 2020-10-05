@@ -2,6 +2,7 @@ module Effect exposing
     ( Effect(..)
     , addToUserFollows
     , batch
+    , closeMenu
     , deleteArticle
     , deleteComment
     , editArticle
@@ -58,6 +59,7 @@ type Effect msg
     | Logout
     | AddToUserFollows Int
     | RemoveFromUserFollows Int
+    | CloseMenu
     | SignUp (Api.Mutation User.Profile msg)
     | SignIn (Api.Mutation User.Profile msg)
     | LoadArticleFeed (Api.Query Article.Feed msg)
@@ -129,6 +131,11 @@ addToUserFollows =
 removeFromUserFollows : Int -> Effect msg
 removeFromUserFollows =
     RemoveFromUserFollows
+
+
+closeMenu : Effect msg
+closeMenu =
+    CloseMenu
 
 
 loadFeed : Api.Query Article.Feed msg -> Effect msg
@@ -251,6 +258,9 @@ map toMsg effect =
         RemoveFromUserFollows id ->
             RemoveFromUserFollows id
 
+        CloseMenu ->
+            CloseMenu
+
         LoadArticleFeed query ->
             LoadArticleFeed (Api.map toMsg query)
 
@@ -316,6 +326,9 @@ perform pushUrl_ ( model, effect ) =
 
         RemoveFromUserFollows following_id ->
             andThenCacheUser { model | context = Context.updateUser (User.removeFollowingId following_id) model.context }
+
+        CloseMenu ->
+            ( { model | context = Context.closeMenu model.context }, Cmd.none )
 
         PushUrl url ->
             case Route.Effect.fromUrl url of

@@ -12,12 +12,14 @@ module Element.Layout exposing
 
 import Element exposing (..)
 import Element.Avatar as Avatar
-import Element.Layout.Menu exposing (Menu)
+import Element.Layout.Menu as Menu exposing (Menu)
 import Element.Scale as Scale
 import Element.Text as Text
 import Html exposing (Html)
 import Route
+import Route.Effect as Effect
 import User exposing (User)
+import Utils.Element as Element
 
 
 
@@ -130,6 +132,7 @@ toPage : Context context -> Element msg -> Layout msg -> Element msg
 toPage context page (Layout options) =
     column [ width fill, height fill ]
         [ toNavBar context
+        , toMobileNav context.menu
         , toBanner options
         , el
             [ paddingXY pageXPadding Scale.large
@@ -174,7 +177,7 @@ toNavBar : Context context -> Element msg
 toNavBar context =
     case context.user of
         User.Author profile_ ->
-            navBar
+            navBar context.menu
                 [ Route.link (Route.Home Nothing) [] "Home"
                 , Route.link Route.NewArticle [] "New Post"
                 , Route.el (Route.Author (User.id profile_)) (profileLink profile_)
@@ -183,7 +186,7 @@ toNavBar context =
                 ]
 
         User.Guest ->
-            navBar
+            navBar context.menu
                 [ Route.link (Route.Home Nothing) [] "Home"
                 , Route.link Route.SignIn [] "Sign In"
                 , Route.link Route.SignUp [] "Sign Up"
@@ -198,8 +201,8 @@ profileLink profile =
         ]
 
 
-navBar : List (Element msg) -> Element msg
-navBar links =
+navBar : Menu -> List (Element msg) -> Element msg
+navBar menu links =
     el
         [ centerX
         , constrainWidth
@@ -210,9 +213,33 @@ navBar links =
                 (el [ paddingXY 0 Scale.medium ]
                     (Text.title [ Text.green, Text.bold ] "conduit")
                 )
-            , navItems links
+            , Element.mobileOnly el [ alignRight ] (mobileNavToggle menu)
+            , Element.desktopOnly el [ alignRight ] (desktopNav links)
             ]
         )
+
+
+toMobileNav menu =
+    case menu of
+        Menu.Open ->
+            column [ alignRight ]
+                [ Route.link (Route.Home Nothing) [] "Home"
+                , Route.link Route.SignIn [] "Sign In"
+                , Route.link Route.SignUp [] "Sign Up"
+                ]
+
+        Menu.Closed ->
+            none
+
+
+mobileNavToggle : Menu -> Element msg
+mobileNavToggle menu =
+    case menu of
+        Menu.Open ->
+            Effect.el Effect.CloseMenu (Text.text [] "Close")
+
+        Menu.Closed ->
+            Effect.el Effect.OpenMenu (Text.text [] "Open")
 
 
 toWidth_ : Options msg -> Int
@@ -228,9 +255,9 @@ toWidth_ options =
             maxWidth // 2
 
 
-navItems : List (Element msg) -> Element msg
-navItems =
-    row [ alignRight, spacing Scale.medium ]
+desktopNav : List (Element msg) -> Element msg
+desktopNav =
+    row [ spacing Scale.medium ]
 
 
 constrainWidth : Attribute msg

@@ -21,7 +21,7 @@ import Page.Signup as SignUp
 import Route exposing (Route)
 import Url exposing (Url)
 import User exposing (User)
-import Utils.Update exposing (updateWith)
+import Utils.Update exposing (updateWith, withEffect)
 
 
 
@@ -63,6 +63,7 @@ changeTo url context page =
     Route.fromUrl url
         |> Maybe.map (changeTo_ context page)
         |> Maybe.withDefault ( NotFound, Effect.none )
+        |> withEffect Effect.closeMenu
 
 
 changeTo_ : Context -> Page -> Route -> ( Page, Effect Msg )

@@ -1,6 +1,7 @@
 module Utils.Update exposing
     ( updateWith
     , withCmd
+    , withEffect
     )
 
 import Effect exposing (Effect)
@@ -20,3 +21,8 @@ updateWith modelF msgF ( model, eff ) =
 withCmd : Cmd msg -> ( model, Cmd msg ) -> ( model, Cmd msg )
 withCmd cmd2 ( model, cmd1 ) =
     ( model, Cmd.batch [ cmd1, cmd2 ] )
+
+
+withEffect : Effect msg -> ( model, Effect msg ) -> ( model, Effect msg )
+withEffect eff2 ( model, eff1 ) =
+    ( model, Effect.batch [ eff1, eff2 ] )
