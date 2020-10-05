@@ -12,7 +12,10 @@ module Element.Layout exposing
 
 import Element exposing (..)
 import Element.Avatar as Avatar
+import Element.Background as Backrgound
+import Element.Keyed as Keyed
 import Element.Layout.Menu as Menu exposing (Menu)
+import Element.Palette as Palette
 import Element.Scale as Scale
 import Element.Text as Text
 import Html exposing (Html)
@@ -130,16 +133,19 @@ authenticated user context =
 
 toPage : Context context -> Element msg -> Layout msg -> Element msg
 toPage context page (Layout options) =
-    column [ width fill, height fill ]
-        [ toNavBar context
-        , toMobileNav context.menu
-        , toBanner options
-        , el
-            [ paddingXY pageXPadding Scale.large
-            , constrainBy (toWidth_ options)
-            , centerX
-            ]
-            page
+    Keyed.column [ width fill, height fill ]
+        [ ( "desktopNav", toDesktopNav context )
+        , ( "mobileNav", toMobileNav context )
+        , ( "banner", toBanner options )
+        , ( "page"
+          , el
+                [ paddingXY pageXPadding Scale.large
+                , constrainBy (toWidth_ options)
+                , Backrgound.color Palette.white
+                , centerX
+                ]
+                page
+          )
         ]
 
 
@@ -157,9 +163,7 @@ banner_ : Options msg -> Banner msg -> Element msg
 banner_ options ( attrs, content ) =
     el
         (List.concat
-            [ [ width fill
-              , height (shrink |> minimum 255)
-              ]
+            [ [ width fill, height (shrink |> minimum 255) ]
             , attrs
             ]
         )
@@ -173,24 +177,27 @@ banner_ options ( attrs, content ) =
         )
 
 
-toNavBar : Context context -> Element msg
-toNavBar context =
-    case context.user of
+toDesktopNav : Context context -> Element msg
+toDesktopNav context =
+    navBar context.menu (navLinks context.user)
+
+
+navLinks : User -> List (Element msg)
+navLinks user =
+    case user of
         User.Author profile_ ->
-            navBar context.menu
-                [ Route.link (Route.Home Nothing) [] "Home"
-                , Route.link Route.NewArticle [] "New Post"
-                , Route.el (Route.Author (User.id profile_)) (profileLink profile_)
-                , Route.link Route.Settings [] "Settings"
-                , Route.link Route.Logout [] "Logout"
-                ]
+            [ Route.link (Route.Home Nothing) [] "Home"
+            , Route.link Route.NewArticle [] "New Post"
+            , Route.el (Route.Author (User.id profile_)) (profileLink profile_)
+            , Route.link Route.Settings [] "Settings"
+            , Route.link Route.Logout [] "Logout"
+            ]
 
         User.Guest ->
-            navBar context.menu
-                [ Route.link (Route.Home Nothing) [] "Home"
-                , Route.link Route.SignIn [] "Sign In"
-                , Route.link Route.SignUp [] "Sign Up"
-                ]
+            [ Route.link (Route.Home Nothing) [] "Home"
+            , Route.link Route.SignIn [] "Sign In"
+            , Route.link Route.SignUp [] "Sign Up"
+            ]
 
 
 profileLink : User.Profile -> Element msg
@@ -219,27 +226,19 @@ navBar menu links =
         )
 
 
-toMobileNav menu =
-    case menu of
-        Menu.Open ->
-            column [ alignRight ]
-                [ Route.link (Route.Home Nothing) [] "Home"
-                , Route.link Route.SignIn [] "Sign In"
-                , Route.link Route.SignUp [] "Sign Up"
-                ]
-
-        Menu.Closed ->
-            none
+toMobileNav : Context context -> Element msg
+toMobileNav context =
+    Menu.drawer context.menu (navLinks context.user)
 
 
 mobileNavToggle : Menu -> Element msg
 mobileNavToggle menu =
     case menu of
         Menu.Open ->
-            Effect.el Effect.CloseMenu (Text.text [] "Close")
+            Effect.el Effect.CloseMenu Menu.hamburgerOpen
 
         Menu.Closed ->
-            Effect.el Effect.OpenMenu (Text.text [] "Open")
+            Effect.el Effect.OpenMenu Menu.hamburgerClosed
 
 
 toWidth_ : Options msg -> Int

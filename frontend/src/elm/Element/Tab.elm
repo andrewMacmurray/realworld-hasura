@@ -15,7 +15,7 @@ import Element.Text as Text
 
 tabs : List (Element msg) -> Element msg
 tabs els =
-    row [ spacing Scale.large, width fill, paddingEach { edges | bottom = Scale.large } ] els
+    wrappedRow [ spacing Scale.large, width fill, paddingEach { edges | bottom = Scale.large } ] els
 
 
 active : String -> Element msg
