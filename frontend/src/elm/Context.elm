@@ -12,6 +12,10 @@ import Ports
 import User exposing (User)
 
 
+
+-- Context
+
+
 type alias Context =
     { user : User
     , menu : Menu
