@@ -242,6 +242,9 @@ simulateEffects options eff =
         LoadUser _ ->
             SimulatedEffect.Cmd.none
 
+        CloseMenu ->
+            SimulatedEffect.Cmd.none
+
         LoadArticleFeed query ->
             simulateResponse query options.feed
 

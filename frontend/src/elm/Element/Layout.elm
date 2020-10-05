@@ -1,23 +1,28 @@
 module Element.Layout exposing
     ( Layout
     , authenticated
-    , guest
     , halfWidth
+    , layout
     , maxWidth
     , measured
     , toHtml
     , toPage
-    , user
     , withBanner
     )
 
 import Element exposing (..)
 import Element.Avatar as Avatar
+import Element.Background as Backrgound
+import Element.Keyed as Keyed
+import Element.Layout.Menu as Menu exposing (Menu)
+import Element.Palette as Palette
 import Element.Scale as Scale
 import Element.Text as Text
 import Html exposing (Html)
 import Route
+import Route.Effect as Effect
 import User exposing (User)
+import Utils.Element as Element
 
 
 
@@ -29,14 +34,17 @@ type Layout msg
 
 
 type alias Options msg =
-    { profile : Maybe User.Profile
-    , banner : Maybe (Banner msg)
+    { banner : Maybe (Banner msg)
     , width : Width
     }
 
 
 type alias Banner msg =
     ( List (Attribute msg), Element msg )
+
+
+type alias Context context =
+    { context | user : User, menu : Menu }
 
 
 type Width
@@ -49,11 +57,10 @@ type Width
 -- Defaults
 
 
-default_ : Maybe User.Profile -> Layout msg
-default_ profile =
+default_ : Layout msg
+default_ =
     Layout
-        { profile = profile
-        , banner = Nothing
+        { banner = Nothing
         , width = Full
         }
 
@@ -67,24 +74,9 @@ pageXPadding =
 -- Construct
 
 
-guest : Layout msg
-guest =
-    default_ Nothing
-
-
-authenticated : User.Profile -> Layout msg
-authenticated profile =
-    default_ (Just profile)
-
-
-user : User -> Layout msg
-user user_ =
-    case user_ of
-        User.Guest ->
-            guest
-
-        User.Author profile ->
-            authenticated profile
+layout : Layout msg
+layout =
+    default_
 
 
 
@@ -134,17 +126,26 @@ layoutOptions =
 -- Render
 
 
-toPage : Element msg -> Layout msg -> Element msg
-toPage page (Layout options) =
-    column [ width fill, height fill ]
-        [ toNavBar options
-        , toBanner options
-        , el
-            [ paddingXY pageXPadding Scale.large
-            , constrainBy (toWidth_ options)
-            , centerX
-            ]
-            page
+authenticated : User.Profile -> Context context -> Element msg -> Layout msg -> Element msg
+authenticated user context =
+    toPage { context | user = User.Author user }
+
+
+toPage : Context context -> Element msg -> Layout msg -> Element msg
+toPage context page (Layout options) =
+    Keyed.column [ width fill, height fill ]
+        [ ( "desktopNav", toDesktopNav context )
+        , ( "mobileNav", toMobileNav context )
+        , ( "banner", toBanner options )
+        , ( "page"
+          , el
+                [ paddingXY pageXPadding Scale.large
+                , constrainBy (toWidth_ options)
+                , Backrgound.color Palette.white
+                , centerX
+                ]
+                page
+          )
         ]
 
 
@@ -162,9 +163,7 @@ banner_ : Options msg -> Banner msg -> Element msg
 banner_ options ( attrs, content ) =
     el
         (List.concat
-            [ [ width fill
-              , height (shrink |> minimum 255)
-              ]
+            [ [ width fill, height (shrink |> minimum 255) ]
             , attrs
             ]
         )
@@ -178,24 +177,27 @@ banner_ options ( attrs, content ) =
         )
 
 
-toNavBar : Options msg -> Element msg
-toNavBar options =
-    case options.profile of
-        Just profile_ ->
-            navBar
-                [ Route.link (Route.Home Nothing) [] "Home"
-                , Route.link Route.NewArticle [] "New Post"
-                , Route.el (Route.Author (User.id profile_)) (profileLink profile_)
-                , Route.link Route.Settings [] "Settings"
-                , Route.link Route.Logout [] "Logout"
-                ]
+toDesktopNav : Context context -> Element msg
+toDesktopNav context =
+    navBar context.menu (navLinks context.user)
 
-        Nothing ->
-            navBar
-                [ Route.link (Route.Home Nothing) [] "Home"
-                , Route.link Route.SignIn [] "Sign In"
-                , Route.link Route.SignUp [] "Sign Up"
-                ]
+
+navLinks : User -> List (Element msg)
+navLinks user =
+    case user of
+        User.Author profile_ ->
+            [ Route.link (Route.Home Nothing) [] "Home"
+            , Route.link Route.NewArticle [] "New Post"
+            , Route.el (Route.Author (User.id profile_)) (profileLink profile_)
+            , Route.link Route.Settings [] "Settings"
+            , Route.link Route.Logout [] "Logout"
+            ]
+
+        User.Guest ->
+            [ Route.link (Route.Home Nothing) [] "Home"
+            , Route.link Route.SignIn [] "Sign In"
+            , Route.link Route.SignUp [] "Sign Up"
+            ]
 
 
 profileLink : User.Profile -> Element msg
@@ -206,8 +208,8 @@ profileLink profile =
         ]
 
 
-navBar : List (Element msg) -> Element msg
-navBar links =
+navBar : Menu -> List (Element msg) -> Element msg
+navBar menu links =
     el
         [ centerX
         , constrainWidth
@@ -218,9 +220,25 @@ navBar links =
                 (el [ paddingXY 0 Scale.medium ]
                     (Text.title [ Text.green, Text.bold ] "conduit")
                 )
-            , navItems links
+            , Element.mobileOnly el [ alignRight ] (mobileNavToggle menu)
+            , Element.desktopOnly el [ alignRight ] (desktopNav links)
             ]
         )
+
+
+toMobileNav : Context context -> Element msg
+toMobileNav context =
+    Menu.drawer context.menu (navLinks context.user)
+
+
+mobileNavToggle : Menu -> Element msg
+mobileNavToggle menu =
+    case menu of
+        Menu.Open ->
+            Effect.el Effect.CloseMenu Menu.hamburgerOpen
+
+        Menu.Closed ->
+            Effect.el Effect.OpenMenu Menu.hamburgerClosed
 
 
 toWidth_ : Options msg -> Int
@@ -236,9 +254,9 @@ toWidth_ options =
             maxWidth // 2
 
 
-navItems : List (Element msg) -> Element msg
-navItems =
-    row [ alignRight, spacing Scale.medium ]
+desktopNav : List (Element msg) -> Element msg
+desktopNav =
+    row [ spacing Scale.medium ]
 
 
 constrainWidth : Attribute msg

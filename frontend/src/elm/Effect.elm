@@ -2,6 +2,7 @@ module Effect exposing
     ( Effect(..)
     , addToUserFollows
     , batch
+    , closeMenu
     , deleteArticle
     , deleteComment
     , editArticle
@@ -36,8 +37,10 @@ import Api
 import Article exposing (Article)
 import Article.Author.Feed as Author
 import Browser.Navigation as Navigation
+import Context exposing (Context)
 import Ports
 import Route exposing (Route)
+import Route.Effect
 import Url exposing (Url)
 import User exposing (User)
 
@@ -56,6 +59,7 @@ type Effect msg
     | Logout
     | AddToUserFollows Int
     | RemoveFromUserFollows Int
+    | CloseMenu
     | SignUp (Api.Mutation User.Profile msg)
     | SignIn (Api.Mutation User.Profile msg)
     | LoadArticleFeed (Api.Query Article.Feed msg)
@@ -127,6 +131,11 @@ addToUserFollows =
 removeFromUserFollows : Int -> Effect msg
 removeFromUserFollows =
     RemoveFromUserFollows
+
+
+closeMenu : Effect msg
+closeMenu =
+    CloseMenu
 
 
 loadFeed : Api.Query Article.Feed msg -> Effect msg
@@ -249,6 +258,9 @@ map toMsg effect =
         RemoveFromUserFollows id ->
             RemoveFromUserFollows id
 
+        CloseMenu ->
+            CloseMenu
+
         LoadArticleFeed query ->
             LoadArticleFeed (Api.map toMsg query)
 
@@ -282,7 +294,7 @@ map toMsg effect =
 
 
 type alias Model model key =
-    { model | user : User, navKey : key }
+    { model | navKey : key, context : Context }
 
 
 type alias PushUrl key msg =
@@ -302,7 +314,7 @@ perform pushUrl_ ( model, effect ) =
             ( model, pushUrl_ model.navKey (Route.routeToString route) )
 
         Logout ->
-            ( { model | user = User.Guest }
+            ( { model | context = Context.setUser User.Guest model.context }
             , Cmd.batch
                 [ Ports.logout
                 , Route.Home Nothing |> Route.routeToString |> pushUrl_ model.navKey
@@ -310,54 +322,72 @@ perform pushUrl_ ( model, effect ) =
             )
 
         AddToUserFollows following_id ->
-            andThenCacheUser { model | user = User.addFollowingId following_id model.user }
+            andThenCacheUser { model | context = Context.updateUser (User.addFollowingId following_id) model.context }
 
         RemoveFromUserFollows following_id ->
-            andThenCacheUser { model | user = User.removeFollowingId following_id model.user }
+            andThenCacheUser { model | context = Context.updateUser (User.removeFollowingId following_id) model.context }
+
+        CloseMenu ->
+            ( { model | context = Context.closeMenu model.context }, Cmd.none )
 
         PushUrl url ->
-            ( model, pushUrl_ model.navKey (Url.toString url) )
+            case Route.Effect.fromUrl url of
+                Just eff ->
+                    ( handleRouteEffect model eff, Cmd.none )
+
+                Nothing ->
+                    ( model, pushUrl_ model.navKey (Url.toString url) )
 
         LoadUrl url ->
             ( model, Navigation.load url )
 
         LoadUser user ->
-            ( { model | user = User.Author user }
+            ( { model | context = Context.setUser (User.Author user) model.context }
             , Ports.toUser user |> Ports.saveUser
             )
 
         SignUp mutation ->
-            ( model, Api.doMutation model.user mutation )
+            ( model, Api.doMutation model.context.user mutation )
 
         SignIn mutation ->
-            ( model, Api.doMutation model.user mutation )
+            ( model, Api.doMutation model.context.user mutation )
 
         LoadArticleFeed query ->
-            ( model, Api.doQuery model.user query )
+            ( model, Api.doQuery model.context.user query )
 
         LoadArticle query ->
-            ( model, Api.doQuery model.user query )
+            ( model, Api.doQuery model.context.user query )
 
         LoadArticles query ->
-            ( model, Api.doQuery model.user query )
+            ( model, Api.doQuery model.context.user query )
 
         MutateWithEmptyResponse mutation ->
-            ( model, Api.doMutation model.user mutation )
+            ( model, Api.doMutation model.context.user mutation )
 
         MutationReturningArticle mutation ->
-            ( model, Api.doMutation model.user mutation )
+            ( model, Api.doMutation model.context.user mutation )
 
         MutateAuthor mutation ->
-            ( model, Api.doMutation model.user mutation )
+            ( model, Api.doMutation model.context.user mutation )
 
         LoadAuthorFeed query ->
-            ( model, Api.doQuery model.user query )
+            ( model, Api.doQuery model.context.user query )
 
         MutateSettings mutation ->
-            ( model, Api.doMutation model.user mutation )
+            ( model, Api.doMutation model.context.user mutation )
 
         UpdateSettings settings ->
-            andThenCacheUser { model | user = User.updateSettings settings model.user }
+            andThenCacheUser { model | context = Context.updateUser (User.updateSettings settings) model.context }
+
+
+handleRouteEffect : Model model key -> Route.Effect.Route -> Model model key
+handleRouteEffect model route =
+    case route of
+        Route.Effect.OpenMenu ->
+            { model | context = Context.openMenu model.context }
+
+        Route.Effect.CloseMenu ->
+            { model | context = Context.closeMenu model.context }
 
 
 andThenCacheUser : Model model key -> ( Model model key, Cmd msg )
@@ -367,7 +397,8 @@ andThenCacheUser =
 
 cacheUser : Model model key -> Cmd msg
 cacheUser =
-    .user
+    .context
+        >> .user
         >> User.getProfile
         >> Maybe.map (Ports.toUser >> Ports.saveUser)
         >> Maybe.withDefault Cmd.none

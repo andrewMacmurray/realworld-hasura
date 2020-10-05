@@ -1,10 +1,11 @@
 module Page.NotFound exposing (view)
 
+import Context exposing (Context)
 import Element exposing (Element)
 import Element.Layout as Layout
 import Element.Text as Text
 
 
-view : Element msg
-view =
-    Layout.guest |> Layout.toPage (Text.title [] "Not Found")
+view : Context -> Element msg
+view context =
+    Layout.layout |> Layout.toPage context (Text.title [] "Not Found")

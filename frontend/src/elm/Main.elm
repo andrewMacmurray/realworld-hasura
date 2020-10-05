@@ -11,13 +11,13 @@ module Main exposing
 import Api
 import Browser exposing (Document, UrlRequest)
 import Browser.Navigation as Nav
+import Context exposing (Context)
 import Effect exposing (Effect)
 import Element
 import Element.Layout as Layout
 import Page exposing (Page)
 import Ports
 import Url exposing (Url)
-import User exposing (User)
 import Utils.Update exposing (updateWith, withCmd)
 
 
@@ -43,7 +43,7 @@ main =
 
 type alias Model key =
     { page : Page
-    , user : User
+    , context : Context
     , navKey : key
     }
 
@@ -74,7 +74,7 @@ performInit flags url key =
 init : Flags -> Url -> key -> ( Model key, Effect Msg )
 init flags url key =
     Page.init
-        |> Page.changeTo url (userFromFlags flags.user)
+        |> Page.changeTo url (Context.init flags.user)
         |> updatePageWith (initialModel flags key)
 
 
@@ -86,14 +86,9 @@ wakeup =
 initialModel : Flags -> key -> Page -> Model key
 initialModel flags key page =
     { page = page
-    , user = userFromFlags flags.user
+    , context = Context.init flags.user
     , navKey = key
     }
-
-
-userFromFlags : Maybe Ports.User -> User
-userFromFlags =
-    Maybe.map Ports.toLoggedIn >> Maybe.withDefault User.Guest
 
 
 
@@ -112,7 +107,7 @@ update msg model =
             handleUrl model urlRequest
 
         UrlChange url ->
-            updatePage model (Page.changeTo url model.user model.page)
+            updatePage model (Page.changeTo url model.context model.page)
 
         PageMsg msg_ ->
             updatePage model (Page.update msg_ model.page)
@@ -162,5 +157,5 @@ view model =
 
 
 view_ : Model key -> Element.Element Msg
-view_ { user, page } =
-    Element.map PageMsg (Page.view user page)
+view_ { context, page } =
+    Element.map PageMsg (Page.view context page)

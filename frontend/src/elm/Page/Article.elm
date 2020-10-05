@@ -12,6 +12,7 @@ import Article exposing (Article)
 import Article.Author as Author exposing (Author)
 import Article.Author.Follow as Follow
 import Article.Comment as Comment exposing (Comment)
+import Context exposing (Context)
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Anchor as Anchor
@@ -200,11 +201,11 @@ deleteArticle =
 -- View
 
 
-view : User -> Model -> Element Msg
-view user model =
-    Layout.user user
-        |> withBanner user model
-        |> Layout.toPage (articleBody user model)
+view : Context -> Model -> Element Msg
+view context model =
+    Layout.layout
+        |> withBanner context.user model
+        |> Layout.toPage context (articleBody context.user model)
 
 
 withBanner : User -> Model -> Layout Msg -> Layout Msg
