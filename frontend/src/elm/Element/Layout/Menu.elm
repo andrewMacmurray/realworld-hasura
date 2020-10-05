@@ -126,17 +126,21 @@ line moveBy =
         none
 
 
+transition : Int -> Attribute msg
 transition n =
     style "transition" (ms n ++ " ease")
 
 
+transitionDelay : Int -> Attribute msg
 transitionDelay n =
     style "transition-delay" (ms n)
 
 
+ms : Int -> String
 ms n =
     String.fromInt n ++ "ms"
 
 
+style : String -> String -> Attribute msg
 style a b =
     htmlAttribute (Html.Attributes.style a b)

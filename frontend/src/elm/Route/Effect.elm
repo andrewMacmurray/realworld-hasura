@@ -34,14 +34,24 @@ fromUrl =
 parser : Parser.Parser (Route -> c) c
 parser =
     oneOf
-        [ Parser.map OpenMenu (s effect </> s "open-menu")
-        , Parser.map CloseMenu (s effect </> s "close-menu")
+        [ Parser.map OpenMenu (s effect </> s open)
+        , Parser.map CloseMenu (s effect </> s close)
         ]
 
 
 effect : String
 effect =
     "route-effect"
+
+
+open : String
+open =
+    "open-menu"
+
+
+close : String
+close =
+    "close-menu"
 
 
 
@@ -60,7 +70,7 @@ routeToString : Route -> String
 routeToString route =
     case route of
         OpenMenu ->
-            absolute [ effect, "open-menu" ] []
+            absolute [ effect, open ] []
 
         CloseMenu ->
-            absolute [ effect, "close-menu" ] []
+            absolute [ effect, close ] []
