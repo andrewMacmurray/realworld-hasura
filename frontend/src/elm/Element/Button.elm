@@ -16,6 +16,7 @@ module Element.Button exposing
     , primary
     , solid
     , toElement
+    , unfollow
     )
 
 import Element exposing (..)
@@ -92,6 +93,7 @@ type Color
 type Icon
     = Heart
     | Plus
+    | Cross
     | Plane
     | Pencil
     | Bin
@@ -195,6 +197,11 @@ follow =
         >> withIcon_ Plus
         >> grey
         >> small
+
+
+unfollow : Button msg -> Button msg
+unfollow =
+    follow >> withIcon_ Cross
 
 
 delete : Button msg -> Button msg
@@ -541,6 +548,9 @@ icon icon_ options =
 
         Plus ->
             Plus.icon (iconColor options)
+
+        Cross ->
+            Plus.cross (iconColor options)
 
         Plane ->
             Plane.icon (iconColor options)

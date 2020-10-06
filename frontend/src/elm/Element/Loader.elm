@@ -5,8 +5,9 @@ module Element.Loader exposing
 
 import Animation exposing (Animation)
 import Animation.Named as Animation
-import Element exposing (Element, alpha, centerX, column, html, htmlAttribute, moveDown, moveLeft, moveUp)
+import Element exposing (Element, alpha, centerX, column, html, moveDown, moveLeft, moveUp)
 import Element.Text as Text
+import Element.Transition.Simple as Transition
 import Html exposing (..)
 import Html.Attributes exposing (style)
 
@@ -47,8 +48,8 @@ loader size color { message, visible } =
             , moveUp 20
             ]
             (Element.el
-                [ style_ "transition" "0.2s linear"
-                , style_ "transition-delay" "0.1s"
+                [ Transition.linear 200
+                , Transition.delay 100
                 , alpha (toAlpha visible)
                 ]
                 (Element.el (alignText size) (Text.text [ textColor color ] message))
@@ -63,7 +64,7 @@ alignText align =
             []
 
         Left ->
-            [ moveLeft 10, moveDown 5 ]
+            [ moveLeft 12, moveDown 5 ]
 
 
 dots_ : Color -> Bool -> Html msg
@@ -163,8 +164,3 @@ toAlpha visible =
 toOpacity : Bool -> String
 toOpacity =
     toAlpha >> String.fromFloat
-
-
-style_ : String -> String -> Element.Attribute msg
-style_ a b =
-    htmlAttribute (style a b)

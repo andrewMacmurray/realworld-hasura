@@ -84,7 +84,7 @@ button { author, user, msg } =
             else if User.follows (Author.id author) profile then
                 Button.button (msg <| UnfollowClicked author) "Unfollow"
                     |> Button.description ("unfollow-" ++ Author.username author)
-                    |> Button.follow
+                    |> Button.unfollow
                     |> Button.toElement
 
             else

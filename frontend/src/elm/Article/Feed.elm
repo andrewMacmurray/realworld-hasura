@@ -165,7 +165,10 @@ fadeIn =
 
 loadingMessage : Element msg
 loadingMessage =
-    el [ moveLeft Scale.small, moveUp Scale.small ]
+    el
+        [ moveLeft Scale.medium
+        , moveUp Scale.small
+        ]
         (Loader.black
             { message = "Loading..."
             , visible = True

@@ -10,6 +10,7 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Palette as Palette
 import Element.Scale as Scale exposing (edges)
+import Element.Transition.Simple as Transition
 import Html.Attributes
 import Utils.Element as Element
 
@@ -33,7 +34,7 @@ drawer menu links =
         Open ->
             Element.mobileOnly el
                 [ alignRight
-                , transition 300
+                , Transition.ease 300
                 , style "max-height" "180px"
                 ]
                 (drawer_ links)
@@ -41,7 +42,7 @@ drawer menu links =
         Closed ->
             Element.mobileOnly el
                 [ alignRight
-                , transition 300
+                , Transition.ease 300
                 , style "max-height" "0"
                 ]
                 (drawer_ links)
@@ -73,16 +74,16 @@ hamburgerOpen =
         [ padding Scale.extraSmall ]
         (column
             [ width (px 35)
-            , transition 200
-            , transitionDelay 100
+            , Transition.ease 200
+            , Transition.delay 100
             , rotate (degrees 45)
             , spacing 5
             ]
             [ line -9
             , el
                 [ width fill
-                , transition 100
-                , transitionDelay 100
+                , Transition.ease 100
+                , Transition.delay 100
                 , rotate (degrees 90)
                 ]
                 (line 0)
@@ -98,13 +99,13 @@ hamburgerClosed =
         (column
             [ width (px 35)
             , spacing 5
-            , transition 200
+            , Transition.ease 200
             , rotate (degrees 0)
             ]
             [ line 0
             , el
                 [ width fill
-                , transition 200
+                , Transition.ease 200
                 , rotate (degrees 0)
                 ]
                 (line 0)
@@ -117,28 +118,13 @@ line : Float -> Element msg
 line moveBy =
     el
         [ Background.color Palette.darkGreen
-        , style "transition" "0.2s ease-out"
+        , Transition.easeOut 200
         , Border.rounded 50
         , width fill
         , moveUp moveBy
         , height (px 4)
         ]
         none
-
-
-transition : Int -> Attribute msg
-transition n =
-    style "transition" (ms n ++ " ease")
-
-
-transitionDelay : Int -> Attribute msg
-transitionDelay n =
-    style "transition-delay" (ms n)
-
-
-ms : Int -> String
-ms n =
-    String.fromInt n ++ "ms"
 
 
 style : String -> String -> Attribute msg
