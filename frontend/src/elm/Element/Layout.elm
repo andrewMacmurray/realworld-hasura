@@ -138,15 +138,22 @@ toPage context page (Layout options) =
         , ( "mobileNav", toMobileNav context )
         , ( "banner", toBanner options )
         , ( "page"
-          , el
-                [ paddingXY pageXPadding Scale.large
-                , constrainBy (toWidth_ options)
-                , Backrgound.color Palette.white
-                , centerX
-                ]
-                page
+          , withBackdrop
+                (el
+                    [ paddingXY pageXPadding Scale.large
+                    , constrainBy (toWidth_ options)
+                    , Backrgound.color Palette.white
+                    , centerX
+                    ]
+                    page
+                )
           )
         ]
+
+
+withBackdrop : Element msg -> Element msg
+withBackdrop =
+    el [ width fill, Backrgound.color Palette.white ]
 
 
 toBanner : Options msg -> Element msg
