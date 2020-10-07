@@ -224,6 +224,21 @@
       allow_aggregations: true
 - table:
     schema: public
+    name: profile
+  select_permissions:
+  - role: user
+    permission:
+      columns:
+      - user_id
+      - email
+      - username
+      - bio
+      - profile_image
+      filter:
+        user_id:
+          _eq: X-Hasura-User-Id
+- table:
+    schema: public
     name: tags
   configuration:
     custom_root_fields:

@@ -278,6 +278,12 @@ simulateEffects options eff =
         UpdateSettings _ ->
             SimulatedEffect.Cmd.none
 
+        RefreshUser _ ->
+            SimulatedEffect.Cmd.none
+
+        UpdateUser _ ->
+            SimulatedEffect.Cmd.none
+
 
 simulateResponse : { m | msg : Api.Response a -> msg } -> Api.Response a -> SimulatedEffect msg
 simulateResponse { msg } res =
