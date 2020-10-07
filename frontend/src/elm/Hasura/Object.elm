@@ -85,6 +85,10 @@ type Likes_variance_fields
     = Likes_variance_fields
 
 
+type Profile
+    = Profile
+
+
 type Tags
     = Tags
 
@@ -99,6 +103,10 @@ type TokenResponse
 
 type UnlikeResponse
     = UnlikeResponse
+
+
+type UserProfile
+    = UserProfile
 
 
 type Users

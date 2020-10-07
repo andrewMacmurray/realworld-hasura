@@ -1,5 +1,6 @@
 module Utils.Update exposing
-    ( updateWith
+    ( andThenWithEffect
+    , updateWith
     , withCmd
     , withEffect
     )
@@ -26,3 +27,8 @@ withCmd cmd2 ( model, cmd1 ) =
 withEffect : Effect msg -> ( model, Effect msg ) -> ( model, Effect msg )
 withEffect eff2 ( model, eff1 ) =
     ( model, Effect.batch [ eff1, eff2 ] )
+
+
+andThenWithEffect : (model -> Effect msg) -> ( model, Effect msg ) -> ( model, Effect msg )
+andThenWithEffect toEffect ( model, eff ) =
+    ( model, Effect.batch [ toEffect model, eff ] )

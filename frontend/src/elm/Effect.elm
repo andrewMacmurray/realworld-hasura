@@ -24,6 +24,7 @@ module Effect exposing
     , publishArticle
     , pushUrl
     , redirectHome
+    , refreshUser
     , removeFromUserFollows
     , signIn
     , signUp
@@ -31,6 +32,7 @@ module Effect exposing
     , unlikeArticle
     , updateComment
     , updateSettings
+    , updateUser
     )
 
 import Api
@@ -65,12 +67,14 @@ type Effect msg
     | LoadArticleFeed (Api.Query Article.Feed msg)
     | LoadArticles (Api.Query (List Article) msg)
     | LoadArticle (Api.Query (Maybe Article) msg)
+    | RefreshUser (Api.Query User msg)
     | MutateWithEmptyResponse (Api.Mutation () msg)
     | MutationReturningArticle (Api.Mutation Article msg)
     | MutateAuthor (Api.Mutation Int msg)
     | LoadAuthorFeed (Api.Query (Maybe Author.Feed) msg)
     | MutateSettings (Api.Mutation () msg)
     | UpdateSettings User.SettingsUpdate
+    | UpdateUser (Api.Response User)
 
 
 none : Effect msg
@@ -136,6 +140,11 @@ removeFromUserFollows =
 closeMenu : Effect msg
 closeMenu =
     CloseMenu
+
+
+refreshUser : Api.Query User msg -> Effect msg
+refreshUser =
+    RefreshUser
 
 
 loadFeed : Api.Query Article.Feed msg -> Effect msg
@@ -218,6 +227,11 @@ updateSettings =
     UpdateSettings
 
 
+updateUser : Api.Response User -> Effect msg
+updateUser =
+    UpdateUser
+
+
 
 -- Transform
 
@@ -240,11 +254,11 @@ map toMsg effect =
         Logout ->
             Logout
 
-        SignUp mut ->
-            SignUp (Api.map toMsg mut)
+        SignUp req ->
+            SignUp (Api.map toMsg req)
 
-        SignIn mut ->
-            SignIn (Api.map toMsg mut)
+        SignIn req ->
+            SignIn (Api.map toMsg req)
 
         PushUrl url ->
             PushUrl url
@@ -261,32 +275,38 @@ map toMsg effect =
         CloseMenu ->
             CloseMenu
 
-        LoadArticleFeed query ->
-            LoadArticleFeed (Api.map toMsg query)
+        LoadArticleFeed req ->
+            LoadArticleFeed (Api.map toMsg req)
 
-        LoadArticle query ->
-            LoadArticle (Api.map toMsg query)
+        LoadArticle req ->
+            LoadArticle (Api.map toMsg req)
 
-        LoadArticles query ->
-            LoadArticles (Api.map toMsg query)
+        LoadArticles req ->
+            LoadArticles (Api.map toMsg req)
 
-        MutateWithEmptyResponse mut ->
-            MutateWithEmptyResponse (Api.map toMsg mut)
+        RefreshUser req ->
+            RefreshUser (Api.map toMsg req)
 
-        MutationReturningArticle mut ->
-            MutationReturningArticle (Api.map toMsg mut)
+        MutateWithEmptyResponse req ->
+            MutateWithEmptyResponse (Api.map toMsg req)
 
-        MutateAuthor mut ->
-            MutateAuthor (Api.map toMsg mut)
+        MutationReturningArticle req ->
+            MutationReturningArticle (Api.map toMsg req)
 
-        LoadAuthorFeed query ->
-            LoadAuthorFeed (Api.map toMsg query)
+        MutateAuthor req ->
+            MutateAuthor (Api.map toMsg req)
 
-        MutateSettings mut ->
-            MutateSettings (Api.map toMsg mut)
+        LoadAuthorFeed req ->
+            LoadAuthorFeed (Api.map toMsg req)
+
+        MutateSettings req ->
+            MutateSettings (Api.map toMsg req)
 
         UpdateSettings settings ->
             UpdateSettings settings
+
+        UpdateUser details ->
+            UpdateUser details
 
 
 
@@ -346,6 +366,9 @@ perform pushUrl_ ( model, effect ) =
             , Ports.toUser user |> Ports.saveUser
             )
 
+        RefreshUser query ->
+            ( model, Api.doQuery model.context.user query )
+
         SignUp mutation ->
             ( model, Api.doMutation model.context.user mutation )
 
@@ -379,6 +402,9 @@ perform pushUrl_ ( model, effect ) =
         UpdateSettings settings ->
             andThenCacheUser { model | context = Context.updateUser (User.updateSettings settings) model.context }
 
+        UpdateUser response ->
+            handleUpdateUser model response
+
 
 handleRouteEffect : Model model key -> Route.Effect.Route -> Model model key
 handleRouteEffect model route =
@@ -396,12 +422,21 @@ andThenCacheUser =
 
 
 cacheUser : Model model key -> Cmd msg
-cacheUser =
-    .context
-        >> .user
-        >> User.getProfile
-        >> Maybe.map (Ports.toUser >> Ports.saveUser)
-        >> Maybe.withDefault Cmd.none
+cacheUser model =
+    model.context.user
+        |> User.getProfile
+        |> Maybe.map (Ports.toUser >> Ports.saveUser)
+        |> Maybe.withDefault Cmd.none
+
+
+handleUpdateUser : Model model key -> Api.Response User -> ( Model model key, Cmd msg )
+handleUpdateUser model response =
+    case response of
+        Ok user ->
+            andThenCacheUser { model | context = Context.setUser user model.context }
+
+        Err _ ->
+            ( model, Cmd.none )
 
 
 andThenDo : (b -> a) -> b -> ( b, a )

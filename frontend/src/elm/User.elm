@@ -17,6 +17,7 @@ module User exposing
     , removeFollowingId
     , settingsUpdate
     , token
+    , updateDetails
     , updateSettings
     , username
     )
@@ -141,29 +142,24 @@ equals p a =
 -- Update
 
 
+updateDetails : Profile -> Details -> User
+updateDetails profile_ =
+    profile (token profile_) >> Author
+
+
 addFollowingId : Id -> User -> User
 addFollowingId id_ =
-    updateProfile (\p -> { p | following = id_ :: p.following })
+    updateProfile_ (\p -> { p | following = id_ :: p.following })
 
 
 removeFollowingId : Id -> User -> User
 removeFollowingId id_ =
-    updateProfile (\p -> { p | following = List.remove id_ p.following })
-
-
-updateProfile : (Details -> Details) -> User -> User
-updateProfile f user =
-    case user of
-        Guest ->
-            Guest
-
-        Author (Profile_ token_ details) ->
-            Author (Profile_ token_ (f details))
+    updateProfile_ (\p -> { p | following = List.remove id_ p.following })
 
 
 updateSettings : SettingsUpdate -> User -> User
 updateSettings settings =
-    updateProfile
+    updateProfile_
         (\profile_ ->
             { profile_
                 | username = String.fromNonEmpty settings.username
@@ -172,6 +168,16 @@ updateSettings settings =
                 , profileImage = String.fromOptional settings.profileImage
             }
         )
+
+
+updateProfile_ : (Details -> Details) -> User -> User
+updateProfile_ f user =
+    case user of
+        Guest ->
+            Guest
+
+        Author (Profile_ token_ details) ->
+            Author (Profile_ token_ (f details))
 
 
 

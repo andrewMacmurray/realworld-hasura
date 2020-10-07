@@ -9,6 +9,7 @@ module Main exposing
     )
 
 import Api
+import Api.Users
 import Browser exposing (Document, UrlRequest)
 import Browser.Navigation as Nav
 import Context exposing (Context)
@@ -18,7 +19,8 @@ import Element.Layout as Layout
 import Page exposing (Page)
 import Ports
 import Url exposing (Url)
-import Utils.Update exposing (updateWith, withCmd)
+import User exposing (User)
+import Utils.Update exposing (andThenWithEffect, updateWith, withCmd)
 
 
 
@@ -53,6 +55,7 @@ type Msg
     | UrlChange Url
     | PageMsg Page.Msg
     | WakeupResponseReceived
+    | RefreshUserResponseReceived (Api.Response User)
 
 
 type alias Flags =
@@ -76,11 +79,17 @@ init flags url key =
     Page.init
         |> Page.changeTo url (Context.init flags.user)
         |> updatePageWith (initialModel flags key)
+        |> andThenWithEffect refreshUser
 
 
 wakeup : Cmd Msg
 wakeup =
     Api.wakeup WakeupResponseReceived
+
+
+refreshUser : Model model -> Effect Msg
+refreshUser model =
+    Api.Users.refresh model.context.user RefreshUserResponseReceived
 
 
 initialModel : Flags -> key -> Page -> Model key
@@ -114,6 +123,9 @@ update msg model =
 
         WakeupResponseReceived ->
             ( model, Effect.none )
+
+        RefreshUserResponseReceived response ->
+            ( model, Effect.updateUser response )
 
 
 handleUrl : Model key -> UrlRequest -> ( Model key, Effect Msg )

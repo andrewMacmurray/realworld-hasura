@@ -1553,6 +1553,99 @@ encodeLikes_variance_order_by input =
         [ ( "article_id", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.article_id ), ( "user_id", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.user_id ) ]
 
 
+buildProfile_bool_exp : (Profile_bool_expOptionalFields -> Profile_bool_expOptionalFields) -> Profile_bool_exp
+buildProfile_bool_exp fillOptionals =
+    let
+        optionals =
+            fillOptionals
+                { and_ = Absent, not_ = Absent, or_ = Absent, bio = Absent, email = Absent, follows = Absent, profile_image = Absent, user_id = Absent, username = Absent }
+    in
+    Profile_bool_exp { and_ = optionals.and_, not_ = optionals.not_, or_ = optionals.or_, bio = optionals.bio, email = optionals.email, follows = optionals.follows, profile_image = optionals.profile_image, user_id = optionals.user_id, username = optionals.username }
+
+
+type alias Profile_bool_expOptionalFields =
+    { and_ : OptionalArgument (List (Maybe Profile_bool_exp))
+    , not_ : OptionalArgument Profile_bool_exp
+    , or_ : OptionalArgument (List (Maybe Profile_bool_exp))
+    , bio : OptionalArgument String_comparison_exp
+    , email : OptionalArgument String_comparison_exp
+    , follows : OptionalArgument Follows_bool_exp
+    , profile_image : OptionalArgument String_comparison_exp
+    , user_id : OptionalArgument Int_comparison_exp
+    , username : OptionalArgument String_comparison_exp
+    }
+
+
+{-| Type alias for the `Profile_bool_exp` attributes. Note that this type
+needs to use the `Profile_bool_exp` type (not just a plain type alias) because it has
+references to itself either directly (recursive) or indirectly (circular). See
+<https://github.com/dillonkearns/elm-graphql/issues/33>.
+-}
+type alias Profile_bool_expRaw =
+    { and_ : OptionalArgument (List (Maybe Profile_bool_exp))
+    , not_ : OptionalArgument Profile_bool_exp
+    , or_ : OptionalArgument (List (Maybe Profile_bool_exp))
+    , bio : OptionalArgument String_comparison_exp
+    , email : OptionalArgument String_comparison_exp
+    , follows : OptionalArgument Follows_bool_exp
+    , profile_image : OptionalArgument String_comparison_exp
+    , user_id : OptionalArgument Int_comparison_exp
+    , username : OptionalArgument String_comparison_exp
+    }
+
+
+{-| Type for the Profile\_bool\_exp input object.
+-}
+type Profile_bool_exp
+    = Profile_bool_exp Profile_bool_expRaw
+
+
+{-| Encode a Profile\_bool\_exp into a value that can be used as an argument.
+-}
+encodeProfile_bool_exp : Profile_bool_exp -> Value
+encodeProfile_bool_exp (Profile_bool_exp input) =
+    Encode.maybeObject
+        [ ( "_and", (encodeProfile_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.and_ ), ( "_not", encodeProfile_bool_exp |> Encode.optional input.not_ ), ( "_or", (encodeProfile_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.or_ ), ( "bio", encodeString_comparison_exp |> Encode.optional input.bio ), ( "email", encodeString_comparison_exp |> Encode.optional input.email ), ( "follows", encodeFollows_bool_exp |> Encode.optional input.follows ), ( "profile_image", encodeString_comparison_exp |> Encode.optional input.profile_image ), ( "user_id", encodeInt_comparison_exp |> Encode.optional input.user_id ), ( "username", encodeString_comparison_exp |> Encode.optional input.username ) ]
+
+
+buildProfile_order_by : (Profile_order_byOptionalFields -> Profile_order_byOptionalFields) -> Profile_order_by
+buildProfile_order_by fillOptionals =
+    let
+        optionals =
+            fillOptionals
+                { bio = Absent, email = Absent, profile_image = Absent, user_id = Absent, username = Absent }
+    in
+    { bio = optionals.bio, email = optionals.email, profile_image = optionals.profile_image, user_id = optionals.user_id, username = optionals.username }
+
+
+type alias Profile_order_byOptionalFields =
+    { bio : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , email : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , profile_image : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , user_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , username : OptionalArgument Hasura.Enum.Order_by.Order_by
+    }
+
+
+{-| Type for the Profile\_order\_by input object.
+-}
+type alias Profile_order_by =
+    { bio : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , email : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , profile_image : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , user_id : OptionalArgument Hasura.Enum.Order_by.Order_by
+    , username : OptionalArgument Hasura.Enum.Order_by.Order_by
+    }
+
+
+{-| Encode a Profile\_order\_by into a value that can be used as an argument.
+-}
+encodeProfile_order_by : Profile_order_by -> Value
+encodeProfile_order_by input =
+    Encode.maybeObject
+        [ ( "bio", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.bio ), ( "email", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.email ), ( "profile_image", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.profile_image ), ( "user_id", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.user_id ), ( "username", Encode.enum Hasura.Enum.Order_by.toString |> Encode.optional input.username ) ]
+
+
 buildString_comparison_exp : (String_comparison_expOptionalFields -> String_comparison_expOptionalFields) -> String_comparison_exp
 buildString_comparison_exp fillOptionals =
     let

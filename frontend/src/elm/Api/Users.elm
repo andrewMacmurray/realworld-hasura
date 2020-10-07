@@ -1,5 +1,6 @@
 module Api.Users exposing
     ( follow
+    , refresh
     , signIn
     , signUp
     , unfollow
@@ -18,10 +19,12 @@ import Hasura.Mutation exposing (LoginRequiredArguments, SignupRequiredArguments
 import Hasura.Object
 import Hasura.Object.Follows as Follows
 import Hasura.Object.Follows_mutation_response as FollowsResponse
+import Hasura.Object.Profile as Profile
 import Hasura.Object.TokenResponse as TokenResponse
 import Hasura.Object.Users as Users
+import Hasura.Query
 import User exposing (User)
-import Utils.SelectionSet as SelectionSet
+import Utils.SelectionSet as SelectionSet exposing (failOnNothing)
 
 
 
@@ -44,6 +47,55 @@ signIn inputs msg =
     Hasura.Mutation.login inputs userSelection
         |> Api.mutation msg
         |> Effect.signIn
+
+
+
+-- Refresh User
+
+
+refresh : User -> (Api.Response User -> msg) -> Effect msg
+refresh user msg =
+    case user of
+        User.Guest ->
+            Effect.none
+
+        User.Author profile ->
+            refreshUser profile msg
+
+
+refreshUser : User.Profile -> (Api.Response User -> msg) -> Effect msg
+refreshUser profile msg =
+    Hasura.Query.profile identity (loggedInUserSelection profile)
+        |> SelectionSet.map List.head
+        |> SelectionSet.failOnNothing
+        |> Api.query msg
+        |> Effect.refreshUser
+
+
+loggedInUserSelection : User.Profile -> SelectionSet User Hasura.Object.Profile
+loggedInUserSelection profile =
+    SelectionSet.map (User.updateDetails profile) detailsSelection_
+
+
+detailsSelection_ : SelectionSet User.Details Hasura.Object.Profile
+detailsSelection_ =
+    SelectionSet.succeed User.Details
+        |> with_ Profile.user_id
+        |> with_ Profile.username
+        |> with_ Profile.email
+        |> with Profile.bio
+        |> with Profile.profile_image
+        |> with followsSelection_
+
+
+followsSelection_ : SelectionSet (List Int) Hasura.Object.Profile
+followsSelection_ =
+    Profile.follows identity (Follows.user Users.id)
+
+
+with_ : SelectionSet (Maybe a) typeLock -> SelectionSet (a -> b) typeLock -> SelectionSet b typeLock
+with_ =
+    with << failOnNothing
 
 
 
