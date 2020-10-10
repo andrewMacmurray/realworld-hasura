@@ -197,7 +197,7 @@ pageIsLoading page =
 
 isLoaded : Feed.Model -> Bool
 isLoaded =
-    not << Api.isLoading << .articles
+    not << Api.isLoading << .feed
 
 
 whiteSubtitle : String -> Element msg

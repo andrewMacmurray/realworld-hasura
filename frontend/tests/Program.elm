@@ -17,7 +17,7 @@ module Program exposing
 
 import Api
 import Article exposing (Article)
-import Article.Feed as Feed
+import Article.Feed as Feed exposing (Feed)
 import Effect exposing (Effect(..))
 import Helpers
 import Json.Encode as Encode
@@ -52,9 +52,9 @@ type alias FakeNavKey =
 
 
 type alias Options =
-    { feed : Api.Response Feed.Home
+    { homeFeed : Api.Response Feed.Home
     , article : Api.Response (Maybe Article)
-    , articles : Api.Response (List Article)
+    , feed : Api.Response Feed
     , authorFeed : Api.Response (Maybe Feed.ForAuthor)
     , settingsUpdate : Api.Response ()
     , route : Route
@@ -115,7 +115,7 @@ simulateArticle article options =
 
 simulateArticleFeed : List Article -> List Tag -> Options -> Options
 simulateArticleFeed articles tags options =
-    { options | feed = Ok (toHomeFeed articles tags) }
+    { options | homeFeed = Ok (toHomeFeed articles tags) }
 
 
 simulateAuthorFeed : Api.Response (Maybe Feed.ForAuthor) -> Options -> Options
@@ -123,9 +123,14 @@ simulateAuthorFeed feed options =
     { options | authorFeed = feed }
 
 
+emptyFeed : Feed.Home
+emptyFeed =
+    toHomeFeed [] []
+
+
 toHomeFeed : List Article -> List Tag -> Feed.Home
 toHomeFeed articles tags =
-    { articles = articles
+    { feed = Helpers.feed articles
     , popularTags = List.map (\t -> { tag = t, count = 1 }) tags
     }
 
@@ -133,19 +138,12 @@ toHomeFeed articles tags =
 defaultOptions : Route -> Options
 defaultOptions route =
     { route = route
-    , feed = Ok emptyFeed
-    , articles = Ok []
+    , homeFeed = Ok emptyFeed
+    , feed = Ok (Helpers.feed [])
     , authorFeed = Ok Nothing
     , article = Ok Nothing
     , user = Nothing
     , settingsUpdate = Ok ()
-    }
-
-
-emptyFeed : Feed.Home
-emptyFeed =
-    { articles = []
-    , popularTags = []
     }
 
 
@@ -246,13 +244,13 @@ simulateEffects options eff =
             SimulatedEffect.Cmd.none
 
         LoadHomeFeed query ->
-            simulateResponse query options.feed
+            simulateResponse query options.homeFeed
 
         LoadArticle query ->
             simulateResponse query options.article
 
-        LoadArticles query ->
-            simulateResponse query options.articles
+        LoadFeed query ->
+            simulateResponse query options.feed
 
         LoadAuthorFeed query ->
             simulateResponse query options.authorFeed

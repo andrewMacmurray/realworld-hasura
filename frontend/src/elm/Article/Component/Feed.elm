@@ -16,6 +16,7 @@ import Animation.Named as Animation
 import Api
 import Api.Articles
 import Article exposing (Article)
+import Article.Feed exposing (Feed)
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Anchor as Anchor
@@ -54,11 +55,11 @@ type alias PageMsg msg =
 
 
 type alias Model =
-    { articles : Api.Data (List Article) }
+    { feed : Api.Data Feed }
 
 
 type Msg
-    = LoadArticlesResponseReceived (Api.Response (List Article))
+    = LoadArticlesResponseReceived (Api.Response Feed)
     | UpdateArticleResponseReceived (Api.Response Article)
     | LikeArticleClicked Article
     | UnLikeArticleClicked Article
@@ -68,24 +69,30 @@ type Msg
 -- Init
 
 
-fromResponse : Api.Response { a | articles : List Article } -> Model
+fromResponse : Api.Response { a | feed : Feed } -> Model
 fromResponse =
-    Api.fromResponse >> Api.mapData .articles >> Model
+    Api.fromResponse >> Api.mapData .feed >> init_
 
 
-fromNullableResponse : Result error (Maybe { a | articles : List Article }) -> Model
+fromNullableResponse : Result error (Maybe { a | feed : Feed }) -> Model
 fromNullableResponse =
-    Api.fromNullableResponse >> Api.mapData .articles >> Model
+    Api.fromNullableResponse >> Api.mapData .feed >> init_
 
 
-load : SelectionSet (List Article) RootQuery -> ( Model, Effect Msg )
+load : SelectionSet Feed RootQuery -> ( Model, Effect Msg )
 load selection =
     ( loading, Api.Articles.load selection LoadArticlesResponseReceived )
 
 
 loading : Model
 loading =
-    { articles = Api.Loading }
+    { feed = Api.Loading }
+
+
+init_ : Api.Data Feed -> Model
+init_ feed =
+    { feed = feed
+    }
 
 
 
@@ -106,7 +113,7 @@ update_ : Msg -> Model -> ( Model, Effect Msg )
 update_ msg model =
     case msg of
         LoadArticlesResponseReceived response ->
-            ( { model | articles = Api.fromResponse response }, Effect.none )
+            ( { model | feed = Api.fromResponse response }, Effect.none )
 
         LikeArticleClicked article ->
             ( model, likeArticle article )
@@ -115,10 +122,15 @@ update_ msg model =
             ( model, unlikeArticle article )
 
         UpdateArticleResponseReceived (Ok article) ->
-            ( { model | articles = Api.mapData (Article.replace article) model.articles }, Effect.none )
+            ( { model | feed = Api.mapData (updateArticle article) model.feed }, Effect.none )
 
         UpdateArticleResponseReceived (Err _) ->
             ( model, Effect.none )
+
+
+updateArticle : Article -> Feed -> Feed
+updateArticle article feed =
+    { feed | articles = Article.replace article feed.articles }
 
 
 likeArticle : Article -> Effect Msg
@@ -144,12 +156,12 @@ type alias Options msg =
 
 view : Options msg -> Element msg
 view options =
-    case options.feed.articles of
+    case options.feed.feed of
         Api.Loading ->
             loadingMessage
 
-        Api.Success articles ->
-            Animation.embed fadeIn (viewArticles options articles)
+        Api.Success feed_ ->
+            Animation.embed fadeIn (viewFeed options feed_)
 
         Api.Failure ->
             Text.error [] "Error loading feed."
@@ -176,11 +188,16 @@ loadingMessage =
         )
 
 
-viewArticles options articles =
-    column [ width fill, spacing Scale.extraLarge, paddingEach { edges | bottom = Scale.large } ]
+viewFeed : Options msg -> Feed -> Element msg
+viewFeed options feed =
+    column
+        [ width fill
+        , spacing Scale.extraLarge
+        , paddingEach { edges | bottom = Scale.large }
+        ]
         [ column
             [ spacing Scale.large, width fill ]
-            (List.map (viewArticle options) articles)
+            (List.map (viewArticle options) feed.articles)
         , pages
         ]
 

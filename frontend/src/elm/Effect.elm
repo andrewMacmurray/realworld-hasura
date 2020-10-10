@@ -10,8 +10,8 @@ module Effect exposing
     , goToArticle
     , likeArticle
     , loadArticle
-    , loadArticles
     , loadAuthorFeed
+    , loadFeed
     , loadHomeFeed
     , loadUrl
     , loadUser
@@ -37,7 +37,7 @@ module Effect exposing
 
 import Api
 import Article exposing (Article)
-import Article.Feed as Feed
+import Article.Feed as Feed exposing (Feed)
 import Browser.Navigation as Navigation
 import Context exposing (Context)
 import Ports
@@ -65,7 +65,7 @@ type Effect msg
     | SignUp (Api.Mutation User.Profile msg)
     | SignIn (Api.Mutation User.Profile msg)
     | LoadHomeFeed (Api.Query Feed.Home msg)
-    | LoadArticles (Api.Query (List Article) msg)
+    | LoadFeed (Api.Query Feed msg)
     | LoadArticle (Api.Query (Maybe Article) msg)
     | RefreshUser (Api.Query User msg)
     | MutateWithEmptyResponse (Api.Mutation () msg)
@@ -157,9 +157,9 @@ loadArticle =
     LoadArticle
 
 
-loadArticles : Api.Query (List Article) msg -> Effect msg
-loadArticles =
-    LoadArticles
+loadFeed : Api.Query Feed msg -> Effect msg
+loadFeed =
+    LoadFeed
 
 
 publishArticle : Api.Mutation () msg -> Effect msg
@@ -281,8 +281,8 @@ map toMsg effect =
         LoadArticle req ->
             LoadArticle (Api.map toMsg req)
 
-        LoadArticles req ->
-            LoadArticles (Api.map toMsg req)
+        LoadFeed req ->
+            LoadFeed (Api.map toMsg req)
 
         RefreshUser req ->
             RefreshUser (Api.map toMsg req)
@@ -381,7 +381,7 @@ perform pushUrl_ ( model, effect ) =
         LoadArticle query ->
             ( model, Api.doQuery model.context.user query )
 
-        LoadArticles query ->
+        LoadFeed query ->
             ( model, Api.doQuery model.context.user query )
 
         MutateWithEmptyResponse mutation ->

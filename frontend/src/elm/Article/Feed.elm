@@ -1,5 +1,6 @@
 module Article.Feed exposing
-    ( ForAuthor
+    ( Feed
+    , ForAuthor
     , Home
     , forAuthor
     )
@@ -10,11 +11,21 @@ import Tag
 
 
 
+-- Feed
+
+
+type alias Feed =
+    { articles : List Article
+    , count : Int
+    }
+
+
+
 -- Home Feed
 
 
 type alias Home =
-    { articles : List Article
+    { feed : Feed
     , popularTags : List Tag.Popular
     }
 
@@ -24,11 +35,11 @@ type alias Home =
 
 
 type alias ForAuthor =
-    { articles : List Article
+    { feed : Feed
     , author : Author
     }
 
 
-forAuthor : Maybe Author -> List Article -> Maybe ForAuthor
-forAuthor author articles =
-    Maybe.map (ForAuthor articles) author
+forAuthor : Maybe Author -> Feed -> Maybe ForAuthor
+forAuthor author feed =
+    Maybe.map (ForAuthor feed) author

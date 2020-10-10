@@ -1,5 +1,5 @@
 module Api.Authors exposing
-    ( ArticlesSelection
+    ( FeedSelection
     , authoredArticles
     , likedArticles
     , loadFeed
@@ -10,7 +10,7 @@ import Api.Argument as Argument exposing (..)
 import Api.Articles as Articles
 import Article exposing (Article)
 import Article.Author as Author exposing (Author)
-import Article.Feed as Feed
+import Article.Feed as Feed exposing (Feed)
 import Effect exposing (Effect)
 import Graphql.Operation exposing (RootQuery)
 import Graphql.SelectionSet as SelectionSet exposing (SelectionSet, with)
@@ -20,37 +20,51 @@ import Hasura.Object.Users as Users
 import Hasura.Query exposing (ArticlesOptionalArguments)
 
 
-type alias ArticlesSelection =
-    Author.Id -> SelectionSet (List Article) RootQuery
+type alias FeedSelection =
+    Author.Id -> SelectionSet Feed RootQuery
 
 
 
 -- load
 
 
-loadFeed : ArticlesSelection -> Author.Id -> (Api.Response (Maybe Feed.ForAuthor) -> msg) -> Effect msg
+loadFeed : FeedSelection -> Author.Id -> (Api.Response (Maybe Feed.ForAuthor) -> msg) -> Effect msg
 loadFeed articles id_ msg =
-    feedSelection id_ articles
+    authorFeedSelection id_ articles
         |> Api.query msg
         |> Effect.loadAuthorFeed
 
 
-feedSelection : Author.Id -> ArticlesSelection -> SelectionSet (Maybe Feed.ForAuthor) RootQuery
-feedSelection id_ selection =
+authorFeedSelection : Author.Id -> FeedSelection -> SelectionSet (Maybe Feed.ForAuthor) RootQuery
+authorFeedSelection id_ selection =
     SelectionSet.succeed Feed.forAuthor
         |> with (authorById id_)
         |> with (selection id_)
 
 
-authoredArticles : ArticlesSelection
+authoredArticles : FeedSelection
 authoredArticles id_ =
+    SelectionSet.succeed Feed
+        |> with (authoredArticles_ id_)
+        |> with (SelectionSet.succeed 0)
+
+
+authoredArticles_ : Author.Id -> SelectionSet (List Article) RootQuery
+authoredArticles_ id_ =
     Hasura.Query.articles
         (Articles.newestFirst >> authoredBy id_)
         Articles.articleSelection
 
 
-likedArticles : ArticlesSelection
+likedArticles : FeedSelection
 likedArticles id_ =
+    SelectionSet.succeed Feed
+        |> with (likedArticles_ id_)
+        |> with (SelectionSet.succeed 0)
+
+
+likedArticles_ : Author.Id -> SelectionSet (List Article) RootQuery
+likedArticles_ id_ =
     Hasura.Query.articles
         (Articles.newestFirst >> likedBy id_)
         Articles.articleSelection

@@ -5,15 +5,24 @@ module Helpers exposing
     , articleWithComments
     , author
     , comment
+    , feed
     , serverError
     )
 
 import Article exposing (Article)
 import Article.Author as Author exposing (Author)
 import Article.Comment as Comment exposing (Comment)
+import Article.Feed exposing (Feed)
 import Date
 import Graphql.Http exposing (HttpError(..), RawError(..))
 import Time exposing (Month(..))
+
+
+feed : List Article -> Feed
+feed articles =
+    { articles = articles
+    , count = List.length articles
+    }
 
 
 serverError : Graphql.Http.Error a

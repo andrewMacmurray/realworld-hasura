@@ -9,8 +9,56 @@ type Articles
     = Articles
 
 
+type Articles_aggregate
+    = Articles_aggregate
+
+
+type Articles_aggregate_fields
+    = Articles_aggregate_fields
+
+
+type Articles_avg_fields
+    = Articles_avg_fields
+
+
+type Articles_max_fields
+    = Articles_max_fields
+
+
+type Articles_min_fields
+    = Articles_min_fields
+
+
 type Articles_mutation_response
     = Articles_mutation_response
+
+
+type Articles_stddev_fields
+    = Articles_stddev_fields
+
+
+type Articles_stddev_pop_fields
+    = Articles_stddev_pop_fields
+
+
+type Articles_stddev_samp_fields
+    = Articles_stddev_samp_fields
+
+
+type Articles_sum_fields
+    = Articles_sum_fields
+
+
+type Articles_var_pop_fields
+    = Articles_var_pop_fields
+
+
+type Articles_var_samp_fields
+    = Articles_var_samp_fields
+
+
+type Articles_variance_fields
+    = Articles_variance_fields
 
 
 type Comments
@@ -103,10 +151,6 @@ type TokenResponse
 
 type UnlikeResponse
     = UnlikeResponse
-
-
-type UserProfile
-    = UserProfile
 
 
 type Users

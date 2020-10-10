@@ -23,7 +23,7 @@ import Api.Date as Date
 import Article exposing (Article)
 import Article.Author as Author exposing (Author)
 import Article.Comment as Comment exposing (Comment, Comment_)
-import Article.Feed as Feed
+import Article.Feed as Feed exposing (Feed)
 import Effect exposing (Effect)
 import Graphql.Operation exposing (RootMutation, RootQuery)
 import Graphql.OptionalArgument exposing (OptionalArgument(..))
@@ -62,18 +62,18 @@ loadArticle id msg =
 --  Articles
 
 
-load : SelectionSet (List Article) RootQuery -> (Api.Response (List Article) -> msg) -> Effect msg
+load : SelectionSet Feed RootQuery -> (Api.Response Feed -> msg) -> Effect msg
 load selection msg =
     selection
         |> Api.query msg
-        |> Effect.loadArticles
+        |> Effect.loadFeed
 
 
 
 -- Global Feed
 
 
-loadHomeFeed : SelectionSet (List Article) RootQuery -> (Api.Response Feed.Home -> msg) -> Effect msg
+loadHomeFeed : SelectionSet Feed RootQuery -> (Api.Response Feed.Home -> msg) -> Effect msg
 loadHomeFeed articlesSelection_ msg =
     SelectionSet.succeed Feed.Home
         |> with articlesSelection_
@@ -86,9 +86,11 @@ loadHomeFeed articlesSelection_ msg =
 -- By Tag
 
 
-byTag : Tag -> SelectionSet (List Article) RootQuery
+byTag : Tag -> SelectionSet Feed RootQuery
 byTag tag =
-    Query.articles (newestFirst >> containsTag tag) articleSelection
+    SelectionSet.succeed Feed
+        |> with (Query.articles (newestFirst >> containsTag tag) articleSelection)
+        |> with (SelectionSet.succeed 0)
 
 
 containsTag : Tag -> Query.ArticlesOptionalArguments -> Query.ArticlesOptionalArguments
@@ -104,9 +106,11 @@ containsTag tag_ =
 -- By Author
 
 
-followedByAuthor : User.Profile -> SelectionSet (List Article) RootQuery
+followedByAuthor : User.Profile -> SelectionSet Feed RootQuery
 followedByAuthor profile =
-    Query.articles (newestFirst >> followedBy profile) articleSelection
+    SelectionSet.succeed Feed
+        |> with (Query.articles (newestFirst >> followedBy profile) articleSelection)
+        |> with (SelectionSet.succeed 0)
 
 
 followedBy : User.Profile -> Query.ArticlesOptionalArguments -> Query.ArticlesOptionalArguments
@@ -144,9 +148,11 @@ popularTagSelection =
 -- Articles
 
 
-all : SelectionSet (List Article) RootQuery
+all : SelectionSet Feed RootQuery
 all =
-    Query.articles newestFirst articleSelection
+    SelectionSet.succeed Feed
+        |> with (Query.articles newestFirst articleSelection)
+        |> with (SelectionSet.succeed 0)
 
 
 articleSelection : SelectionSet Article Hasura.Object.Articles

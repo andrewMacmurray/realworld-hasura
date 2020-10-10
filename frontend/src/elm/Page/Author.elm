@@ -117,7 +117,7 @@ handleLoadAuthoredArticles model =
         |> embedFeed { model | activeTab = AuthoredArticles }
 
 
-loadFeed : Authors.ArticlesSelection -> Model -> ( Feed.Model, Effect Feed.Msg )
+loadFeed : Authors.FeedSelection -> Model -> ( Feed.Model, Effect Feed.Msg )
 loadFeed selection model =
     case model.author of
         Api.Success author ->
