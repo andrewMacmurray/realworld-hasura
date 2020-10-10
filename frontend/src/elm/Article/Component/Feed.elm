@@ -59,7 +59,7 @@ type alias Model =
 
 
 type Msg
-    = LoadArticlesResponseReceived (Api.Response Feed)
+    = LoadFeedResponseReceived (Api.Response Feed)
     | UpdateArticleResponseReceived (Api.Response Article)
     | LikeArticleClicked Article
     | UnLikeArticleClicked Article
@@ -81,7 +81,7 @@ fromNullableResponse =
 
 load : SelectionSet Feed RootQuery -> ( Model, Effect Msg )
 load selection =
-    ( loading, Api.Articles.load selection LoadArticlesResponseReceived )
+    ( loading, Api.Articles.loadFeed selection LoadFeedResponseReceived )
 
 
 loading : Model
@@ -112,7 +112,7 @@ update pageMsg msg pageModel =
 update_ : Msg -> Model -> ( Model, Effect Msg )
 update_ msg model =
     case msg of
-        LoadArticlesResponseReceived response ->
+        LoadFeedResponseReceived response ->
             ( { model | feed = Api.fromResponse response }, Effect.none )
 
         LikeArticleClicked article ->

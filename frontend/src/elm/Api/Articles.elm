@@ -1,14 +1,14 @@
 module Api.Articles exposing
     ( all
-    , articleSelection
     , byTag
     , delete
     , deleteComment
     , edit
+    , feedSelection
     , followedByAuthor
     , like
-    , load
     , loadArticle
+    , loadFeed
     , loadHomeFeed
     , newestFirst
     , postComment
@@ -34,6 +34,8 @@ import Hasura.InputObject as Input
 import Hasura.Mutation as Mutation
 import Hasura.Object exposing (Articles)
 import Hasura.Object.Articles as Articles exposing (CommentsOptionalArguments)
+import Hasura.Object.Articles_aggregate as ArticlesAggregate
+import Hasura.Object.Articles_aggregate_fields as ArticlesAggregateFields
 import Hasura.Object.Comments as Comments
 import Hasura.Object.Likes as Likes
 import Hasura.Object.Likes_aggregate as LikesAggregate
@@ -62,8 +64,8 @@ loadArticle id msg =
 --  Articles
 
 
-load : SelectionSet Feed RootQuery -> (Api.Response Feed -> msg) -> Effect msg
-load selection msg =
+loadFeed : SelectionSet Feed RootQuery -> (Api.Response Feed -> msg) -> Effect msg
+loadFeed selection msg =
     selection
         |> Api.query msg
         |> Effect.loadFeed
@@ -88,9 +90,7 @@ loadHomeFeed articlesSelection_ msg =
 
 byTag : Tag -> SelectionSet Feed RootQuery
 byTag tag =
-    SelectionSet.succeed Feed
-        |> with (Query.articles (newestFirst >> containsTag tag) articleSelection)
-        |> with (SelectionSet.succeed 0)
+    feedSelection (newestFirst >> containsTag tag)
 
 
 containsTag : Tag -> Query.ArticlesOptionalArguments -> Query.ArticlesOptionalArguments
@@ -108,18 +108,33 @@ containsTag tag_ =
 
 followedByAuthor : User.Profile -> SelectionSet Feed RootQuery
 followedByAuthor profile =
-    SelectionSet.succeed Feed
-        |> with (Query.articles (newestFirst >> followedBy profile) articleSelection)
-        |> with (SelectionSet.succeed 0)
+    feedSelection (newestFirst >> followedBy profile)
 
 
-followedBy : User.Profile -> Query.ArticlesOptionalArguments -> Query.ArticlesOptionalArguments
 followedBy profile =
     Argument.combine4
         (where_ Input.buildArticles_bool_exp)
         (author Input.buildUsers_bool_exp)
         (id Input.buildInt_comparison_exp)
         (in_ (User.id profile :: User.following profile))
+
+
+feedSelection : (Query.ArticlesOptionalArguments -> Query.ArticlesOptionalArguments) -> SelectionSet Feed RootQuery
+feedSelection where_ =
+    SelectionSet.succeed Feed
+        |> with (Query.articles where_ articleSelection)
+        |> with (count where_)
+
+
+count : (Query.ArticlesAggregateOptionalArguments -> Query.ArticlesAggregateOptionalArguments) -> SelectionSet Int RootQuery
+count where_ =
+    Query.articles_aggregate where_ countSelection
+
+
+countSelection : SelectionSet Int Hasura.Object.Articles_aggregate
+countSelection =
+    ArticlesAggregate.aggregate (ArticlesAggregateFields.count identity)
+        |> SelectionSet.map defaultToZero
 
 
 
@@ -152,7 +167,7 @@ all : SelectionSet Feed RootQuery
 all =
     SelectionSet.succeed Feed
         |> with (Query.articles newestFirst articleSelection)
-        |> with (SelectionSet.succeed 0)
+        |> with (Query.articles_aggregate newestFirst countSelection)
 
 
 articleSelection : SelectionSet Article Hasura.Object.Articles
@@ -211,7 +226,12 @@ likedBySelection =
 likesCountSelection : SelectionSet Int Hasura.Object.Likes_aggregate
 likesCountSelection =
     LikesAggregate.aggregate (LikesAggregateFields.count identity)
-        |> SelectionSet.map (Maybe.andThen identity >> Maybe.withDefault 0)
+        |> SelectionSet.map defaultToZero
+
+
+defaultToZero : Maybe (Maybe number) -> number
+defaultToZero =
+    Maybe.andThen identity >> Maybe.withDefault 0
 
 
 tagSelection : SelectionSet Tag.Tag Hasura.Object.Tags
@@ -219,7 +239,6 @@ tagSelection =
     SelectionSet.map Tag.one Tags.tag
 
 
-newestFirst : Query.ArticlesOptionalArguments -> Query.ArticlesOptionalArguments
 newestFirst =
     Argument.combine2
         (order_by Input.buildArticles_order_by)

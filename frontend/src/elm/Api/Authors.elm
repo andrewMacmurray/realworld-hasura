@@ -8,7 +8,6 @@ module Api.Authors exposing
 import Api
 import Api.Argument as Argument exposing (..)
 import Api.Articles as Articles
-import Article exposing (Article)
 import Article.Author as Author exposing (Author)
 import Article.Feed as Feed exposing (Feed)
 import Effect exposing (Effect)
@@ -22,6 +21,16 @@ import Hasura.Query exposing (ArticlesOptionalArguments)
 
 type alias FeedSelection =
     Author.Id -> SelectionSet Feed RootQuery
+
+
+authoredArticles : FeedSelection
+authoredArticles id_ =
+    Articles.feedSelection (Articles.newestFirst >> authoredBy id_)
+
+
+likedArticles : FeedSelection
+likedArticles id_ =
+    Articles.feedSelection (Articles.newestFirst >> likedBy id_)
 
 
 
@@ -40,34 +49,6 @@ authorFeedSelection id_ selection =
     SelectionSet.succeed Feed.forAuthor
         |> with (authorById id_)
         |> with (selection id_)
-
-
-authoredArticles : FeedSelection
-authoredArticles id_ =
-    SelectionSet.succeed Feed
-        |> with (authoredArticles_ id_)
-        |> with (SelectionSet.succeed 0)
-
-
-authoredArticles_ : Author.Id -> SelectionSet (List Article) RootQuery
-authoredArticles_ id_ =
-    Hasura.Query.articles
-        (Articles.newestFirst >> authoredBy id_)
-        Articles.articleSelection
-
-
-likedArticles : FeedSelection
-likedArticles id_ =
-    SelectionSet.succeed Feed
-        |> with (likedArticles_ id_)
-        |> with (SelectionSet.succeed 0)
-
-
-likedArticles_ : Author.Id -> SelectionSet (List Article) RootQuery
-likedArticles_ id_ =
-    Hasura.Query.articles
-        (Articles.newestFirst >> likedBy id_)
-        Articles.articleSelection
 
 
 authoredBy : Author.Id -> ArticlesOptionalArguments -> ArticlesOptionalArguments
