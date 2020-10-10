@@ -9,8 +9,8 @@ module Page.Author exposing
 import Api
 import Api.Authors as Authors
 import Article.Author as Author exposing (Author)
-import Article.Author.Feed as Author
 import Article.Author.Follow as Follow
+import Article.Component.Feed as Feed
 import Article.Feed as Feed
 import Context exposing (Context)
 import Effect exposing (Effect)
@@ -40,7 +40,7 @@ type alias Model =
 
 
 type Msg
-    = LoadAuthorResponseReceived (Api.Response (Maybe Author.Feed))
+    = LoadAuthorResponseReceived (Api.Response (Maybe Feed.ForAuthor))
     | LikedArticlesClicked
     | AuthoredArticlesClicked
     | FeedMsg Feed.Msg
@@ -97,7 +97,7 @@ update msg model =
             handleLoadAuthoredArticles model
 
 
-handleLoadResponse : Model -> Api.Response (Maybe Author.Feed) -> Model
+handleLoadResponse : Model -> Api.Response (Maybe Feed.ForAuthor) -> Model
 handleLoadResponse model response =
     { model
         | author = Api.mapData .author (Api.fromNullableResponse response)

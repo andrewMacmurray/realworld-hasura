@@ -12,7 +12,7 @@ module Effect exposing
     , loadArticle
     , loadArticles
     , loadAuthorFeed
-    , loadFeed
+    , loadHomeFeed
     , loadUrl
     , loadUser
     , logout
@@ -37,7 +37,7 @@ module Effect exposing
 
 import Api
 import Article exposing (Article)
-import Article.Author.Feed as Author
+import Article.Feed as Feed
 import Browser.Navigation as Navigation
 import Context exposing (Context)
 import Ports
@@ -64,14 +64,14 @@ type Effect msg
     | CloseMenu
     | SignUp (Api.Mutation User.Profile msg)
     | SignIn (Api.Mutation User.Profile msg)
-    | LoadArticleFeed (Api.Query Article.Feed msg)
+    | LoadHomeFeed (Api.Query Feed.Home msg)
     | LoadArticles (Api.Query (List Article) msg)
     | LoadArticle (Api.Query (Maybe Article) msg)
     | RefreshUser (Api.Query User msg)
     | MutateWithEmptyResponse (Api.Mutation () msg)
     | MutationReturningArticle (Api.Mutation Article msg)
     | MutateAuthor (Api.Mutation Int msg)
-    | LoadAuthorFeed (Api.Query (Maybe Author.Feed) msg)
+    | LoadAuthorFeed (Api.Query (Maybe Feed.ForAuthor) msg)
     | MutateSettings (Api.Mutation () msg)
     | UpdateSettings User.SettingsUpdate
     | UpdateUser (Api.Response User)
@@ -147,9 +147,9 @@ refreshUser =
     RefreshUser
 
 
-loadFeed : Api.Query Article.Feed msg -> Effect msg
-loadFeed =
-    LoadArticleFeed
+loadHomeFeed : Api.Query Feed.Home msg -> Effect msg
+loadHomeFeed =
+    LoadHomeFeed
 
 
 loadArticle : Api.Query (Maybe Article) msg -> Effect msg
@@ -212,7 +212,7 @@ unfollowAuthor =
     MutateAuthor
 
 
-loadAuthorFeed : Api.Query (Maybe Author.Feed) msg -> Effect msg
+loadAuthorFeed : Api.Query (Maybe Feed.ForAuthor) msg -> Effect msg
 loadAuthorFeed =
     LoadAuthorFeed
 
@@ -275,8 +275,8 @@ map toMsg effect =
         CloseMenu ->
             CloseMenu
 
-        LoadArticleFeed req ->
-            LoadArticleFeed (Api.map toMsg req)
+        LoadHomeFeed req ->
+            LoadHomeFeed (Api.map toMsg req)
 
         LoadArticle req ->
             LoadArticle (Api.map toMsg req)
@@ -375,7 +375,7 @@ perform pushUrl_ ( model, effect ) =
         SignIn mutation ->
             ( model, Api.doMutation model.context.user mutation )
 
-        LoadArticleFeed query ->
+        LoadHomeFeed query ->
             ( model, Api.doQuery model.context.user query )
 
         LoadArticle query ->

@@ -10,7 +10,7 @@ import Animation
 import Animation.Named as Animation
 import Api
 import Api.Articles
-import Article exposing (Article)
+import Article.Component.Feed as Feed
 import Article.Feed as Feed
 import Context exposing (Context)
 import Effect exposing (Effect)
@@ -43,7 +43,7 @@ type alias Model =
 
 
 type Msg
-    = LoadFeedResponseReceived (Api.Response Article.Feed)
+    = LoadFeedResponseReceived (Api.Response Feed.Home)
     | GlobalFeedClicked
     | YourFeedClicked User.Profile
     | FeedMsg Feed.Msg
@@ -75,13 +75,13 @@ fetchFeed : User -> Maybe Tag -> Effect Msg
 fetchFeed user tag =
     case ( user, tag ) of
         ( _, Just tag_ ) ->
-            Api.Articles.loadFeed (Api.Articles.byTag tag_) LoadFeedResponseReceived
+            Api.Articles.loadHomeFeed (Api.Articles.byTag tag_) LoadFeedResponseReceived
 
         ( User.Guest, _ ) ->
-            Api.Articles.loadFeed Api.Articles.all LoadFeedResponseReceived
+            Api.Articles.loadHomeFeed Api.Articles.all LoadFeedResponseReceived
 
         ( User.Author profile_, _ ) ->
-            Api.Articles.loadFeed (Api.Articles.followedByAuthor profile_) LoadFeedResponseReceived
+            Api.Articles.loadHomeFeed (Api.Articles.followedByAuthor profile_) LoadFeedResponseReceived
 
 
 initialModel : User -> Maybe Tag -> Model
@@ -128,7 +128,7 @@ update msg model =
             Feed.update FeedMsg msg_ model
 
 
-handleFeedResponse : Model -> Api.Response Article.Feed -> Model
+handleFeedResponse : Model -> Api.Response Feed.Home -> Model
 handleFeedResponse model res =
     { model
         | popularTags = Api.mapData .popularTags (Api.fromResponse res)
@@ -197,7 +197,7 @@ pageIsLoading page =
 
 isLoaded : Feed.Model -> Bool
 isLoaded =
-    not << Api.isLoading
+    not << Api.isLoading << .articles
 
 
 whiteSubtitle : String -> Element msg

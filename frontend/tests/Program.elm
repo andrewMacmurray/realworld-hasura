@@ -17,7 +17,7 @@ module Program exposing
 
 import Api
 import Article exposing (Article)
-import Article.Author.Feed as Author
+import Article.Feed as Feed
 import Effect exposing (Effect(..))
 import Helpers
 import Json.Encode as Encode
@@ -52,10 +52,10 @@ type alias FakeNavKey =
 
 
 type alias Options =
-    { feed : Api.Response Article.Feed
+    { feed : Api.Response Feed.Home
     , article : Api.Response (Maybe Article)
     , articles : Api.Response (List Article)
-    , authorFeed : Api.Response (Maybe Author.Feed)
+    , authorFeed : Api.Response (Maybe Feed.ForAuthor)
     , settingsUpdate : Api.Response ()
     , route : Route
     , user : Maybe Ports.User
@@ -115,16 +115,16 @@ simulateArticle article options =
 
 simulateArticleFeed : List Article -> List Tag -> Options -> Options
 simulateArticleFeed articles tags options =
-    { options | feed = Ok (toGlobalFeed articles tags) }
+    { options | feed = Ok (toHomeFeed articles tags) }
 
 
-simulateAuthorFeed : Api.Response (Maybe Author.Feed) -> Options -> Options
+simulateAuthorFeed : Api.Response (Maybe Feed.ForAuthor) -> Options -> Options
 simulateAuthorFeed feed options =
     { options | authorFeed = feed }
 
 
-toGlobalFeed : List Article -> List Tag -> Article.Feed
-toGlobalFeed articles tags =
+toHomeFeed : List Article -> List Tag -> Feed.Home
+toHomeFeed articles tags =
     { articles = articles
     , popularTags = List.map (\t -> { tag = t, count = 1 }) tags
     }
@@ -142,7 +142,7 @@ defaultOptions route =
     }
 
 
-emptyFeed : Article.Feed
+emptyFeed : Feed.Home
 emptyFeed =
     { articles = []
     , popularTags = []
@@ -245,7 +245,7 @@ simulateEffects options eff =
         CloseMenu ->
             SimulatedEffect.Cmd.none
 
-        LoadArticleFeed query ->
+        LoadHomeFeed query ->
             simulateResponse query options.feed
 
         LoadArticle query ->

@@ -9,7 +9,7 @@ module Api.Articles exposing
     , like
     , load
     , loadArticle
-    , loadFeed
+    , loadHomeFeed
     , newestFirst
     , postComment
     , publish
@@ -23,6 +23,7 @@ import Api.Date as Date
 import Article exposing (Article)
 import Article.Author as Author exposing (Author)
 import Article.Comment as Comment exposing (Comment, Comment_)
+import Article.Feed as Feed
 import Effect exposing (Effect)
 import Graphql.Operation exposing (RootMutation, RootQuery)
 import Graphql.OptionalArgument exposing (OptionalArgument(..))
@@ -72,13 +73,13 @@ load selection msg =
 -- Global Feed
 
 
-loadFeed : SelectionSet (List Article) RootQuery -> (Api.Response Article.Feed -> msg) -> Effect msg
-loadFeed articlesSelection_ msg =
-    SelectionSet.succeed Article.Feed
+loadHomeFeed : SelectionSet (List Article) RootQuery -> (Api.Response Feed.Home -> msg) -> Effect msg
+loadHomeFeed articlesSelection_ msg =
+    SelectionSet.succeed Feed.Home
         |> with articlesSelection_
         |> with popularTagsSelection
         |> Api.query msg
-        |> Effect.loadFeed
+        |> Effect.loadHomeFeed
 
 
 

@@ -10,7 +10,7 @@ module Page.Editor exposing
 import Api
 import Api.Articles
 import Article exposing (Article)
-import Article.Feed as Feed
+import Article.Component.Feed as Feed
 import Context exposing (Context)
 import Effect exposing (Effect)
 import Element exposing (..)

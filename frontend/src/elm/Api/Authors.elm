@@ -10,7 +10,7 @@ import Api.Argument as Argument exposing (..)
 import Api.Articles as Articles
 import Article exposing (Article)
 import Article.Author as Author exposing (Author)
-import Article.Author.Feed as Feed exposing (Feed)
+import Article.Feed as Feed
 import Effect exposing (Effect)
 import Graphql.Operation exposing (RootQuery)
 import Graphql.SelectionSet as SelectionSet exposing (SelectionSet, with)
@@ -28,16 +28,16 @@ type alias ArticlesSelection =
 -- load
 
 
-loadFeed : ArticlesSelection -> Author.Id -> (Api.Response (Maybe Feed) -> msg) -> Effect msg
+loadFeed : ArticlesSelection -> Author.Id -> (Api.Response (Maybe Feed.ForAuthor) -> msg) -> Effect msg
 loadFeed articles id_ msg =
     feedSelection id_ articles
         |> Api.query msg
         |> Effect.loadAuthorFeed
 
 
-feedSelection : Author.Id -> ArticlesSelection -> SelectionSet (Maybe Feed) RootQuery
+feedSelection : Author.Id -> ArticlesSelection -> SelectionSet (Maybe Feed.ForAuthor) RootQuery
 feedSelection id_ selection =
-    SelectionSet.succeed Feed.build
+    SelectionSet.succeed Feed.forAuthor
         |> with (authorById id_)
         |> with (selection id_)
 
