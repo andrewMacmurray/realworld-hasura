@@ -30,4 +30,4 @@ redirect route =
 
 redirectHome : BlogProgramTest -> Expectation
 redirectHome =
-    redirect (Route.Home Nothing)
+    redirect Route.home

@@ -114,7 +114,7 @@ pushUrl =
 
 redirectHome : Effect msg
 redirectHome =
-    NavigateTo (Route.Home Nothing)
+    NavigateTo Route.home
 
 
 goToArticle : Article.Id -> Effect msg
@@ -337,7 +337,7 @@ perform pushUrl_ ( model, effect ) =
             ( { model | context = Context.setUser User.Guest model.context }
             , Cmd.batch
                 [ Ports.logout
-                , Route.Home Nothing |> Route.routeToString |> pushUrl_ model.navKey
+                , Route.home |> Route.routeToString |> pushUrl_ model.navKey
                 ]
             )
 

@@ -12,6 +12,7 @@ import Api
 import Api.Articles
 import Article.Component.Feed as Feed
 import Article.Feed as Feed
+import Article.Page as Page
 import Context exposing (Context)
 import Effect exposing (Effect)
 import Element exposing (..)
@@ -64,8 +65,8 @@ type Tab
 -- Init
 
 
-init : User -> Maybe Tag -> ( Model, Effect Msg )
-init user tag =
+init : User -> Maybe Tag -> Page.Number -> ( Model, Effect Msg )
+init user tag page_ =
     ( initialModel user tag
     , fetchFeed user tag
     )

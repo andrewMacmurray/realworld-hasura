@@ -53,7 +53,7 @@ toAuthorFeed author_ articles =
 
 authorRoute : Route
 authorRoute =
-    Route.Author 1
+    Route.author author
 
 
 author : Author

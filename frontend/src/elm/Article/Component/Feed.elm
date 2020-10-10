@@ -55,7 +55,8 @@ type alias PageMsg msg =
 
 
 type alias Model =
-    { feed : Api.Data Feed }
+    { feed : Api.Data Feed
+    }
 
 
 type Msg

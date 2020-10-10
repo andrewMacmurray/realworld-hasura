@@ -12,6 +12,7 @@ import Article.Author as Author exposing (Author)
 import Article.Author.Follow as Follow
 import Article.Component.Feed as Feed
 import Article.Feed as Feed
+import Article.Page as Page
 import Context exposing (Context)
 import Effect exposing (Effect)
 import Element exposing (..)
@@ -56,8 +57,8 @@ type Tab
 -- Init
 
 
-init : User.Id -> ( Model, Effect Msg )
-init id_ =
+init : User.Id -> Page.Number -> ( Model, Effect Msg )
+init id_ page_ =
     ( initialModel, fetchAuthorFeed id_ )
 
 

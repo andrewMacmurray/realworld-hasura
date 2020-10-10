@@ -73,7 +73,7 @@ withPage =
 
 onHomePage : Options
 onHomePage =
-    withPage (Route.Home Nothing)
+    withPage Route.home
 
 
 withLoggedInUser : Options -> Options
@@ -223,7 +223,7 @@ simulateEffects options eff =
             SimulatedEffect.Navigation.pushUrl (Route.routeToString route)
 
         Logout ->
-            SimulatedEffect.Navigation.pushUrl (Route.routeToString (Route.Home Nothing))
+            SimulatedEffect.Navigation.pushUrl (Route.routeToString Route.home)
 
         PushUrl url ->
             SimulatedEffect.Navigation.pushUrl (Url.toString url)

@@ -193,15 +193,15 @@ navLinks : User -> List (Element msg)
 navLinks user =
     case user of
         User.Author profile_ ->
-            [ Route.link (Route.Home Nothing) [] "Home"
+            [ Route.link Route.home [] "Home"
             , Route.link Route.NewArticle [] "New Post"
-            , Route.el (Route.Author (User.id profile_)) (profileLink profile_)
+            , Route.el (Route.profile profile_) (profileLink profile_)
             , Route.link Route.Settings [] "Settings"
             , Route.link Route.Logout [] "Logout"
             ]
 
         User.Guest ->
-            [ Route.link (Route.Home Nothing) [] "Home"
+            [ Route.link Route.home [] "Home"
             , Route.link Route.SignIn [] "Sign In"
             , Route.link Route.SignUp [] "Sign Up"
             ]
@@ -223,7 +223,7 @@ navBar menu links =
         , paddingXY pageXPadding 0
         ]
         (row [ width fill ]
-            [ Route.el (Route.Home Nothing)
+            [ Route.el Route.home
                 (el [ paddingXY 0 Scale.medium ]
                     (Text.title [ Text.green, Text.bold ] "conduit")
                 )

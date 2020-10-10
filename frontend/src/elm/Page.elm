@@ -69,8 +69,8 @@ changeTo url context page =
 changeTo_ : Context -> Page -> Route -> ( Page, Effect Msg )
 changeTo_ context page route =
     case route of
-        Route.Home tag ->
-            updateWith Home HomeMsg (Home.init context.user tag)
+        Route.Home tag page_ ->
+            updateWith Home HomeMsg (Home.init context.user tag page_)
 
         Route.SignUp ->
             updateWith SignUp SignUpMsg SignUp.init
@@ -90,8 +90,8 @@ changeTo_ context page route =
         Route.Article id_ ->
             updateWith Article ArticleMsg (Article.init id_)
 
-        Route.Author id_ ->
-            updateWith Author AuthorMsg (Author.init id_)
+        Route.Author id_ page_ ->
+            updateWith Author AuthorMsg (Author.init id_ page_)
 
         Route.Logout ->
             ( page, Effect.logout )
