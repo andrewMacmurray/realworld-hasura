@@ -25,6 +25,8 @@ import Element.Palette as Palette
 import Element.Scale as Scale
 import Element.Tab as Tab
 import Element.Text as Text
+import Graphql.Operation exposing (RootQuery)
+import Graphql.SelectionSet exposing (SelectionSet)
 import Route
 import Tag exposing (Tag)
 import User exposing (User(..))
@@ -76,13 +78,27 @@ fetchFeed : User -> Maybe Tag -> Effect Msg
 fetchFeed user tag =
     case ( user, tag ) of
         ( _, Just tag_ ) ->
-            Api.Articles.loadHomeFeed (Api.Articles.byTag tag_) LoadFeedResponseReceived
+            loadFeed (Api.Articles.byTag tag_)
 
         ( User.Guest, _ ) ->
-            Api.Articles.loadHomeFeed Api.Articles.all LoadFeedResponseReceived
+            loadFeed Api.Articles.all
 
         ( User.Author profile_, _ ) ->
-            Api.Articles.loadHomeFeed (Api.Articles.followedByAuthor profile_) LoadFeedResponseReceived
+            fetchAuthorFeed profile_
+
+
+fetchAuthorFeed : User.Profile -> Effect Msg
+fetchAuthorFeed profile_ =
+    if User.isFollowingAuthors profile_ then
+        loadFeed (Api.Articles.followedByAuthor profile_)
+
+    else
+        loadFeed Api.Articles.all
+
+
+loadFeed : SelectionSet Feed.Feed RootQuery -> Effect Msg
+loadFeed where_ =
+    Api.Articles.loadHomeFeed where_ LoadFeedResponseReceived
 
 
 initialModel : User -> Maybe Tag -> Model
