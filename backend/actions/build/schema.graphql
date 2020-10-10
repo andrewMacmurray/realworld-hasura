@@ -596,6 +596,11 @@ type mutation_root {
   ): likes_mutation_response
   "delete single row from the table: \"likes\""
   delete_likes_by_pk(id: Int!): likes
+  "delete data from the table: \"profile\""
+  delete_profile(
+    "filter the rows which have to be deleted"
+    where: profile_bool_exp!
+  ): profile_mutation_response
   "delete data from the table: \"tags\""
   delete_tags(
     "filter the rows which have to be deleted"
@@ -639,6 +644,16 @@ type mutation_root {
     "on conflict condition"
     on_conflict: comments_on_conflict
   ): comments_mutation_response
+  "insert data into the table: \"profile\""
+  insert_profile(
+    "the rows to be inserted"
+    objects: [profile_insert_input!]!
+  ): profile_mutation_response
+  "insert a single row into the table: \"profile\""
+  insert_profile_one(
+    "the row to be inserted"
+    object: profile_insert_input!
+  ): profile
   "insert a single row into the table: \"tags\""
   insert_tag(
     "the row to be inserted"
@@ -766,6 +781,15 @@ type mutation_root {
     _set: likes_set_input, 
     pk_columns: likes_pk_columns_input!
   ): likes
+  "update data of the table: \"profile\""
+  update_profile(
+    "increments the integer columns with given value of the filtered values"
+    _inc: profile_inc_input, 
+    "sets the columns of the filtered rows to the given values"
+    _set: profile_set_input, 
+    "filter the rows which have to be updated"
+    where: profile_bool_exp!
+  ): profile_mutation_response
   "update data of the table: \"tags\""
   update_tags(
     "increments the integer columns with given value of the filtered values"
@@ -800,6 +824,128 @@ type mutation_root {
     "filter the rows which have to be updated"
     where: users_bool_exp!
   ): users_mutation_response
+}
+
+"columns and relationships of \"profile\""
+type profile {
+  bio: String
+  email: String
+  "An array relationship"
+  follows(
+    "distinct select on columns"
+    distinct_on: [follows_select_column!], 
+    "limit the number of rows returned"
+    limit: Int, 
+    "skip the first n rows. Use only with order_by"
+    offset: Int, 
+    "sort the rows by one or more columns"
+    order_by: [follows_order_by!], 
+    "filter the rows returned"
+    where: follows_bool_exp
+  ): [follows!]!
+  "An aggregated array relationship"
+  follows_aggregate(
+    "distinct select on columns"
+    distinct_on: [follows_select_column!], 
+    "limit the number of rows returned"
+    limit: Int, 
+    "skip the first n rows. Use only with order_by"
+    offset: Int, 
+    "sort the rows by one or more columns"
+    order_by: [follows_order_by!], 
+    "filter the rows returned"
+    where: follows_bool_exp
+  ): follows_aggregate!
+  profile_image: String
+  user_id: Int
+  username: String
+}
+
+"aggregated selection of \"profile\""
+type profile_aggregate {
+  aggregate: profile_aggregate_fields
+  nodes: [profile!]!
+}
+
+"aggregate fields of \"profile\""
+type profile_aggregate_fields {
+  avg: profile_avg_fields
+  count(columns: [profile_select_column!], distinct: Boolean): Int
+  max: profile_max_fields
+  min: profile_min_fields
+  stddev: profile_stddev_fields
+  stddev_pop: profile_stddev_pop_fields
+  stddev_samp: profile_stddev_samp_fields
+  sum: profile_sum_fields
+  var_pop: profile_var_pop_fields
+  var_samp: profile_var_samp_fields
+  variance: profile_variance_fields
+}
+
+"aggregate avg on columns"
+type profile_avg_fields {
+  user_id: Float
+}
+
+"aggregate max on columns"
+type profile_max_fields {
+  bio: String
+  email: String
+  profile_image: String
+  user_id: Int
+  username: String
+}
+
+"aggregate min on columns"
+type profile_min_fields {
+  bio: String
+  email: String
+  profile_image: String
+  user_id: Int
+  username: String
+}
+
+"response of any mutation on the table \"profile\""
+type profile_mutation_response {
+  "number of affected rows by the mutation"
+  affected_rows: Int!
+  "data of the affected rows by the mutation"
+  returning: [profile!]!
+}
+
+"aggregate stddev on columns"
+type profile_stddev_fields {
+  user_id: Float
+}
+
+"aggregate stddev_pop on columns"
+type profile_stddev_pop_fields {
+  user_id: Float
+}
+
+"aggregate stddev_samp on columns"
+type profile_stddev_samp_fields {
+  user_id: Float
+}
+
+"aggregate sum on columns"
+type profile_sum_fields {
+  user_id: Int
+}
+
+"aggregate var_pop on columns"
+type profile_var_pop_fields {
+  user_id: Float
+}
+
+"aggregate var_samp on columns"
+type profile_var_samp_fields {
+  user_id: Float
+}
+
+"aggregate variance on columns"
+type profile_variance_fields {
+  user_id: Float
 }
 
 "query root"
@@ -916,6 +1062,32 @@ type query_root {
   ): likes_aggregate!
   "fetch data from the table: \"likes\" using primary key columns"
   likes_by_pk(id: Int!): likes
+  "fetch data from the table: \"profile\""
+  profile(
+    "distinct select on columns"
+    distinct_on: [profile_select_column!], 
+    "limit the number of rows returned"
+    limit: Int, 
+    "skip the first n rows. Use only with order_by"
+    offset: Int, 
+    "sort the rows by one or more columns"
+    order_by: [profile_order_by!], 
+    "filter the rows returned"
+    where: profile_bool_exp
+  ): [profile!]!
+  "fetch aggregated fields from the table: \"profile\""
+  profile_aggregate(
+    "distinct select on columns"
+    distinct_on: [profile_select_column!], 
+    "limit the number of rows returned"
+    limit: Int, 
+    "skip the first n rows. Use only with order_by"
+    offset: Int, 
+    "sort the rows by one or more columns"
+    order_by: [profile_order_by!], 
+    "filter the rows returned"
+    where: profile_bool_exp
+  ): profile_aggregate!
   "fetch data from the table: \"tags\" using primary key columns"
   tag(id: Int!): tags
   "fetch data from the table: \"tags\""
@@ -1088,6 +1260,32 @@ type subscription_root {
   ): likes_aggregate!
   "fetch data from the table: \"likes\" using primary key columns"
   likes_by_pk(id: Int!): likes
+  "fetch data from the table: \"profile\""
+  profile(
+    "distinct select on columns"
+    distinct_on: [profile_select_column!], 
+    "limit the number of rows returned"
+    limit: Int, 
+    "skip the first n rows. Use only with order_by"
+    offset: Int, 
+    "sort the rows by one or more columns"
+    order_by: [profile_order_by!], 
+    "filter the rows returned"
+    where: profile_bool_exp
+  ): [profile!]!
+  "fetch aggregated fields from the table: \"profile\""
+  profile_aggregate(
+    "distinct select on columns"
+    distinct_on: [profile_select_column!], 
+    "limit the number of rows returned"
+    limit: Int, 
+    "skip the first n rows. Use only with order_by"
+    offset: Int, 
+    "sort the rows by one or more columns"
+    order_by: [profile_order_by!], 
+    "filter the rows returned"
+    where: profile_bool_exp
+  ): profile_aggregate!
   "fetch data from the table: \"tags\" using primary key columns"
   tag(id: Int!): tags
   "fetch data from the table: \"tags\""
@@ -1495,6 +1693,15 @@ enum order_by {
   desc
   desc_nulls_first
   desc_nulls_last
+}
+
+"select columns of table \"profile\""
+enum profile_select_column {
+  bio
+  email
+  profile_image
+  user_id
+  username
 }
 
 "unique or primary key constraints on table \"tags\""
@@ -2230,6 +2437,136 @@ input likes_var_samp_order_by {
 input likes_variance_order_by {
   article_id: order_by
   id: order_by
+  user_id: order_by
+}
+
+"order by aggregate values of table \"profile\""
+input profile_aggregate_order_by {
+  avg: profile_avg_order_by
+  count: order_by
+  max: profile_max_order_by
+  min: profile_min_order_by
+  stddev: profile_stddev_order_by
+  stddev_pop: profile_stddev_pop_order_by
+  stddev_samp: profile_stddev_samp_order_by
+  sum: profile_sum_order_by
+  var_pop: profile_var_pop_order_by
+  var_samp: profile_var_samp_order_by
+  variance: profile_variance_order_by
+}
+
+"input type for inserting array relation for remote table \"profile\""
+input profile_arr_rel_insert_input {
+  data: [profile_insert_input!]!
+}
+
+"order by avg() on columns of table \"profile\""
+input profile_avg_order_by {
+  user_id: order_by
+}
+
+"Boolean expression to filter rows from the table \"profile\". All fields are combined with a logical 'AND'."
+input profile_bool_exp {
+  _and: [profile_bool_exp]
+  _not: profile_bool_exp
+  _or: [profile_bool_exp]
+  bio: String_comparison_exp
+  email: String_comparison_exp
+  follows: follows_bool_exp
+  profile_image: String_comparison_exp
+  user_id: Int_comparison_exp
+  username: String_comparison_exp
+}
+
+"input type for incrementing integer column in table \"profile\""
+input profile_inc_input {
+  user_id: Int
+}
+
+"input type for inserting data into table \"profile\""
+input profile_insert_input {
+  bio: String
+  email: String
+  follows: follows_arr_rel_insert_input
+  profile_image: String
+  user_id: Int
+  username: String
+}
+
+"order by max() on columns of table \"profile\""
+input profile_max_order_by {
+  bio: order_by
+  email: order_by
+  profile_image: order_by
+  user_id: order_by
+  username: order_by
+}
+
+"order by min() on columns of table \"profile\""
+input profile_min_order_by {
+  bio: order_by
+  email: order_by
+  profile_image: order_by
+  user_id: order_by
+  username: order_by
+}
+
+"input type for inserting object relation for remote table \"profile\""
+input profile_obj_rel_insert_input {
+  data: profile_insert_input!
+}
+
+"ordering options when selecting data from \"profile\""
+input profile_order_by {
+  bio: order_by
+  email: order_by
+  follows_aggregate: follows_aggregate_order_by
+  profile_image: order_by
+  user_id: order_by
+  username: order_by
+}
+
+"input type for updating data in table \"profile\""
+input profile_set_input {
+  bio: String
+  email: String
+  profile_image: String
+  user_id: Int
+  username: String
+}
+
+"order by stddev() on columns of table \"profile\""
+input profile_stddev_order_by {
+  user_id: order_by
+}
+
+"order by stddev_pop() on columns of table \"profile\""
+input profile_stddev_pop_order_by {
+  user_id: order_by
+}
+
+"order by stddev_samp() on columns of table \"profile\""
+input profile_stddev_samp_order_by {
+  user_id: order_by
+}
+
+"order by sum() on columns of table \"profile\""
+input profile_sum_order_by {
+  user_id: order_by
+}
+
+"order by var_pop() on columns of table \"profile\""
+input profile_var_pop_order_by {
+  user_id: order_by
+}
+
+"order by var_samp() on columns of table \"profile\""
+input profile_var_samp_order_by {
+  user_id: order_by
+}
+
+"order by variance() on columns of table \"profile\""
+input profile_variance_order_by {
   user_id: order_by
 }
 

@@ -153,7 +153,7 @@ signInButton =
 
 username : Inputs -> Element Msg
 username =
-    textInput
+    input Field.medium
         { label = "Username"
         , value = .username
         , update = \i v -> { i | username = v }
@@ -162,13 +162,13 @@ username =
 
 password : Inputs -> Element Msg
 password =
-    textInput
+    input Field.currentPassword
         { label = "Password"
         , value = .password
         , update = \i v -> { i | password = v }
         }
 
 
-textInput : Field.Config Inputs -> Inputs -> Element Msg
-textInput =
-    Field.toElement InputsChanged << Field.medium << Field.field
+input : (Field.Field inputs -> Field.View Inputs output) -> Field.Config inputs -> Inputs -> Element Msg
+input withStyle =
+    Field.field >> withStyle >> Field.toElement InputsChanged

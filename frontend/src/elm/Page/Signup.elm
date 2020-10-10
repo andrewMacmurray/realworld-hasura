@@ -156,7 +156,7 @@ signupButton =
 
 email : Inputs -> Element Msg
 email =
-    textInput
+    input Field.medium
         { label = "Email"
         , value = .email
         , update = \i v -> { i | email = v }
@@ -165,7 +165,7 @@ email =
 
 username : Inputs -> Element Msg
 username =
-    textInput
+    input Field.medium
         { label = "Username"
         , value = .username
         , update = \i v -> { i | username = v }
@@ -174,13 +174,13 @@ username =
 
 password : Inputs -> Element Msg
 password =
-    textInput
+    input Field.newPassword
         { label = "Password"
         , value = .password
         , update = \i v -> { i | password = v }
         }
 
 
-textInput : Field.Config Inputs -> Inputs -> Element Msg
-textInput =
-    Field.field >> Field.medium >> Field.toElement InputsChanged
+input : (Field.Field inputs -> Field.View Inputs output) -> Field.Config inputs -> Inputs -> Element Msg
+input withStyle =
+    Field.field >> withStyle >> Field.toElement InputsChanged

@@ -1,10 +1,12 @@
 module Form.View.Field exposing
-    ( Style
+    ( FieldType
     , View
     , area
     , borderless
+    , currentPassword
     , large
     , medium
+    , newPassword
     , showErrorsIf
     , small
     , toElement
@@ -29,18 +31,28 @@ import Form.Validation exposing (Validation)
 
 
 type alias View inputs output =
-    { style : Style
+    { fieldType : FieldType
     , validation : Maybe (Validation inputs output)
     , field : Field inputs
     , errorsVisible : Bool
     }
 
 
-type Style
-    = Large
-    | Medium
-    | Small
+type FieldType
+    = TextField Size
+    | Password Password
     | TextArea Border
+
+
+type Password
+    = New
+    | Current
+
+
+type Size
+    = Small
+    | Medium
+    | Large
 
 
 type Border
@@ -54,17 +66,17 @@ type Border
 
 large : Field inputs -> View inputs output
 large =
-    defaults_ Large
+    defaults_ (TextField Large)
 
 
 medium : Field inputs -> View inputs output
 medium =
-    defaults_ Medium
+    defaults_ (TextField Medium)
 
 
 small : Field inputs -> View inputs output
 small =
-    defaults_ Small
+    defaults_ (TextField Small)
 
 
 area : Field inputs -> View inputs output
@@ -77,9 +89,19 @@ borderless =
     defaults_ (TextArea Borderless)
 
 
-defaults_ : Style -> Field inputs -> View inputs output
+newPassword : Field inputs -> View inputs output
+newPassword =
+    defaults_ (Password New)
+
+
+currentPassword : Field inputs -> View inputs output
+currentPassword =
+    defaults_ (Password Current)
+
+
+defaults_ : FieldType -> Field inputs -> View inputs output
 defaults_ style field =
-    { style = style
+    { fieldType = style
     , validation = Nothing
     , field = field
     , errorsVisible = True
@@ -105,45 +127,107 @@ showErrorsIf errorsVisible options =
 
 
 toElement : (inputs -> msg) -> View inputs output -> inputs -> Element msg
-toElement msg ({ field, style, validation } as options) inputs =
-    let
-        commonAttributes =
-            List.concat
-                [ [ Anchor.description (Field.label field), padding Scale.small ]
-                , errorAttributes options inputs
-                ]
+toElement msg options inputs =
+    case options.fieldType of
+        TextField size ->
+            toTextField size options inputs msg
 
-        config_ =
-            { onChange = Field.update field inputs >> msg
-            , text = Field.value field inputs
-            , placeholder = Just (placeholder (Field.label field))
-            , label = Input.labelHidden (Field.label field)
-            }
-    in
-    case style of
-        Small ->
-            Input.text (Font.size Text.small :: commonAttributes) config_
-
-        Medium ->
-            Input.text (Font.size Text.medium :: commonAttributes) config_
-
-        Large ->
-            Input.text (Font.size Text.medium :: commonAttributes) config_
+        Password password ->
+            toPasswordField password options inputs msg
 
         TextArea border ->
-            Input.multiline
-                (List.concat
-                    [ [ Font.size Text.small ]
-                    , commonAttributes
-                    , toAreaStyle border
-                    ]
-                )
-                { onChange = config_.onChange
-                , text = config_.text
-                , placeholder = config_.placeholder
-                , label = config_.label
-                , spellcheck = True
-                }
+            toTextAreaField border options inputs msg
+
+
+toTextAreaField : Border -> View inputs output -> inputs -> (inputs -> msg) -> Element msg
+toTextAreaField border options inputs msg =
+    let
+        config =
+            common options inputs msg
+    in
+    Input.multiline
+        (List.concat
+            [ [ Font.size Text.small ]
+            , attributes options inputs
+            , toAreaStyle border
+            ]
+        )
+        { onChange = config.onChange
+        , text = config.text
+        , placeholder = config.placeholder
+        , label = config.label
+        , spellcheck = True
+        }
+
+
+toPasswordField : Password -> View inputs output -> inputs -> (inputs -> msg) -> Element msg
+toPasswordField password options input msg =
+    let
+        common_ =
+            common options input msg
+
+        attributes_ =
+            fontSize Medium :: attributes options input
+
+        config =
+            { onChange = common_.onChange
+            , text = common_.text
+            , placeholder = common_.placeholder
+            , label = common_.label
+            , show = False
+            }
+    in
+    case password of
+        New ->
+            Input.newPassword attributes_ config
+
+        Current ->
+            Input.currentPassword attributes_ config
+
+
+toTextField : Size -> View inputs output -> inputs -> (inputs -> msg) -> Element msg
+toTextField size options input msg =
+    Input.text
+        (fontSize size :: attributes options input)
+        (common options input msg)
+
+
+fontSize : Size -> Attr decorative msg
+fontSize size =
+    case size of
+        Small ->
+            Font.size Text.small
+
+        Medium ->
+            Font.size Text.medium
+
+        Large ->
+            Font.size Text.large
+
+
+type alias Common msg =
+    { onChange : String -> msg
+    , text : String
+    , placeholder : Maybe (Input.Placeholder msg)
+    , label : Input.Label msg
+    }
+
+
+common : View inputs output -> inputs -> (inputs -> msg) -> Common msg
+common options inputs msg =
+    { onChange = Field.update options.field inputs >> msg
+    , text = Field.value options.field inputs
+    , placeholder = Just (placeholder (Field.label options.field))
+    , label = Input.labelHidden (Field.label options.field)
+    }
+
+
+attributes : View inputs output -> inputs -> List (Attribute msg)
+attributes options inputs =
+    List.concat
+        [ [ Anchor.description (Field.label options.field), padding Scale.small ]
+        , errorAttributes options inputs
+        ]
 
 
 errorAttributes : View inputs output -> inputs -> List (Attribute msg)
