@@ -89,7 +89,7 @@ tagQuery =
 
 pageNumber : Query.Parser Page.Number
 pageNumber =
-    Query.int "page" |> Query.map Page.number
+    Query.int "page" |> Query.map Page.toNumber
 
 
 link : Route -> List Text.Option -> String -> Element msg
@@ -151,7 +151,7 @@ toTagQuery_ =
 
 pageNumberQuery_ : Page.Number -> Url.QueryParameter
 pageNumberQuery_ =
-    Page.int >> Url.int "page"
+    Page.number >> Url.int "page"
 
 
 fromUrl : Url -> Maybe Route

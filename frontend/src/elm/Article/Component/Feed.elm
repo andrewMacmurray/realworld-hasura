@@ -22,12 +22,9 @@ import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Anchor as Anchor
 import Element.Avatar as Avatar
-import Element.Background as Background
-import Element.Border as Border
 import Element.Button as Button
 import Element.Divider as Divider
 import Element.Loader as Loader
-import Element.Palette as Palette
 import Element.Scale as Scale exposing (edges)
 import Element.Text as Text
 import Graphql.Operation exposing (RootQuery)
@@ -210,33 +207,16 @@ viewFeed options feed =
         [ column
             [ spacing Scale.large, width fill ]
             (List.map (viewArticle options) feed.articles)
-        , pages
+        , pages options feed
         ]
 
 
-pages =
-    row [ spacing Scale.extraSmall ]
-        [ activePage 1
-        , page 2
-        ]
-
-
-activePage n =
-    el
-        [ width (px 25)
-        , height (px 25)
-        ]
-        (el [ centerY, centerX ] (Text.text [ Text.black ] (String.fromInt n)))
-
-
-page n =
-    el
-        [ Border.rounded 100
-        , Background.color Palette.green
-        , width (px 25)
-        , height (px 25)
-        ]
-        (el [ centerY, centerX ] (Text.text [ Text.white ] (String.fromInt n)))
+pages : Options msg -> Feed -> Element msg
+pages options feed =
+    Page.view
+        { total = feed.count
+        , page = options.feed.page
+        }
 
 
 viewArticle : Options msg -> Article -> Element msg
