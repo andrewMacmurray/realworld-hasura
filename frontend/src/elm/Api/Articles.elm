@@ -24,6 +24,7 @@ import Article exposing (Article)
 import Article.Author as Author exposing (Author)
 import Article.Comment as Comment exposing (Comment, Comment_)
 import Article.Feed as Feed exposing (Feed)
+import Article.Page as Page
 import Effect exposing (Effect)
 import Graphql.Operation exposing (RootMutation, RootQuery)
 import Graphql.OptionalArgument exposing (OptionalArgument(..))
@@ -76,9 +77,9 @@ loadFeed selection msg =
 
 
 loadHomeFeed : SelectionSet Feed RootQuery -> (Api.Response Feed.Home -> msg) -> Effect msg
-loadHomeFeed articlesSelection_ msg =
+loadHomeFeed feedSelection_ msg =
     SelectionSet.succeed Feed.Home
-        |> with articlesSelection_
+        |> with feedSelection_
         |> with popularTagsSelection
         |> Api.query msg
         |> Effect.loadHomeFeed
@@ -88,9 +89,9 @@ loadHomeFeed articlesSelection_ msg =
 -- By Tag
 
 
-byTag : Tag -> SelectionSet Feed RootQuery
-byTag tag =
-    feedSelection (newestFirst >> containsTag tag)
+byTag : Page.Number -> Tag -> SelectionSet Feed RootQuery
+byTag page_ tag =
+    feedSelection page_ (newestFirst >> containsTag tag)
 
 
 containsTag : Tag -> Query.ArticlesOptionalArguments -> Query.ArticlesOptionalArguments
@@ -106,9 +107,9 @@ containsTag tag_ =
 -- By Author
 
 
-followedByAuthor : User.Profile -> SelectionSet Feed RootQuery
-followedByAuthor profile =
-    feedSelection (newestFirst >> followedBy profile)
+followedByAuthor : User.Profile -> Page.Number -> SelectionSet Feed RootQuery
+followedByAuthor profile page_ =
+    feedSelection page_ (newestFirst >> followedBy profile)
 
 
 followedBy profile =
@@ -119,10 +120,10 @@ followedBy profile =
         (in_ (User.id profile :: User.following profile))
 
 
-feedSelection : (Query.ArticlesOptionalArguments -> Query.ArticlesOptionalArguments) -> SelectionSet Feed RootQuery
-feedSelection where_ =
+feedSelection : Page.Number -> (Query.ArticlesOptionalArguments -> Query.ArticlesOptionalArguments) -> SelectionSet Feed RootQuery
+feedSelection page where_ =
     SelectionSet.succeed Feed
-        |> with (Query.articles where_ articleSelection)
+        |> with (Query.articles (where_ >> paginate page) articleSelection)
         |> with (count where_)
 
 
@@ -135,6 +136,10 @@ countSelection : SelectionSet Int Hasura.Object.Articles_aggregate
 countSelection =
     ArticlesAggregate.aggregate (ArticlesAggregateFields.count identity)
         |> SelectionSet.map defaultToZero
+
+
+paginate page_ args =
+    { args | offset = Present (Page.offset page_), limit = Present Page.size }
 
 
 
@@ -163,11 +168,9 @@ popularTagSelection =
 -- Articles
 
 
-all : SelectionSet Feed RootQuery
-all =
-    SelectionSet.succeed Feed
-        |> with (Query.articles newestFirst articleSelection)
-        |> with (Query.articles_aggregate newestFirst countSelection)
+all : Page.Number -> SelectionSet Feed RootQuery
+all page_ =
+    feedSelection page_ newestFirst
 
 
 articleSelection : SelectionSet Article Hasura.Object.Articles

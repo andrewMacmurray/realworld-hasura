@@ -17,6 +17,7 @@ import Api
 import Api.Articles
 import Article exposing (Article)
 import Article.Feed exposing (Feed)
+import Article.Page as Page
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Anchor as Anchor
@@ -56,6 +57,7 @@ type alias PageMsg msg =
 
 type alias Model =
     { feed : Api.Data Feed
+    , page : Page.Number
     }
 
 
@@ -70,29 +72,38 @@ type Msg
 -- Init
 
 
-fromResponse : Api.Response { a | feed : Feed } -> Model
-fromResponse =
-    Api.fromResponse >> Api.mapData .feed >> init_
+fromResponse : Api.Response { a | feed : Feed } -> Model -> Model
+fromResponse response model =
+    Api.fromResponse response
+        |> Api.mapData .feed
+        |> init_ model.page
 
 
-fromNullableResponse : Result error (Maybe { a | feed : Feed }) -> Model
-fromNullableResponse =
-    Api.fromNullableResponse >> Api.mapData .feed >> init_
+fromNullableResponse : Result error (Maybe { a | feed : Feed }) -> Model -> Model
+fromNullableResponse response model =
+    Api.fromNullableResponse response
+        |> Api.mapData .feed
+        |> init_ model.page
 
 
-load : SelectionSet Feed RootQuery -> ( Model, Effect Msg )
-load selection =
-    ( loading, Api.Articles.loadFeed selection LoadFeedResponseReceived )
+load : (Page.Number -> SelectionSet Feed RootQuery) -> Model -> ( Model, Effect Msg )
+load selection model =
+    ( { model | feed = Api.Loading }
+    , Api.Articles.loadFeed (selection model.page) LoadFeedResponseReceived
+    )
 
 
-loading : Model
-loading =
-    { feed = Api.Loading }
+loading : Page.Number -> Model
+loading page_ =
+    { feed = Api.Loading
+    , page = page_
+    }
 
 
-init_ : Api.Data Feed -> Model
-init_ feed =
+init_ : Page.Number -> Api.Data Feed -> Model
+init_ page_ feed =
     { feed = feed
+    , page = page_
     }
 
 

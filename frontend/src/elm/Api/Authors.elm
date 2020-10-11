@@ -10,6 +10,7 @@ import Api.Argument as Argument exposing (..)
 import Api.Articles as Articles
 import Article.Author as Author exposing (Author)
 import Article.Feed as Feed exposing (Feed)
+import Article.Page as Page
 import Effect exposing (Effect)
 import Graphql.Operation exposing (RootQuery)
 import Graphql.SelectionSet as SelectionSet exposing (SelectionSet, with)
@@ -20,35 +21,35 @@ import Hasura.Query exposing (ArticlesOptionalArguments)
 
 
 type alias FeedSelection =
-    Author.Id -> SelectionSet Feed RootQuery
+    Author.Id -> Page.Number -> SelectionSet Feed RootQuery
 
 
 authoredArticles : FeedSelection
-authoredArticles id_ =
-    Articles.feedSelection (Articles.newestFirst >> authoredBy id_)
+authoredArticles id_ page_ =
+    Articles.feedSelection page_ (Articles.newestFirst >> authoredBy id_)
 
 
 likedArticles : FeedSelection
-likedArticles id_ =
-    Articles.feedSelection (Articles.newestFirst >> likedBy id_)
+likedArticles id_ page_ =
+    Articles.feedSelection page_ (Articles.newestFirst >> likedBy id_)
 
 
 
 -- load
 
 
-loadFeed : FeedSelection -> Author.Id -> (Api.Response (Maybe Feed.ForAuthor) -> msg) -> Effect msg
-loadFeed articles id_ msg =
-    authorFeedSelection id_ articles
+loadFeed : FeedSelection -> Author.Id -> Page.Number -> (Api.Response (Maybe Feed.ForAuthor) -> msg) -> Effect msg
+loadFeed articles id_ page_ msg =
+    authorFeedSelection id_ page_ articles
         |> Api.query msg
         |> Effect.loadAuthorFeed
 
 
-authorFeedSelection : Author.Id -> FeedSelection -> SelectionSet (Maybe Feed.ForAuthor) RootQuery
-authorFeedSelection id_ selection =
+authorFeedSelection : Author.Id -> Page.Number -> FeedSelection -> SelectionSet (Maybe Feed.ForAuthor) RootQuery
+authorFeedSelection id_ page_ selection =
     SelectionSet.succeed Feed.forAuthor
         |> with (authorById id_)
-        |> with (selection id_)
+        |> with (selection id_ page_)
 
 
 authoredBy : Author.Id -> ArticlesOptionalArguments -> ArticlesOptionalArguments

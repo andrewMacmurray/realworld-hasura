@@ -69,31 +69,31 @@ type Tab
 
 init : User -> Maybe Tag -> Page.Number -> ( Model, Effect Msg )
 init user tag page_ =
-    ( initialModel user tag
-    , fetchFeed user tag
+    ( initialModel user page_ tag
+    , fetchFeed user page_ tag
     )
 
 
-fetchFeed : User -> Maybe Tag -> Effect Msg
-fetchFeed user tag =
+fetchFeed : User -> Page.Number -> Maybe Tag -> Effect Msg
+fetchFeed user page_ tag =
     case ( user, tag ) of
         ( _, Just tag_ ) ->
-            loadFeed (Api.Articles.byTag tag_)
+            loadFeed (Api.Articles.byTag page_ tag_)
 
         ( User.Guest, _ ) ->
-            loadFeed Api.Articles.all
+            loadFeed (Api.Articles.all page_)
 
         ( User.Author profile_, _ ) ->
-            fetchAuthorFeed profile_
+            fetchAuthorFeed page_ profile_
 
 
-fetchAuthorFeed : User.Profile -> Effect Msg
-fetchAuthorFeed profile_ =
+fetchAuthorFeed : Page.Number -> User.Profile -> Effect Msg
+fetchAuthorFeed page_ profile_ =
     if User.isFollowingAuthors profile_ then
-        loadFeed (Api.Articles.followedByAuthor profile_)
+        loadFeed (Api.Articles.followedByAuthor profile_ page_)
 
     else
-        loadFeed Api.Articles.all
+        loadFeed (Api.Articles.all page_)
 
 
 loadFeed : SelectionSet Feed.Feed RootQuery -> Effect Msg
@@ -101,11 +101,11 @@ loadFeed where_ =
     Api.Articles.loadHomeFeed where_ LoadFeedResponseReceived
 
 
-initialModel : User -> Maybe Tag -> Model
-initialModel user tag =
+initialModel : User -> Page.Number -> Maybe Tag -> Model
+initialModel user page_ tag =
     { pageLoad = Loading
     , activeTab = initTab user tag
-    , feed = Feed.loading
+    , feed = Feed.loading page_
     , popularTags = Api.Loading
     }
 
@@ -149,7 +149,7 @@ handleFeedResponse : Model -> Api.Response Feed.Home -> Model
 handleFeedResponse model res =
     { model
         | popularTags = Api.mapData .popularTags (Api.fromResponse res)
-        , feed = Feed.fromResponse res
+        , feed = Feed.fromResponse res model.feed
         , pageLoad = Loaded
     }
 
@@ -161,14 +161,13 @@ embedFeed =
 
 loadGlobalFeed : Model -> ( Model, Effect Msg )
 loadGlobalFeed model =
-    Feed.load Api.Articles.all
+    Feed.load Api.Articles.all model.feed
         |> embedFeed { model | activeTab = Global }
 
 
 loadYourFeed : User.Profile -> Model -> ( Model, Effect Msg )
 loadYourFeed profile_ model =
-    Api.Articles.followedByAuthor profile_
-        |> Feed.load
+    Feed.load (Api.Articles.followedByAuthor profile_) model.feed
         |> embedFeed { model | activeTab = YourFeed }
 
 
