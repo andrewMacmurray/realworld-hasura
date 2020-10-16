@@ -70,6 +70,7 @@ type Effect msg
     | RefreshUser (Api.Query User msg)
     | MutateWithEmptyResponse (Api.Mutation () msg)
     | MutationReturningArticle (Api.Mutation Article msg)
+    | MutationReturningArticleId (Api.Mutation Article.Id msg)
     | MutateAuthor (Api.Mutation Int msg)
     | LoadAuthorFeed (Api.Query (Maybe Feed.ForAuthor) msg)
     | MutateSettings (Api.Mutation () msg)
@@ -162,14 +163,14 @@ loadFeed =
     LoadFeed
 
 
-publishArticle : Api.Mutation () msg -> Effect msg
+publishArticle : Api.Mutation Article.Id msg -> Effect msg
 publishArticle =
-    MutateWithEmptyResponse
+    MutationReturningArticleId
 
 
-editArticle : Api.Mutation () msg -> Effect msg
+editArticle : Api.Mutation Article.Id msg -> Effect msg
 editArticle =
-    MutateWithEmptyResponse
+    MutationReturningArticleId
 
 
 deleteArticle : Api.Mutation () msg -> Effect msg
@@ -293,6 +294,9 @@ map toMsg effect =
         MutationReturningArticle req ->
             MutationReturningArticle (Api.map toMsg req)
 
+        MutationReturningArticleId req ->
+            MutationReturningArticleId (Api.map toMsg req)
+
         MutateAuthor req ->
             MutateAuthor (Api.map toMsg req)
 
@@ -388,6 +392,9 @@ perform pushUrl_ ( model, effect ) =
             ( model, Api.doMutation model.context.user mutation )
 
         MutationReturningArticle mutation ->
+            ( model, Api.doMutation model.context.user mutation )
+
+        MutationReturningArticleId mutation ->
             ( model, Api.doMutation model.context.user mutation )
 
         MutateAuthor mutation ->

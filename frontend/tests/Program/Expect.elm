@@ -3,6 +3,7 @@ module Program.Expect exposing
     , hasNoEls
     , redirect
     , redirectHome
+    , redirectToPublishedArticle
     )
 
 import Expect exposing (Expectation)
@@ -26,6 +27,11 @@ contains n label =
 redirect : Route -> BlogProgramTest -> Expectation
 redirect route =
     ProgramTest.expectBrowserUrl (\s -> Expect.equal (baseUrl ++ Route.routeToString route) s)
+
+
+redirectToPublishedArticle : BlogProgramTest -> Expectation
+redirectToPublishedArticle =
+    redirect (Route.Article 1)
 
 
 redirectHome : BlogProgramTest -> Expectation

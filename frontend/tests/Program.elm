@@ -261,6 +261,9 @@ simulateEffects options eff =
         MutationReturningArticle mutation ->
             simulateResponse mutation (Ok (Helpers.article "updated"))
 
+        MutationReturningArticleId mutation ->
+            simulateResponse mutation (Ok 1)
+
         AddToUserFollows _ ->
             SimulatedEffect.Cmd.none
 

@@ -252,9 +252,9 @@ newestFirst =
 -- Publish
 
 
-publish : (Api.Response () -> msg) -> Article.Inputs -> Effect msg
+publish : (Api.Response Article.Id -> msg) -> Article.Inputs -> Effect msg
 publish msg article_ =
-    Mutation.publish_article identity { object = toPublishArgs article_ } SelectionSet.empty
+    Mutation.publish_article identity { object = toPublishArgs article_ } Articles.id
         |> SelectionSet.failOnNothing
         |> Api.mutation msg
         |> Effect.publishArticle
@@ -287,9 +287,9 @@ toTagArg tag_ =
 -- Edit
 
 
-edit : (Api.Response () -> msg) -> Article.Id -> Article.Inputs -> Effect msg
+edit : (Api.Response Article.Id -> msg) -> Article.Id -> Article.Inputs -> Effect msg
 edit msg id_ edits =
-    SelectionSet.succeed (\_ _ _ -> ())
+    SelectionSet.succeed (\_ _ _ -> id_)
         |> with (editArticle id_ edits)
         |> with (insertTags id_ edits)
         |> with (deleteTags id_)

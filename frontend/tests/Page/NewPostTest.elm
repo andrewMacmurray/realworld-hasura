@@ -43,7 +43,7 @@ suite =
                     |> Program.fillField "write-your-article-(in-markdown)" "some article content"
                     |> Program.fillField "enter-tags" "tag"
                     |> clickButton "Publish Article"
-                    |> Expect.redirectHome
+                    |> Expect.redirectToPublishedArticle
         , test "User sees errors if submitting an incomplete article" <|
             \_ ->
                 Program.withPage Route.NewArticle

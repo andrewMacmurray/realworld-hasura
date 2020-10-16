@@ -41,8 +41,8 @@ type Msg
     | InputsChanged Inputs
     | PublishClickedWithErrors
     | PublishClicked Article.Inputs
-    | PublishResponseReceived (Api.Response ())
-    | EditResponseReceived Article.Id (Api.Response ())
+    | PublishResponseReceived (Api.Response Article.Id)
+    | EditResponseReceived (Api.Response Article.Id)
 
 
 type Mode
@@ -112,8 +112,8 @@ update msg model =
         PublishClicked toCreate ->
             ( model, publishArticle model.mode toCreate )
 
-        PublishResponseReceived (Ok _) ->
-            ( model, Effect.redirectHome )
+        PublishResponseReceived (Ok id) ->
+            ( model, Effect.goToArticle id )
 
         PublishResponseReceived (Err _) ->
             ( model, Effect.none )
@@ -121,10 +121,10 @@ update msg model =
         PublishClickedWithErrors ->
             ( { model | errorsVisible = True }, Effect.none )
 
-        EditResponseReceived id (Ok _) ->
+        EditResponseReceived (Ok id) ->
             ( model, Effect.goToArticle id )
 
-        EditResponseReceived _ (Err _) ->
+        EditResponseReceived (Err _) ->
             ( model, Effect.none )
 
 
@@ -149,7 +149,7 @@ publishArticle mode =
             Api.Articles.publish PublishResponseReceived
 
         EditArticle id ->
-            Api.Articles.edit (EditResponseReceived id) id
+            Api.Articles.edit EditResponseReceived id
 
 
 
