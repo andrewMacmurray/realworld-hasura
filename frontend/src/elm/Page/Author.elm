@@ -57,22 +57,22 @@ type Tab
 -- Init
 
 
-init : User.Id -> Page.Number -> ( Model, Effect Msg )
-init id_ page_ =
-    ( initialModel page_, fetchAuthorFeed page_ id_ )
+init : Author.Id -> ( Model, Effect Msg )
+init id =
+    ( initialModel id, fetchAuthorFeed id )
 
 
-initialModel : Page.Number -> Model
-initialModel page_ =
-    { feed = Feed.loading page_
+initialModel : Author.Id -> Model
+initialModel id =
+    { feed = Feed.loading (Authors.authoredArticles id)
     , author = Api.Loading
     , activeTab = AuthoredArticles
     }
 
 
-fetchAuthorFeed : Page.Number -> User.Id -> Effect Msg
-fetchAuthorFeed page_ id_ =
-    Authors.loadFeed Authors.authoredArticles id_ page_ LoadAuthorResponseReceived
+fetchAuthorFeed : Author.Id -> Effect Msg
+fetchAuthorFeed id_ =
+    Authors.loadFeed Authors.authoredArticles id_ Page.first LoadAuthorResponseReceived
 
 
 
@@ -122,7 +122,7 @@ loadFeed : Authors.FeedSelection -> Model -> ( Feed.Model, Effect Feed.Msg )
 loadFeed selection model =
     case model.author of
         Api.Success author ->
-            Feed.load (selection (Author.id author)) model.feed
+            Feed.load (selection (Author.id author))
 
         _ ->
             ( model.feed, Effect.none )

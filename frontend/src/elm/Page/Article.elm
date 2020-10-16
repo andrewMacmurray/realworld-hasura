@@ -367,7 +367,7 @@ comments user model article =
             , height fill
             , Anchor.description "comments"
             ]
-            [ Text.title [ Text.green ] (commentsTitle (Article.comments article))
+            [ Text.subtitle [ Text.green, Text.regular ] (commentsTitle (Article.comments article))
             , newComment article model user
             , column [ spacing Scale.large, width fill ] (showComments user model article)
             ]
@@ -418,7 +418,7 @@ commentInput =
 
 commentsTitle : List Comment -> String
 commentsTitle comments_ =
-    String.pluralize "Comment" (List.length comments_)
+    String.pluralize "comment" (List.length comments_)
 
 
 showComment : CommentAction -> User -> Comment -> Element Msg

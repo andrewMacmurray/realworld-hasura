@@ -31,40 +31,40 @@ import User
 
 
 type Route
-    = Home (Maybe Tag) Page.Number
+    = Home (Maybe Tag)
     | SignUp
     | SignIn
     | NewArticle
     | EditArticle Article.Id
     | Settings
     | Article Article.Id
-    | Author User.Id Page.Number
+    | Author User.Id
     | Logout
 
 
 parser : Parser.Parser (Route -> c) c
 parser =
     oneOf
-        [ Parser.map Home (top <?> tagQuery <?> pageNumber)
+        [ Parser.map Home (top <?> tagQuery)
         , Parser.map SignUp (s "sign-up")
         , Parser.map SignIn (s "sign-in")
         , Parser.map NewArticle (s "new-article")
         , Parser.map Article (s "article" </> int)
         , Parser.map EditArticle (s "article" </> s "edit" </> int)
         , Parser.map Settings (s "settings")
-        , Parser.map Author (s "author" </> int <?> pageNumber)
+        , Parser.map Author (s "author" </> int)
         , Parser.map Logout (s "logout")
         ]
 
 
 tagFeed : Tag -> Route
 tagFeed tag =
-    Home (Just tag) Page.first
+    Home (Just tag)
 
 
 home : Route
 home =
-    Home Nothing Page.first
+    Home Nothing
 
 
 editArticle : Article -> Route
@@ -74,12 +74,12 @@ editArticle =
 
 author : Author -> Route
 author a =
-    Author (Author.id a) Page.first
+    Author (Author.id a)
 
 
 profile : User.Profile -> Route
 profile p =
-    Author (User.id p) Page.first
+    Author (User.id p)
 
 
 tagQuery : Query.Parser (Maybe Tag)
@@ -116,8 +116,8 @@ el route el_ =
 routeToString : Route -> String
 routeToString route =
     case route of
-        Home tag_ number_ ->
-            absolute [] (pageNumberQuery_ number_ :: toTagQuery_ tag_)
+        Home tag_ ->
+            absolute [] (toTagQuery_ tag_)
 
         SignUp ->
             absolute [ "sign-up" ] []
@@ -137,8 +137,8 @@ routeToString route =
         Article id ->
             absolute [ "article", String.fromInt id ] []
 
-        Author id number_ ->
-            absolute [ "author", String.fromInt id ] [ pageNumberQuery_ number_ ]
+        Author id ->
+            absolute [ "author", String.fromInt id ] []
 
         Logout ->
             absolute [ "logout" ] []
@@ -147,11 +147,6 @@ routeToString route =
 toTagQuery_ : Maybe Tag -> List Url.QueryParameter
 toTagQuery_ =
     Maybe.map (Tag.value >> Url.string "tag" >> List.singleton) >> Maybe.withDefault []
-
-
-pageNumberQuery_ : Page.Number -> Url.QueryParameter
-pageNumberQuery_ =
-    Page.number >> Url.int "page"
 
 
 fromUrl : Url -> Maybe Route

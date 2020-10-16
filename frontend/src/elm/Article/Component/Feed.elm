@@ -55,7 +55,12 @@ type alias PageMsg msg =
 type alias Model =
     { feed : Api.Data Feed
     , page : Page.Number
+    , selection : FeedSelection
     }
+
+
+type alias FeedSelection =
+    Page.Number -> SelectionSet Feed RootQuery
 
 
 type Msg
@@ -69,39 +74,34 @@ type Msg
 -- Init
 
 
-fromResponse : Api.Response { a | feed : Feed } -> Model -> Model
+fromResponse : Api.Response { res | feed : Feed } -> Model -> Model
 fromResponse response model =
-    Api.fromResponse response
-        |> Api.mapData .feed
-        |> init_ model.page
+    Api.fromResponse response |> updateFeed model
 
 
-fromNullableResponse : Result error (Maybe { a | feed : Feed }) -> Model -> Model
+fromNullableResponse : Result error (Maybe { res | feed : Feed }) -> Model -> Model
 fromNullableResponse response model =
-    Api.fromNullableResponse response
-        |> Api.mapData .feed
-        |> init_ model.page
+    Api.fromNullableResponse response |> updateFeed model
 
 
-load : (Page.Number -> SelectionSet Feed RootQuery) -> Model -> ( Model, Effect Msg )
-load selection model =
-    ( { model | feed = Api.Loading }
-    , Api.Articles.loadFeed (selection model.page) LoadFeedResponseReceived
+load : FeedSelection -> ( Model, Effect Msg )
+load selection =
+    ( loading selection
+    , Api.Articles.loadFeed (selection Page.first) LoadFeedResponseReceived
     )
 
 
-loading : Page.Number -> Model
-loading page_ =
+loading : FeedSelection -> Model
+loading selection =
     { feed = Api.Loading
-    , page = page_
+    , page = Page.first
+    , selection = selection
     }
 
 
-init_ : Page.Number -> Api.Data Feed -> Model
-init_ page_ feed =
-    { feed = feed
-    , page = page_
-    }
+updateFeed : Model -> Api.Data { res | feed : Feed } -> Model
+updateFeed model response =
+    { model | feed = Api.mapData .feed response }
 
 
 

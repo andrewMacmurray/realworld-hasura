@@ -89,8 +89,8 @@ loadHomeFeed feedSelection_ msg =
 -- By Tag
 
 
-byTag : Page.Number -> Tag -> SelectionSet Feed RootQuery
-byTag page_ tag =
+byTag : Tag -> Page.Number -> SelectionSet Feed RootQuery
+byTag tag page_ =
     feedSelection page_ (newestFirst >> containsTag tag)
 
 
