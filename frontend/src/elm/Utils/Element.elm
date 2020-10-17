@@ -2,9 +2,11 @@ module Utils.Element exposing
     ( desktopOnly
     , maybe
     , mobileOnly
+    , showOnDesktop
+    , showOnMobile
     )
 
-import Element exposing (Element, htmlAttribute)
+import Element exposing (Element, el, fill, htmlAttribute, width)
 import Html.Attributes exposing (class)
 
 
@@ -23,19 +25,29 @@ maybe toElement =
 
 mobileOnly : (List (Element.Attribute msg) -> a) -> List (Element.Attribute msg) -> a
 mobileOnly node attrs =
-    node (attrs ++ [ hideOnDesktop ])
+    node (attrs ++ [ hideOnDesktop_ ])
 
 
 desktopOnly : (List (Element.Attribute msg) -> c -> a) -> List (Element.Attribute msg) -> c -> a
 desktopOnly node attrs =
-    node (attrs ++ [ showOnDesktop ])
+    node (attrs ++ [ showOnDesktop_ ])
 
 
-showOnDesktop : Element.Attribute msg
+showOnDesktop : Element msg -> Element msg
 showOnDesktop =
+    el [ width fill, showOnDesktop_ ]
+
+
+showOnMobile : Element msg -> Element msg
+showOnMobile =
+    el [ width fill, hideOnDesktop_ ]
+
+
+showOnDesktop_ : Element.Attribute msg
+showOnDesktop_ =
     htmlAttribute (class "show-on-desktop")
 
 
-hideOnDesktop : Element.Attribute msg
-hideOnDesktop =
+hideOnDesktop_ : Element.Attribute msg
+hideOnDesktop_ =
     htmlAttribute (class "hide-on-desktop")

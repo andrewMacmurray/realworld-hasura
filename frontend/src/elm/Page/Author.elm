@@ -27,6 +27,7 @@ import Element.Text as Text
 import Route
 import User exposing (User)
 import User.Element as Element
+import Utils.Element as Element
 
 
 
@@ -165,7 +166,8 @@ bannerContent user author =
             column [ spacing Scale.small, centerY ]
                 [ row [ spacing Scale.small ]
                     [ Avatar.large (Author.profileImage author_)
-                    , Text.headline [ Text.white ] (Author.username author_)
+                    , Element.showOnDesktop (Text.headline [ Text.white ] (Author.username author_))
+                    , Element.showOnMobile (Text.title [ Text.white ] (Author.username author_))
                     ]
                 , followButton user author_
                 , newPostButton user author_

@@ -303,12 +303,18 @@ viewTag textOption tag =
 headline : Article -> Element msg
 headline article =
     paragraph []
-        [ Text.headline
-            [ Text.white
-            , Text.description "article-title"
-            ]
-            (Article.title article)
+        [ Element.showOnDesktop (headline_ Text.headline article)
+        , Element.showOnMobile (headline_ Text.title article)
         ]
+
+
+headline_ : (List Text.Option -> String -> Element msg) -> Article -> Element msg
+headline_ textStyle article =
+    textStyle
+        [ Text.white
+        , Text.description "article-title"
+        ]
+        (Article.title article)
 
 
 author : Article -> Element msg
