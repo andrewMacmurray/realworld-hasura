@@ -134,7 +134,7 @@ withSpeed_ speed (Loader options) =
 
 default : Element msg
 default =
-    iconWithMessage "Loading..."
+    icon
         |> alignLeft
         |> black
         |> show True
