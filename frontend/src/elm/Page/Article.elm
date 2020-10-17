@@ -23,6 +23,7 @@ import Element.Events exposing (onClick)
 import Element.Font as Font
 import Element.Layout as Layout exposing (Layout)
 import Element.Layout.Block as Block
+import Element.Loader as Loader
 import Element.Palette as Palette
 import Element.Scale as Scale exposing (edges)
 import Element.Text as Text
@@ -339,7 +340,7 @@ articleBody : User -> Model -> Element Msg
 articleBody user model =
     case model.article of
         Api.Loading ->
-            Text.text [] "Loading..."
+            el [ moveLeft Scale.medium ] Loader.default
 
         Api.Success article ->
             showArticleBody user model article

@@ -240,11 +240,7 @@ loadingMessage =
         [ moveLeft Scale.medium
         , moveUp Scale.small
         ]
-        (Loader.iconWithMessage "Loading..."
-            |> Loader.alignLeft
-            |> Loader.black
-            |> Loader.show True
-        )
+        Loader.default
 
 
 viewFeed : Options msg -> Feed -> Element msg

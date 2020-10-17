@@ -10,11 +10,11 @@ module Page.Editor exposing
 import Api
 import Api.Articles
 import Article exposing (Article)
-import Article.Component.Feed as Feed
 import Context exposing (Context)
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Layout as Layout
+import Element.Loader as Loader
 import Element.Scale as Scale
 import Element.Text as Text
 import Form.Button as Button
@@ -167,7 +167,7 @@ page : Model -> Element Msg
 page model =
     case model.inputs of
         Api.Loading ->
-            el [ paddingXY 0 (Scale.large + Scale.extraSmall) ] Feed.loadingMessage
+            el [ moveDown Scale.small ] Loader.default
 
         Api.NotFound ->
             Text.text [] "No article found"

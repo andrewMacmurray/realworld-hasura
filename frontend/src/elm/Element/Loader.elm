@@ -2,6 +2,7 @@ module Element.Loader exposing
     ( alignLeft
     , attributes
     , black
+    , default
     , fast
     , icon
     , iconWithMessage
@@ -125,6 +126,18 @@ withColor_ color (Loader options) =
 withSpeed_ : Speed -> Loader msg -> Loader msg
 withSpeed_ speed (Loader options) =
     Loader { options | speed = speed }
+
+
+
+-- Preconfigured
+
+
+default : Element msg
+default =
+    iconWithMessage "Loading..."
+        |> alignLeft
+        |> black
+        |> show True
 
 
 
