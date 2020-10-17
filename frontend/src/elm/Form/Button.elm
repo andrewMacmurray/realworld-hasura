@@ -4,7 +4,7 @@ module Form.Button exposing
     )
 
 import Element exposing (Element)
-import Element.Button as Button
+import Element.Button as Button exposing (Button)
 import Form.Validation as Validation exposing (Validation)
 
 
@@ -15,21 +15,24 @@ import Form.Validation as Validation exposing (Validation)
 type alias ValidateOnInputOptions inputs output msg =
     { validation : Validation inputs output
     , label : String
+    , style : Button msg -> Button msg
     , onSubmit : output -> msg
     , inputs : inputs
     }
 
 
 validateOnInput : ValidateOnInputOptions inputs output msg -> Element msg
-validateOnInput { validation, label, onSubmit, inputs } =
+validateOnInput { validation, label, style, onSubmit, inputs } =
     case Validation.run inputs validation of
         Validation.Success output ->
             Button.button (onSubmit output) label
                 |> Button.description label
+                |> style
                 |> Button.toElement
 
         Validation.Failure _ ->
             Button.disabled label
+                |> style
                 |> Button.toElement
 
 

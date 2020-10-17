@@ -3,6 +3,7 @@ module Form.Field exposing
     , Field
     , field
     , id
+    , identity
     , label
     , update
     , value
@@ -29,6 +30,15 @@ type alias Config inputs =
 field : Config inputs -> Field inputs
 field =
     Field
+
+
+identity : String -> Field String
+identity label_ =
+    Field
+        { label = label_
+        , update = always Basics.identity
+        , value = Basics.identity
+        }
 
 
 

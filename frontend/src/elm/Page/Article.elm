@@ -26,7 +26,9 @@ import Element.Layout.Block as Block
 import Element.Palette as Palette
 import Element.Scale as Scale exposing (edges)
 import Element.Text as Text
+import Form.Button as Button
 import Form.Field as Field
+import Form.Validation as Validation exposing (Validation)
 import Form.View.Field as Field
 import Route
 import Tag exposing (Tag)
@@ -52,7 +54,7 @@ type Msg
     = ArticleReceived (Api.Response (Maybe Article))
     | FollowMsg Follow.Msg
     | CommentTyped String
-    | PostCommentClicked Article
+    | PostCommentClicked Article String.NonEmpty
     | PostCommentResponseReceived (Api.Response Article)
     | CommentEditUnfocused
     | DeleteCommentClicked Comment
@@ -119,8 +121,8 @@ update msg model =
         CommentTyped comment ->
             ( { model | newComment = comment, commentAction = NoCommentAction }, Effect.none )
 
-        PostCommentClicked article ->
-            ( model, postComment article model.newComment )
+        PostCommentClicked article comment ->
+            ( model, postComment article comment )
 
         PostCommentResponseReceived response ->
             ( resetComments { model | article = Api.fromResponse response }, Effect.none )
@@ -177,7 +179,7 @@ handleFollowEffect =
     Follow.effect >> Effect.map FollowMsg
 
 
-postComment : Article -> String -> Effect Msg
+postComment : Article -> String.NonEmpty -> Effect Msg
 postComment =
     Api.Articles.postComment PostCommentResponseReceived
 
@@ -393,27 +395,37 @@ newComment_ article model =
         , onClick CommentEditUnfocused
         ]
         [ commentInput model.newComment
-        , postCommentButton article
+        , postCommentButton model.newComment article
         ]
 
 
-postCommentButton : Article -> Element Msg
-postCommentButton article =
-    Button.button (PostCommentClicked article) "Post"
-        |> Button.description "post-new-comment"
-        |> Button.post
-        |> Button.toElement
+postCommentButton : String -> Article -> Element Msg
+postCommentButton comment article =
+    Button.validateOnInput
+        { label = "Post"
+        , style = Button.description "post-new-comment" >> Button.post
+        , validation = nonEmptyComment
+        , onSubmit = PostCommentClicked article
+        , inputs = comment
+        }
 
 
 commentInput : String -> Element Msg
 commentInput =
-    Field.field
-        { label = "Post a new comment"
-        , value = identity
-        , update = always identity
-        }
+    commentField
         |> Field.borderless
+        |> Field.validateWith nonEmptyComment
         |> Field.toElement CommentTyped
+
+
+nonEmptyComment : Validation String String.NonEmpty
+nonEmptyComment =
+    Validation.build identity |> Validation.nonEmpty commentField
+
+
+commentField : Field.Field String
+commentField =
+    Field.identity "Post a new comment"
 
 
 commentsTitle : List Comment -> String

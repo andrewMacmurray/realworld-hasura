@@ -48,6 +48,7 @@ import Hasura.Query as Query
 import Tag exposing (Tag)
 import User
 import Utils.SelectionSet as SelectionSet
+import Utils.String as String
 
 
 
@@ -398,7 +399,7 @@ unlike article msg =
 -- Post Comment
 
 
-postComment : (Api.Response Article -> msg) -> Article -> String -> Effect msg
+postComment : (Api.Response Article -> msg) -> Article -> String.NonEmpty -> Effect msg
 postComment msg article comment =
     mutateCommentsSelection
         |> Mutation.post_comment identity { object = postCommentArgs article comment }
@@ -412,13 +413,13 @@ mutateCommentsSelection =
     Comments.article articleSelection
 
 
-postCommentArgs : Article -> String -> Input.Comments_insert_input
+postCommentArgs : Article -> String.NonEmpty -> Input.Comments_insert_input
 postCommentArgs article comment =
     Input.buildComments_insert_input
         (\args ->
             { args
                 | article_id = Present (Article.id article)
-                , comment = Present comment
+                , comment = Present (String.fromNonEmpty comment)
             }
         )
 
