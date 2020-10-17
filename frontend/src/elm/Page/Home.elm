@@ -25,8 +25,6 @@ import Element.Palette as Palette
 import Element.Scale as Scale
 import Element.Tab as Tab
 import Element.Text as Text
-import Graphql.Operation exposing (RootQuery)
-import Graphql.SelectionSet exposing (SelectionSet)
 import Route
 import Tag exposing (Tag)
 import User exposing (User(..))
@@ -63,6 +61,12 @@ type Tab
     | TagFeed Tag
 
 
+type alias FeedConfig =
+    { tab : Tab
+    , selection : Page.Number -> Api.Articles.FeedSelection
+    }
+
+
 
 -- Init
 
@@ -76,56 +80,61 @@ init user tag =
 
 fetchFeed : User -> Maybe Tag -> Effect Msg
 fetchFeed user tag =
-    loadFeed (feedSelection user tag Page.first)
+    initFeed user tag
+        |> .selection
+        |> loadFeed
 
 
-feedSelection : User -> Maybe Tag -> Page.Number -> SelectionSet Feed.Feed RootQuery
-feedSelection user tag =
-    case ( user, tag ) of
-        ( _, Just tag_ ) ->
-            Api.Articles.byTag tag_
-
-        ( User.Guest, _ ) ->
-            Api.Articles.all
-
-        ( User.Author profile_, _ ) ->
-            authorFeedSelection profile_
-
-
-authorFeedSelection : User.Profile -> Page.Number -> SelectionSet Feed.Feed RootQuery
-authorFeedSelection profile_ page_ =
-    if User.isFollowingAuthors profile_ then
-        Api.Articles.followedByAuthor profile_ page_
-
-    else
-        Api.Articles.all page_
-
-
-loadFeed : SelectionSet Feed.Feed RootQuery -> Effect Msg
-loadFeed where_ =
-    Api.Articles.loadHomeFeed where_ LoadFeedResponseReceived
+loadFeed : (Page.Number -> Api.Articles.FeedSelection) -> Effect Msg
+loadFeed selection =
+    Api.Articles.loadHomeFeed (selection Page.first) LoadFeedResponseReceived
 
 
 initialModel : User -> Maybe Tag -> Model
 initialModel user tag =
     { pageLoad = Loading
-    , activeTab = initTab user tag
-    , feed = Feed.loading (feedSelection user tag)
+    , activeTab = .tab (initFeed user tag)
+    , feed = Feed.loading (.selection (initFeed user tag))
     , popularTags = Api.Loading
     }
 
 
-initTab : User -> Maybe Tag -> Tab
-initTab user tag =
+initFeed : User -> Maybe Tag -> FeedConfig
+initFeed user tag =
     case ( user, tag ) of
         ( _, Just t ) ->
-            TagFeed t
+            tagFeed t
 
-        ( User.Author _, _ ) ->
-            YourFeed
+        ( User.Author profile, _ ) ->
+            if User.isFollowingAuthors profile then
+                yourFeed profile
+
+            else
+                global
 
         ( User.Guest, _ ) ->
-            Global
+            global
+
+
+tagFeed : Tag -> FeedConfig
+tagFeed tag =
+    { tab = TagFeed tag
+    , selection = Api.Articles.byTag tag
+    }
+
+
+yourFeed : User.Profile -> FeedConfig
+yourFeed profile =
+    { tab = YourFeed
+    , selection = Api.Articles.followedByAuthor profile
+    }
+
+
+global : FeedConfig
+global =
+    { tab = Global
+    , selection = Api.Articles.all
+    }
 
 
 

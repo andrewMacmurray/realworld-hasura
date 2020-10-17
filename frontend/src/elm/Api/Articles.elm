@@ -1,5 +1,6 @@
 module Api.Articles exposing
-    ( all
+    ( FeedSelection
+    , all
     , byTag
     , delete
     , deleteComment
@@ -66,7 +67,11 @@ loadArticle id msg =
 --  Articles
 
 
-loadFeed : SelectionSet Feed RootQuery -> (Api.Response Feed -> msg) -> Effect msg
+type alias FeedSelection =
+    SelectionSet Feed RootQuery
+
+
+loadFeed : FeedSelection -> (Api.Response Feed -> msg) -> Effect msg
 loadFeed selection msg =
     selection
         |> Api.query msg
@@ -77,7 +82,7 @@ loadFeed selection msg =
 -- Global Feed
 
 
-loadHomeFeed : SelectionSet Feed RootQuery -> (Api.Response Feed.Home -> msg) -> Effect msg
+loadHomeFeed : FeedSelection -> (Api.Response Feed.Home -> msg) -> Effect msg
 loadHomeFeed feedSelection_ msg =
     SelectionSet.succeed Feed.Home
         |> with feedSelection_
@@ -90,7 +95,7 @@ loadHomeFeed feedSelection_ msg =
 -- By Tag
 
 
-byTag : Tag -> Page.Number -> SelectionSet Feed RootQuery
+byTag : Tag -> Page.Number -> FeedSelection
 byTag tag page_ =
     feedSelection page_ (newestFirst >> containsTag tag)
 
@@ -108,7 +113,7 @@ containsTag tag_ =
 -- By Author
 
 
-followedByAuthor : User.Profile -> Page.Number -> SelectionSet Feed RootQuery
+followedByAuthor : User.Profile -> Page.Number -> FeedSelection
 followedByAuthor profile page_ =
     feedSelection page_ (newestFirst >> followedBy profile)
 
@@ -121,7 +126,7 @@ followedBy profile =
         (in_ (User.id profile :: User.following profile))
 
 
-feedSelection : Page.Number -> (Query.ArticlesOptionalArguments -> Query.ArticlesOptionalArguments) -> SelectionSet Feed RootQuery
+feedSelection : Page.Number -> (Query.ArticlesOptionalArguments -> Query.ArticlesOptionalArguments) -> FeedSelection
 feedSelection page where_ =
     SelectionSet.succeed Feed
         |> with (Query.articles (where_ >> paginate page) articleSelection)
@@ -169,7 +174,7 @@ popularTagSelection =
 -- Articles
 
 
-all : Page.Number -> SelectionSet Feed RootQuery
+all : Page.Number -> FeedSelection
 all page_ =
     feedSelection page_ newestFirst
 

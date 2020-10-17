@@ -104,7 +104,7 @@ user name email =
     , token = "token"
     , bio = Nothing
     , profileImage = Nothing
-    , following = []
+    , following = [ 1 ]
     }
 
 
