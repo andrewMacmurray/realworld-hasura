@@ -108,7 +108,7 @@ loading : FeedSelection -> Model
 loading selection =
     { feed = Api.Loading
     , page = Page.first
-    , loadMoreRequest = Failure
+    , loadMoreRequest = Idle
     , selection = selection
     }
 
