@@ -1,3 +1,7 @@
+.force-wrapped-row-fill > div {
+  width: 100% !important;
+}
+
 .underline-hover:hover {
   text-decoration: underline;
 }

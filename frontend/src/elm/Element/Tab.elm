@@ -11,11 +11,17 @@ import Element.Events exposing (onClick)
 import Element.Palette as Palette
 import Element.Scale as Scale exposing (edges)
 import Element.Text as Text
+import Html.Attributes
 
 
 tabs : List (Element msg) -> Element msg
 tabs els =
-    wrappedRow [ spacing Scale.large, paddingEach { edges | bottom = Scale.large } ] els
+    wrappedRow_
+        [ width fill
+        , spacing Scale.large
+        , paddingEach { edges | bottom = Scale.large }
+        ]
+        els
 
 
 active : String -> Element msg
@@ -48,3 +54,14 @@ subtitleLink =
 greenSubtitle : String -> Element msg
 greenSubtitle =
     Text.subtitle [ Text.darkGreen, Text.pointer ]
+
+
+wrappedRow_ : List (Attribute msg) -> List (Element msg) -> Element msg
+wrappedRow_ attrs =
+    -- Hack to stop element from overflowing page's width
+    wrappedRow (forceRowFill :: attrs)
+
+
+forceRowFill : Attribute msg
+forceRowFill =
+    htmlAttribute (Html.Attributes.class "force-wrapped-row-fill")
