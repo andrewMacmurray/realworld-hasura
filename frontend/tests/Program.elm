@@ -285,6 +285,12 @@ simulateEffects options eff =
         UpdateUser _ ->
             SimulatedEffect.Cmd.none
 
+        GetViewport _ ->
+            SimulatedEffect.Cmd.none
+
+        SetOffsetY _ _ ->
+            SimulatedEffect.Cmd.none
+
 
 simulateResponse : { m | msg : Api.Response a -> msg } -> Api.Response a -> SimulatedEffect msg
 simulateResponse { msg } res =

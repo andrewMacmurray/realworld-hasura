@@ -18,6 +18,7 @@ import Api.Articles
 import Article exposing (Article)
 import Article.Feed exposing (Feed)
 import Article.Page as Page
+import Browser.Dom exposing (Viewport)
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Anchor as Anchor
@@ -67,9 +68,11 @@ type alias FeedSelection =
 
 type Msg
     = LoadFeedResponseReceived (Api.Response Feed)
-    | LoadMoreResponseReceived (Api.Response Feed)
+    | LoadMoreResponseReceived Viewport (Api.Response Feed)
     | LoadMoreClicked
     | UpdateArticleResponseReceived (Api.Response Article)
+    | PageScrolled
+    | ViewportReceived Viewport
     | LikeArticleClicked Article
     | UnLikeArticleClicked Article
 
@@ -136,18 +139,21 @@ update_ msg model =
             ( { model | feed = Api.fromResponse response }, Effect.none )
 
         LoadMoreClicked ->
-            ( { model | loadMoreRequest = Loading }, loadMore model )
+            ( { model | loadMoreRequest = Loading }, Effect.getViewport ViewportReceived )
 
-        LoadMoreResponseReceived (Ok feed) ->
+        ViewportReceived viewport ->
+            ( model, loadMore model viewport )
+
+        LoadMoreResponseReceived viewport (Ok feed) ->
             ( { model
                 | loadMoreRequest = Idle
                 , feed = appendToFeed feed model.feed
                 , page = Page.next model.page
               }
-            , Effect.none
+            , Effect.setOffsetY PageScrolled viewport
             )
 
-        LoadMoreResponseReceived (Err _) ->
+        LoadMoreResponseReceived _ (Err _) ->
             ( { model | loadMoreRequest = Failure }, Effect.none )
 
         LikeArticleClicked article ->
@@ -160,6 +166,9 @@ update_ msg model =
             ( { model | feed = Api.mapData (updateArticle article) model.feed }, Effect.none )
 
         UpdateArticleResponseReceived (Err _) ->
+            ( model, Effect.none )
+
+        PageScrolled ->
             ( model, Effect.none )
 
 
@@ -188,9 +197,9 @@ unlikeArticle article =
     Api.Articles.unlike article UpdateArticleResponseReceived
 
 
-loadMore : Model -> Effect Msg
-loadMore model =
-    Api.Articles.loadFeed (model.selection (Page.next model.page)) LoadMoreResponseReceived
+loadMore : Model -> Viewport -> Effect Msg
+loadMore model viewport =
+    Api.Articles.loadFeed (model.selection (Page.next model.page)) (LoadMoreResponseReceived viewport)
 
 
 
@@ -252,8 +261,8 @@ viewFeed options feed =
 
 pages : Options msg -> Feed -> Element Msg
 pages options feed =
-    Page.view
-        { total = feed.count
+    Page.loadMoreButton
+        { totalArticles = feed.count
         , loading = isLoadingMore options.feed.loadMoreRequest
         , page = options.feed.page
         , onClick = LoadMoreClicked

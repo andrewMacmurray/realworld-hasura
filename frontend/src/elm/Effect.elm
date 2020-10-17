@@ -7,6 +7,7 @@ module Effect exposing
     , deleteComment
     , editArticle
     , followAuthor
+    , getViewport
     , goToArticle
     , likeArticle
     , loadArticle
@@ -26,6 +27,7 @@ module Effect exposing
     , redirectHome
     , refreshUser
     , removeFromUserFollows
+    , setOffsetY
     , signIn
     , signUp
     , unfollowAuthor
@@ -38,11 +40,13 @@ module Effect exposing
 import Api
 import Article exposing (Article)
 import Article.Feed as Feed exposing (Feed)
+import Browser.Dom as Dom exposing (Viewport)
 import Browser.Navigation as Navigation
 import Context exposing (Context)
 import Ports
 import Route exposing (Route)
 import Route.Effect
+import Task
 import Url exposing (Url)
 import User exposing (User)
 
@@ -58,6 +62,8 @@ type Effect msg
     | LoadUrl String
     | NavigateTo Route
     | LoadUser User.Profile
+    | GetViewport (Viewport -> msg)
+    | SetOffsetY msg Float
     | Logout
     | AddToUserFollows Int
     | RemoveFromUserFollows Int
@@ -86,6 +92,16 @@ none =
 batch : List (Effect msg) -> Effect msg
 batch =
     Batch
+
+
+getViewport : (Viewport -> msg) -> Effect msg
+getViewport =
+    GetViewport
+
+
+setOffsetY : msg -> Viewport -> Effect msg
+setOffsetY msg vp =
+    SetOffsetY msg vp.viewport.y
 
 
 loadUser : User.Profile -> Effect msg
@@ -252,6 +268,12 @@ map toMsg effect =
         LoadUser token ->
             LoadUser token
 
+        GetViewport msg ->
+            GetViewport (msg >> toMsg)
+
+        SetOffsetY msg vp ->
+            SetOffsetY (toMsg msg) vp
+
         Logout ->
             Logout
 
@@ -336,6 +358,12 @@ perform pushUrl_ ( model, effect ) =
 
         NavigateTo route ->
             ( model, pushUrl_ model.navKey (Route.routeToString route) )
+
+        GetViewport msg ->
+            ( model, Task.perform msg Dom.getViewport )
+
+        SetOffsetY msg y ->
+            ( model, Task.perform (always msg) (Dom.setViewport 0 y) )
 
         Logout ->
             ( { model | context = Context.setUser User.Guest model.context }

@@ -1,10 +1,10 @@
 module Article.Page exposing
     ( Number
     , first
+    , loadMoreButton
     , next
     , offset
     , size
-    , view
     )
 
 import Element exposing (..)
@@ -47,9 +47,9 @@ offset page_ =
     (number_ page_ - 1) * size
 
 
-isLastPage : { options | total : Int, page : Number } -> Bool
-isLastPage { total, page } =
-    number_ page == lastPage total
+isLastPage : { options | totalArticles : Int, page : Number } -> Bool
+isLastPage { totalArticles, page } =
+    number_ page == lastPage totalArticles
 
 
 lastPage : Int -> Int
@@ -76,16 +76,16 @@ next (Number n) =
 
 
 type alias Options msg =
-    { total : Int
+    { totalArticles : Int
     , page : Number
     , loading : Bool
     , onClick : msg
     }
 
 
-view : Options msg -> Element msg
-view options =
-    if options.total <= size || isLastPage options then
+loadMoreButton : Options msg -> Element msg
+loadMoreButton options =
+    if options.totalArticles <= size || isLastPage options then
         none
 
     else
