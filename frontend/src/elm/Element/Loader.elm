@@ -1,26 +1,46 @@
 module Element.Loader exposing
-    ( black
+    ( alignLeft
+    , attributes
+    , black
+    , icon
+    , iconWithMessage
+    , show
     , white
     )
 
 import Animation exposing (Animation)
 import Animation.Named as Animation
-import Element exposing (Element, alpha, centerX, column, html, moveDown, moveLeft, moveUp)
+import Element exposing (..)
 import Element.Text as Text
 import Element.Transition.Simple as Transition
-import Html exposing (..)
+import Html exposing (Html, div)
 import Html.Attributes exposing (style)
 
 
-type alias Options =
-    { message : String
-    , visible : Bool
+
+-- Loader
+
+
+type Loader msg
+    = Loader (Options msg)
+
+
+type alias Options msg =
+    { style : Style
+    , textAlign : TextAlign
+    , color : Color
+    , attributes : List (Element.Attribute msg)
     }
 
 
-type Align
+type Style
+    = WithMessage String
+    | Icon
+
+
+type TextAlign
     = Left
-    | Right
+    | Center
 
 
 type Color
@@ -28,39 +48,109 @@ type Color
     | White
 
 
-white : Options -> Element msg
+
+-- Defaults
+
+
+defaults : Style -> Options msg
+defaults style =
+    { style = style
+    , textAlign = Center
+    , color = White
+    , attributes = []
+    }
+
+
+
+-- Construct
+
+
+iconWithMessage : String -> Loader msg
+iconWithMessage =
+    WithMessage >> defaults >> Loader
+
+
+icon : Loader msg
+icon =
+    Loader (defaults Icon)
+
+
+
+-- Configure
+
+
+white : Loader msg -> Loader msg
 white =
-    loader Right White
+    withColor_ White
 
 
-black : Options -> Element msg
+black : Loader msg -> Loader msg
 black =
-    loader Left Black
+    withColor_ Black
 
 
-loader : Align -> Color -> Options -> Element msg
-loader size color { message, visible } =
-    column []
-        [ html (dots_ color visible)
-        , Animation.el
-            (Animation.fadeIn 500 [ Animation.delay 1400 ])
-            [ centerX
-            , moveUp 20
-            ]
-            (Element.el
-                [ Transition.linear 200
-                , Transition.delay 100
-                , alpha (toAlpha visible)
-                ]
-                (Element.el (alignText size) (Text.text [ textColor color ] message))
-            )
+attributes : List (Attribute msg) -> Loader msg -> Loader msg
+attributes attrs (Loader options) =
+    Loader { options | attributes = attrs }
+
+
+alignLeft : Loader msg -> Loader msg
+alignLeft (Loader options) =
+    Loader { options | textAlign = Left }
+
+
+withColor_ : Color -> Loader msg -> Loader msg
+withColor_ color (Loader options) =
+    Loader { options | color = color }
+
+
+
+-- Render
+
+
+show : Bool -> Loader msg -> Element msg
+show visible (Loader options) =
+    column (List.append (iconBlend options) options.attributes)
+        [ html (dots_ options.color visible)
+        , toMessage visible options
         ]
 
 
-alignText : Align -> List (Element.Attr decorative msg)
+iconBlend : Options msg -> List (Attribute msg)
+iconBlend options =
+    case options.style of
+        Icon ->
+            [ htmlAttribute (metaBlendMode options.color) ]
+
+        WithMessage _ ->
+            []
+
+
+toMessage : Bool -> Options msg -> Element msg
+toMessage visible options =
+    case options.style of
+        WithMessage message ->
+            Animation.el
+                (Animation.fadeIn 500 [ Animation.delay 1400 ])
+                [ centerX
+                , moveUp 20
+                ]
+                (Element.el
+                    [ Transition.linear 200
+                    , Transition.delay 100
+                    , alpha (toAlpha visible)
+                    ]
+                    (Element.el (alignText options.textAlign) (Text.text [ textColor options.color ] message))
+                )
+
+        Icon ->
+            none
+
+
+alignText : TextAlign -> List (Element.Attr decorative msg)
 alignText align =
     case align of
-        Right ->
+        Center ->
             []
 
         Left ->
@@ -78,8 +168,9 @@ dots_ color visible =
         [ style "transform" "translateY(-15px)"
         , style "filter" ("contrast(100) " ++ "opacity(" ++ toOpacity visible ++ ")")
         , style "transition" "0.2s linear"
-        , style "mix-blend-mode" (toMetaBlendMode color)
+        , metaBlendMode color
         , style "background" (toMetaBackdrop color)
+        , style "border-radius" "30%"
         , style "padding" "10px 20px"
         ]
         [ div []
@@ -102,7 +193,7 @@ textColor color =
             Text.black
 
 
-meta : Color -> List (Attribute msg)
+meta : Color -> List (Html.Attribute msg)
 meta color =
     [ style "border-radius" "50%"
     , style "width" "20px"
@@ -112,6 +203,11 @@ meta color =
     , style "margin" "0 5px"
     , style "background" (toMetaColor color)
     ]
+
+
+metaBlendMode : Color -> Html.Attribute msg
+metaBlendMode =
+    toMetaBlendMode >> style "mix-blend-mode"
 
 
 toMetaBlendMode : Color -> String

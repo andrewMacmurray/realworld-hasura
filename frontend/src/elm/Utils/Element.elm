@@ -1,10 +1,24 @@
 module Utils.Element exposing
     ( desktopOnly
+    , maybe
     , mobileOnly
     )
 
-import Element exposing (htmlAttribute)
+import Element exposing (Element, htmlAttribute)
 import Html.Attributes exposing (class)
+
+
+
+-- Utils
+
+
+maybe : (a -> Element msg) -> Maybe a -> Element msg
+maybe toElement =
+    Maybe.map toElement >> Maybe.withDefault Element.none
+
+
+
+-- Responsive
 
 
 mobileOnly : (List (Element.Attribute msg) -> a) -> List (Element.Attribute msg) -> a

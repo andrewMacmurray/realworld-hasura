@@ -202,10 +202,10 @@ loadingMessage =
         [ moveLeft Scale.medium
         , moveUp Scale.small
         ]
-        (Loader.black
-            { message = "Loading..."
-            , visible = True
-            }
+        (Loader.iconWithMessage "Loading..."
+            |> Loader.alignLeft
+            |> Loader.black
+            |> Loader.show True
         )
 
 
@@ -219,16 +219,26 @@ viewFeed options feed =
         [ column
             [ spacing Scale.large, width fill ]
             (List.map (viewArticle options) feed.articles)
-        , Element.map options.msg (pages feed)
+        , Element.map options.msg (pages options feed)
         ]
 
 
-pages : Feed -> Element Msg
-pages feed =
+pages : Options msg -> Feed -> Element Msg
+pages options feed =
     Page.view
         { total = feed.count
+        , loading = isLoadingMore options.feed.loadMoreRequest
         , onClick = LoadMoreClicked
         }
+
+
+isLoadingMore request =
+    case request of
+        Loading ->
+            True
+
+        _ ->
+            False
 
 
 viewArticle : Options msg -> Article -> Element msg

@@ -63,6 +63,7 @@ lastPage total =
 
 type alias Options msg =
     { total : Int
+    , loading : Bool
     , onClick : msg
     }
 
@@ -73,10 +74,21 @@ view options =
         none
 
     else
-        el [ spacing Scale.extraSmall ] (loadMore options.onClick)
+        el [ spacing Scale.extraSmall ] (loadMore options)
 
 
-loadMore msg =
-    Button.button msg "Load More..."
-        |> Button.loadMore
-        |> Button.toElement
+loadMore options =
+    let
+        text =
+            "Load more"
+    in
+    if options.loading then
+        Button.decorative text
+            |> Button.loadMore
+            |> Button.loading
+            |> Button.toElement
+
+    else
+        Button.button options.onClick text
+            |> Button.loadMore
+            |> Button.toElement

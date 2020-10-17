@@ -12,6 +12,7 @@ module Element.Button exposing
     , like
     , link
     , loadMore
+    , loading
     , noText
     , post
     , primary
@@ -28,12 +29,13 @@ import Element.Font as Font
 import Element.Icon as Icon
 import Element.Icon.Bin as Bin
 import Element.Icon.Chevron as Chevron
-import Element.Icon.Ellipsis as Elipsis
+import Element.Icon.Ellipsis as Ellipsis
 import Element.Icon.Heart as Heart
 import Element.Icon.Pencil as Pencil
 import Element.Icon.Plane as Plane
 import Element.Icon.Plus as Plus
 import Element.Input as Input
+import Element.Loader as Loader
 import Element.Palette as Palette
 import Element.Scale as Scale
 import Element.Text as Text
@@ -56,16 +58,20 @@ type alias Options msg =
     , color : Color
     , icon : Maybe Icon
     , description : Maybe String
-    , hover : Bool
-    , onClick : Action msg
+    , state : State msg
     , shade : Shade
     }
+
+
+type State msg
+    = Active (Action msg)
+    | Inactive
+    | Loading
 
 
 type Action msg
     = Msg msg
     | Link String
-    | None
 
 
 type Shape
@@ -112,8 +118,8 @@ type Shade
 -- Defaults
 
 
-defaults : Action msg -> String -> Button msg
-defaults action text =
+defaults : State msg -> String -> Button msg
+defaults state text =
     Button
         { fill = Solid
         , color = Green
@@ -121,9 +127,8 @@ defaults action text =
         , icon = Nothing
         , shape = Square
         , text = Just text
-        , onClick = action
         , description = Nothing
-        , hover = True
+        , state = state
         , shade = Dark
         }
 
@@ -134,22 +139,27 @@ defaults action text =
 
 decorative : String -> Button msg
 decorative =
-    defaults None >> noHover
+    defaults Inactive
 
 
 button : msg -> String -> Button msg
 button msg =
-    defaults (Msg msg)
+    defaults (Active (Msg msg))
 
 
 link : { href : String, text : String } -> Button msg
 link { href, text } =
-    defaults (Link href) text
+    defaults (Active (Link href)) text
 
 
 disabled : String -> Button msg
 disabled =
     decorative >> grey >> hollow
+
+
+loading : Button msg -> Button msg
+loading =
+    withState_ Loading >> solid
 
 
 
@@ -217,7 +227,9 @@ delete =
 
 loadMore : Button msg -> Button msg
 loadMore =
-    pill >> hollow >> withIcon_ Chevron
+    pill
+        >> hollow
+        >> withIcon_ Chevron
 
 
 light : Button msg -> Button msg
@@ -275,11 +287,6 @@ solid =
     withFill_ Solid
 
 
-noHover : Button msg -> Button msg
-noHover (Button options) =
-    Button { options | hover = False }
-
-
 withFill_ : Fill -> Button msg -> Button msg
 withFill_ fill (Button options) =
     Button { options | fill = fill }
@@ -290,20 +297,27 @@ withIcon_ icon_ (Button options) =
     Button { options | icon = Just icon_ }
 
 
+withState_ : State msg -> Button msg -> Button msg
+withState_ state (Button options) =
+    Button { options | state = state }
+
+
 
 -- Render
 
 
 toElement : Button msg -> Element msg
 toElement (Button options) =
-    case options.onClick of
-        Msg msg ->
-            toButton (Just msg) options
+    case options.state of
+        Active action ->
+            case action of
+                Msg msg ->
+                    toButton (Just msg) options
 
-        Link href ->
-            toLink href options
+                Link href ->
+                    toLink href options
 
-        None ->
+        _ ->
             toButton Nothing options
 
 
@@ -401,8 +415,11 @@ padding_ options =
 
 hoverStyles : Options msg -> List Decoration
 hoverStyles options =
-    case ( options.hover, options.fill ) of
-        ( False, _ ) ->
+    case ( options.state, options.fill ) of
+        ( Inactive, _ ) ->
+            []
+
+        ( Loading, _ ) ->
             []
 
         ( _, Solid ) ->
@@ -523,10 +540,7 @@ label : Options msg -> Element msg
 label options =
     case ( options.text, options.icon ) of
         ( Just _, Just icon_ ) ->
-            row [ width fill, spacing Scale.extraSmall ]
-                [ el [ centerY ] (icon icon_ options)
-                , el [ centerY ] (text_ options)
-                ]
+            textWithIconLabel icon_ options
 
         ( Nothing, Just icon_ ) ->
             icon icon_ options
@@ -535,16 +549,40 @@ label options =
             text_ options
 
 
+textWithIconLabel : Icon -> Options msg -> Element msg
+textWithIconLabel icon_ options =
+    case options.state of
+        Loading ->
+            row [ width fill, spacing Scale.extraSmall ]
+                [ el [ centerY ] (icon icon_ options)
+                , el
+                    [ inFront
+                        (Loader.icon
+                            |> Loader.white
+                            |> Loader.attributes [ centerX, centerY, moveUp 2, moveRight Scale.extraSmall, scale 0.7 ]
+                            |> Loader.show True
+                        )
+                    ]
+                    (el [ alpha 0 ] (text_ options))
+                ]
+
+        _ ->
+            row [ width fill, spacing Scale.extraSmall ]
+                [ el [ centerY ] (icon icon_ options)
+                , el [ centerY ] (text_ options)
+                ]
+
+
 iconHover : Options msg -> List (Attribute msg)
 iconHover options =
-    case ( options.icon, options.hover ) of
-        ( Just Ellipsis, True ) ->
+    case ( options.icon, options.state ) of
+        ( Just Ellipsis, Active _ ) ->
             [ Icon.blackHover ]
 
-        ( Just Chevron, True ) ->
+        ( Just Chevron, Active _ ) ->
             [ Icon.whiteHoverStroke ]
 
-        ( Just _, True ) ->
+        ( Just _, Active _ ) ->
             [ Icon.whiteHover ]
 
         ( _, _ ) ->
@@ -573,7 +611,7 @@ icon icon_ options =
             Bin.icon (iconColor options)
 
         Ellipsis ->
-            Elipsis.icon (iconColor options)
+            Ellipsis.icon (iconColor options)
 
         Chevron ->
             Chevron.down (iconColor options)

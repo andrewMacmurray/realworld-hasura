@@ -195,10 +195,9 @@ banner model =
             [ centerX
             , inFront
                 (el [ centerX ]
-                    (Loader.white
-                        { message = "Loading..."
-                        , visible = pageIsLoading model.pageLoad
-                        }
+                    (Loader.iconWithMessage "Loading..."
+                        |> Loader.white
+                        |> Loader.show (pageIsLoading model.pageLoad)
                     )
                 )
             ]
