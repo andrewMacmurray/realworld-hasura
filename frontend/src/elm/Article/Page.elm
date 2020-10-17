@@ -89,7 +89,7 @@ loadMoreButton options =
         none
 
     else
-        el [ spacing Scale.extraSmall, centerX ] (loadMore options)
+        el [ spacing Scale.extraSmall ] (loadMore options)
 
 
 loadMore : Options msg -> Element msg

@@ -108,7 +108,7 @@ loading : FeedSelection -> Model
 loading selection =
     { feed = Api.Loading
     , page = Page.first
-    , loadMoreRequest = Idle
+    , loadMoreRequest = Failure
     , selection = selection
     }
 
@@ -255,18 +255,33 @@ viewFeed options feed =
         , paddingEach { edges | bottom = Scale.large }
         ]
         [ Keyed.column [ spacing Scale.large, width fill ] (List.map (viewArticle options) feed.articles)
-        , Element.map options.msg (pages options feed)
+        , loadMoreButton options feed
         ]
 
 
-pages : Options msg -> Feed -> Element Msg
-pages options feed =
-    Page.loadMoreButton
-        { totalArticles = feed.count
-        , loading = isLoadingMore options.feed.loadMoreRequest
-        , page = options.feed.page
-        , onClick = LoadMoreClicked
-        }
+loadMoreButton : Options msg -> Feed -> Element msg
+loadMoreButton options feed =
+    case options.feed.loadMoreRequest of
+        Failure ->
+            column [ centerX, spacing Scale.medium ]
+                [ el [ centerX ] (loadMoreButton_ options feed)
+                , Text.error [] "Error loading more, try again?"
+                ]
+
+        _ ->
+            el [ centerX ] (loadMoreButton_ options feed)
+
+
+loadMoreButton_ : Options msg -> Feed -> Element msg
+loadMoreButton_ options feed =
+    Element.map options.msg
+        (Page.loadMoreButton
+            { totalArticles = feed.count
+            , loading = isLoadingMore options.feed.loadMoreRequest
+            , page = options.feed.page
+            , onClick = LoadMoreClicked
+            }
+        )
 
 
 isLoadingMore : LoadMoreRequest -> Bool
