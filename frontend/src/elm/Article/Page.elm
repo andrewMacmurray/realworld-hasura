@@ -1,7 +1,7 @@
 module Article.Page exposing
     ( Number
     , first
-    , number
+    , next
     , offset
     , size
     , view
@@ -42,19 +42,33 @@ first =
 -- Query
 
 
-number : Number -> Int
-number (Number n) =
-    n
-
-
 offset : Number -> Int
 offset page_ =
-    (number page_ - 1) * size
+    (number_ page_ - 1) * size
+
+
+isLastPage : { options | total : Int, page : Number } -> Bool
+isLastPage { total, page } =
+    number_ page == lastPage total
 
 
 lastPage : Int -> Int
 lastPage total =
     (total // size) + 1
+
+
+number_ : Number -> Int
+number_ (Number n) =
+    n
+
+
+
+-- Update
+
+
+next : Number -> Number
+next (Number n) =
+    Number (n + 1)
 
 
 
@@ -63,6 +77,7 @@ lastPage total =
 
 type alias Options msg =
     { total : Int
+    , page : Number
     , loading : Bool
     , onClick : msg
     }
@@ -70,13 +85,14 @@ type alias Options msg =
 
 view : Options msg -> Element msg
 view options =
-    if options.total <= size then
+    if options.total <= size || isLastPage options then
         none
 
     else
         el [ spacing Scale.extraSmall, centerX ] (loadMore options)
 
 
+loadMore : Options msg -> Element msg
 loadMore options =
     let
         text =

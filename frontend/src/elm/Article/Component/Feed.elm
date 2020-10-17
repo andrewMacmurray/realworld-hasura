@@ -24,6 +24,7 @@ import Element.Anchor as Anchor
 import Element.Avatar as Avatar
 import Element.Button as Button
 import Element.Divider as Divider
+import Element.Keyed as Keyed
 import Element.Loader as Loader
 import Element.Scale as Scale exposing (edges)
 import Element.Text as Text
@@ -66,6 +67,7 @@ type alias FeedSelection =
 
 type Msg
     = LoadFeedResponseReceived (Api.Response Feed)
+    | LoadMoreResponseReceived (Api.Response Feed)
     | LoadMoreClicked
     | UpdateArticleResponseReceived (Api.Response Article)
     | LikeArticleClicked Article
@@ -134,7 +136,19 @@ update_ msg model =
             ( { model | feed = Api.fromResponse response }, Effect.none )
 
         LoadMoreClicked ->
-            ( { model | loadMoreRequest = Loading }, Effect.none )
+            ( { model | loadMoreRequest = Loading }, loadMore model )
+
+        LoadMoreResponseReceived (Ok feed) ->
+            ( { model
+                | loadMoreRequest = Idle
+                , feed = appendToFeed feed model.feed
+                , page = Page.next model.page
+              }
+            , Effect.none
+            )
+
+        LoadMoreResponseReceived (Err _) ->
+            ( { model | loadMoreRequest = Failure }, Effect.none )
 
         LikeArticleClicked article ->
             ( model, likeArticle article )
@@ -147,6 +161,16 @@ update_ msg model =
 
         UpdateArticleResponseReceived (Err _) ->
             ( model, Effect.none )
+
+
+appendToFeed : Feed -> Api.Data Feed -> Api.Data Feed
+appendToFeed feed =
+    Api.mapData (appendArticles feed.articles)
+
+
+appendArticles : List Article -> Feed -> Feed
+appendArticles articles feed =
+    { feed | articles = feed.articles ++ articles }
 
 
 updateArticle : Article -> Feed -> Feed
@@ -162,6 +186,11 @@ likeArticle article =
 unlikeArticle : Article -> Effect Msg
 unlikeArticle article =
     Api.Articles.unlike article UpdateArticleResponseReceived
+
+
+loadMore : Model -> Effect Msg
+loadMore model =
+    Api.Articles.loadFeed (model.selection (Page.next model.page)) LoadMoreResponseReceived
 
 
 
@@ -216,9 +245,7 @@ viewFeed options feed =
         , spacing Scale.extraLarge
         , paddingEach { edges | bottom = Scale.large }
         ]
-        [ column
-            [ spacing Scale.large, width fill ]
-            (List.map (viewArticle options) feed.articles)
+        [ Keyed.column [ spacing Scale.large, width fill ] (List.map (viewArticle options) feed.articles)
         , Element.map options.msg (pages options feed)
         ]
 
@@ -228,10 +255,12 @@ pages options feed =
     Page.view
         { total = feed.count
         , loading = isLoadingMore options.feed.loadMoreRequest
+        , page = options.feed.page
         , onClick = LoadMoreClicked
         }
 
 
+isLoadingMore : LoadMoreRequest -> Bool
 isLoadingMore request =
     case request of
         Loading ->
@@ -241,9 +270,10 @@ isLoadingMore request =
             False
 
 
-viewArticle : Options msg -> Article -> Element msg
+viewArticle : Options msg -> Article -> ( String, Element msg )
 viewArticle options article =
-    column
+    ( String.fromInt (Article.id article)
+    , column
         [ anchor article
         , spacing Scale.medium
         , width fill
@@ -260,6 +290,7 @@ viewArticle options article =
             ]
         , Divider.divider
         ]
+    )
 
 
 likes : Options msg -> Article -> Element msg
