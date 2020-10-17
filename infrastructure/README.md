@@ -6,8 +6,8 @@ Terraform configuration for provisioning infrastructure pieces for realworld app
 
 ### Pieces
 
-+ The configuration manages 2 heroku instances (`hasura` + `actions server`) and 1 postgres database
-+ Deployment of Docker images to the instances is handled separately
++ The configuration manages 1 heroku instance (`actions server`) and 1 postgres database
++ Deployment of Docker image to the instance is handled separately
 
 ### Running plans and applies 
 

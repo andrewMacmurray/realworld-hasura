@@ -29,15 +29,6 @@ jobs:
       - run: ./gradlew shadowJar
       - run: heroku container:login
       - run: heroku container:push --app realworld-actions web
-  build-hasura:
-    runs-on: ubuntu-latest
-    env:
-      HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-    steps:
-      - uses: actions/checkout@v1
-      - run: heroku container:login
-      - run: heroku container:push --app realworld-hasura web
-        working-directory: ./backend/hasura
   build-frontend:
     defaults:
       run:
@@ -54,8 +45,8 @@ jobs:
         with:
           name: frontend-build
           path: ./frontend/dist
-  deploy-backend:
-    needs: [build-hasura, build-actions, build-frontend]
+  deploy-actions:
+    needs: [build-actions, build-frontend]
     env:
       HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
     runs-on: ubuntu-latest
@@ -64,10 +55,22 @@ jobs:
       - run: heroku container:login
       - run: heroku container:release --app realworld-actions web
         working-directory: ./backend/actions
-      - run: heroku container:release --app realworld-hasura web
-        working-directory: ./backend/hasura
+  migrate-hasura:
+    runs-on: ubuntu-latest
+    env:
+      HASURA_ENDPOINT: ${{ secrets.HASURA_ENDPOINT }}
+      HASURA_ADMIN_SECRET: ${{ secrets.HASURA_ADMIN_SECRET }}
+      HASURA_WORKDIR: ./backend/hasura
+    steps:
+      - uses: actions/checkout@master
+      - uses: tibotiber/hasura-action@master
+        with:
+          args: migrate apply
+      - uses: tibotiber/hasura-action@master
+        with:
+          args: metadata apply
   deploy-frontend:
-    needs: [deploy-backend]
+    needs: [migrate-hasura]
     defaults:
       run:
         working-directory: ./frontend
