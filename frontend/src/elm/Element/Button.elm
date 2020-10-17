@@ -11,6 +11,7 @@ module Element.Button exposing
     , light
     , like
     , link
+    , loadMore
     , noText
     , post
     , primary
@@ -26,6 +27,7 @@ import Element.Border as Border
 import Element.Font as Font
 import Element.Icon as Icon
 import Element.Icon.Bin as Bin
+import Element.Icon.Chevron as Chevron
 import Element.Icon.Ellipsis as Elipsis
 import Element.Icon.Heart as Heart
 import Element.Icon.Pencil as Pencil
@@ -98,6 +100,7 @@ type Icon
     | Pencil
     | Bin
     | Ellipsis
+    | Chevron
 
 
 type Shade
@@ -210,6 +213,11 @@ delete =
         >> withIcon_ Bin
         >> small
         >> red
+
+
+loadMore : Button msg -> Button msg
+loadMore =
+    pill >> hollow >> withIcon_ Chevron
 
 
 light : Button msg -> Button msg
@@ -533,6 +541,9 @@ iconHover options =
         ( Just Ellipsis, True ) ->
             [ Icon.blackHover ]
 
+        ( Just Chevron, True ) ->
+            [ Icon.whiteHoverStroke ]
+
         ( Just _, True ) ->
             [ Icon.whiteHover ]
 
@@ -563,6 +574,9 @@ icon icon_ options =
 
         Ellipsis ->
             Elipsis.icon (iconColor options)
+
+        Chevron ->
+            Chevron.down (iconColor options)
 
 
 iconColor : Options msg -> Element.Color

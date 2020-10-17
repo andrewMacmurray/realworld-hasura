@@ -55,6 +55,7 @@ type alias PageMsg msg =
 type alias Model =
     { feed : Api.Data Feed
     , page : Page.Number
+    , loadMoreRequest : LoadMoreRequest
     , selection : FeedSelection
     }
 
@@ -65,9 +66,16 @@ type alias FeedSelection =
 
 type Msg
     = LoadFeedResponseReceived (Api.Response Feed)
+    | LoadMoreClicked
     | UpdateArticleResponseReceived (Api.Response Article)
     | LikeArticleClicked Article
     | UnLikeArticleClicked Article
+
+
+type LoadMoreRequest
+    = Idle
+    | Loading
+    | Failure
 
 
 
@@ -95,6 +103,7 @@ loading : FeedSelection -> Model
 loading selection =
     { feed = Api.Loading
     , page = Page.first
+    , loadMoreRequest = Idle
     , selection = selection
     }
 
@@ -123,6 +132,9 @@ update_ msg model =
     case msg of
         LoadFeedResponseReceived response ->
             ( { model | feed = Api.fromResponse response }, Effect.none )
+
+        LoadMoreClicked ->
+            ( { model | loadMoreRequest = Loading }, Effect.none )
 
         LikeArticleClicked article ->
             ( model, likeArticle article )
@@ -207,15 +219,15 @@ viewFeed options feed =
         [ column
             [ spacing Scale.large, width fill ]
             (List.map (viewArticle options) feed.articles)
-        , pages options feed
+        , Element.map options.msg (pages feed)
         ]
 
 
-pages : Options msg -> Feed -> Element msg
-pages options feed =
+pages : Feed -> Element Msg
+pages feed =
     Page.view
         { total = feed.count
-        , page = options.feed.page
+        , onClick = LoadMoreClicked
         }
 
 

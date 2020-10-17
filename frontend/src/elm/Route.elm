@@ -14,7 +14,6 @@ module Route exposing
 
 import Article exposing (Article)
 import Article.Author as Author exposing (Author)
-import Article.Page as Page
 import Element exposing (Element)
 import Element.Button as Button exposing (Button)
 import Element.Text as Text
@@ -85,11 +84,6 @@ profile p =
 tagQuery : Query.Parser (Maybe Tag)
 tagQuery =
     Query.string "tag" |> Query.map (Maybe.map Tag.one)
-
-
-pageNumber : Query.Parser Page.Number
-pageNumber =
-    Query.int "page" |> Query.map Page.toNumber
 
 
 link : Route -> List Text.Option -> String -> Element msg
