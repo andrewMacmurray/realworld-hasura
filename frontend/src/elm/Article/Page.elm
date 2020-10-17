@@ -74,7 +74,7 @@ view options =
         none
 
     else
-        el [ spacing Scale.extraSmall ] (loadMore options)
+        el [ spacing Scale.extraSmall, centerX ] (loadMore options)
 
 
 loadMore options =

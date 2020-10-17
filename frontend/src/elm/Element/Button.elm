@@ -228,6 +228,7 @@ delete =
 loadMore : Button msg -> Button msg
 loadMore =
     pill
+        >> grey
         >> hollow
         >> withIcon_ Chevron
 
@@ -559,6 +560,7 @@ textWithIconLabel icon_ options =
                     [ inFront
                         (Loader.icon
                             |> Loader.white
+                            |> Loader.fast
                             |> Loader.attributes [ centerX, centerY, moveUp 2, moveRight Scale.extraSmall, scale 0.7 ]
                             |> Loader.show True
                         )
