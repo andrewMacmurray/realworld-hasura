@@ -1,4 +1,10 @@
-module Element.Icon exposing (blackHover, hoverTarget, small, whiteHover)
+module Element.Icon exposing
+    ( blackHover
+    , hoverTarget
+    , small
+    , whiteHover
+    , whiteHoverStroke
+    )
 
 import Element exposing (..)
 import Html.Attributes
@@ -14,6 +20,11 @@ small =
 whiteHover : Element.Attribute msg
 whiteHover =
     htmlAttribute (Html.Attributes.class "icon-white-hover")
+
+
+whiteHoverStroke : Element.Attribute msg
+whiteHoverStroke =
+    htmlAttribute (Html.Attributes.class "icon-white-hover-stroke")
 
 
 blackHover : Attribute msg

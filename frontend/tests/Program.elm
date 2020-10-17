@@ -17,7 +17,7 @@ module Program exposing
 
 import Api
 import Article exposing (Article)
-import Article.Author.Feed as Author
+import Article.Feed as Feed exposing (Feed)
 import Effect exposing (Effect(..))
 import Helpers
 import Json.Encode as Encode
@@ -52,10 +52,10 @@ type alias FakeNavKey =
 
 
 type alias Options =
-    { feed : Api.Response Article.Feed
+    { homeFeed : Api.Response Feed.Home
     , article : Api.Response (Maybe Article)
-    , articles : Api.Response (List Article)
-    , authorFeed : Api.Response (Maybe Author.Feed)
+    , feed : Api.Response Feed
+    , authorFeed : Api.Response (Maybe Feed.ForAuthor)
     , settingsUpdate : Api.Response ()
     , route : Route
     , user : Maybe Ports.User
@@ -73,7 +73,7 @@ withPage =
 
 onHomePage : Options
 onHomePage =
-    withPage (Route.Home Nothing)
+    withPage Route.home
 
 
 withLoggedInUser : Options -> Options
@@ -115,17 +115,22 @@ simulateArticle article options =
 
 simulateArticleFeed : List Article -> List Tag -> Options -> Options
 simulateArticleFeed articles tags options =
-    { options | feed = Ok (toGlobalFeed articles tags) }
+    { options | homeFeed = Ok (toHomeFeed articles tags) }
 
 
-simulateAuthorFeed : Api.Response (Maybe Author.Feed) -> Options -> Options
+simulateAuthorFeed : Api.Response (Maybe Feed.ForAuthor) -> Options -> Options
 simulateAuthorFeed feed options =
     { options | authorFeed = feed }
 
 
-toGlobalFeed : List Article -> List Tag -> Article.Feed
-toGlobalFeed articles tags =
-    { articles = articles
+emptyFeed : Feed.Home
+emptyFeed =
+    toHomeFeed [] []
+
+
+toHomeFeed : List Article -> List Tag -> Feed.Home
+toHomeFeed articles tags =
+    { feed = Helpers.feed articles
     , popularTags = List.map (\t -> { tag = t, count = 1 }) tags
     }
 
@@ -133,19 +138,12 @@ toGlobalFeed articles tags =
 defaultOptions : Route -> Options
 defaultOptions route =
     { route = route
-    , feed = Ok emptyFeed
-    , articles = Ok []
+    , homeFeed = Ok emptyFeed
+    , feed = Ok (Helpers.feed [])
     , authorFeed = Ok Nothing
     , article = Ok Nothing
     , user = Nothing
     , settingsUpdate = Ok ()
-    }
-
-
-emptyFeed : Article.Feed
-emptyFeed =
-    { articles = []
-    , popularTags = []
     }
 
 
@@ -225,7 +223,7 @@ simulateEffects options eff =
             SimulatedEffect.Navigation.pushUrl (Route.routeToString route)
 
         Logout ->
-            SimulatedEffect.Navigation.pushUrl (Route.routeToString (Route.Home Nothing))
+            SimulatedEffect.Navigation.pushUrl (Route.routeToString Route.home)
 
         PushUrl url ->
             SimulatedEffect.Navigation.pushUrl (Url.toString url)
@@ -245,14 +243,14 @@ simulateEffects options eff =
         CloseMenu ->
             SimulatedEffect.Cmd.none
 
-        LoadArticleFeed query ->
-            simulateResponse query options.feed
+        LoadHomeFeed query ->
+            simulateResponse query options.homeFeed
 
         LoadArticle query ->
             simulateResponse query options.article
 
-        LoadArticles query ->
-            simulateResponse query options.articles
+        LoadFeed query ->
+            simulateResponse query options.feed
 
         LoadAuthorFeed query ->
             simulateResponse query options.authorFeed
@@ -262,6 +260,9 @@ simulateEffects options eff =
 
         MutationReturningArticle mutation ->
             simulateResponse mutation (Ok (Helpers.article "updated"))
+
+        MutationReturningArticleId mutation ->
+            simulateResponse mutation (Ok 1)
 
         AddToUserFollows _ ->
             SimulatedEffect.Cmd.none
@@ -282,6 +283,12 @@ simulateEffects options eff =
             SimulatedEffect.Cmd.none
 
         UpdateUser _ ->
+            SimulatedEffect.Cmd.none
+
+        GetViewport _ ->
+            SimulatedEffect.Cmd.none
+
+        SetOffsetY _ _ ->
             SimulatedEffect.Cmd.none
 
 

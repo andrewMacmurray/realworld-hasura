@@ -161,6 +161,7 @@ updateButton profile model =
         , validation = validation profile
         , inputs = model.inputs
         , onSubmit = UpdateSettingsClicked
+        , style = identity
         }
 
 

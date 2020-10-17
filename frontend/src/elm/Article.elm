@@ -1,7 +1,6 @@
 module Article exposing
     ( Article
     , Details
-    , Feed
     , Id
     , Inputs
     , about
@@ -59,16 +58,6 @@ type alias Inputs =
     , about : String.NonEmpty
     , content : String.NonEmpty
     , tags : List Tag
-    }
-
-
-
--- Feed
-
-
-type alias Feed =
-    { articles : List Article
-    , popularTags : List Tag.Popular
     }
 
 

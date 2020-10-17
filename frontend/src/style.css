@@ -7,11 +7,16 @@
 }
 
 .icon-hover-target {
-  transition: fill 0.2s ease;
+  transition: 0.2s ease;
+  transition-property: fill, stroke;
 }
 
 .icon-white-hover:hover .icon-hover-target {
   fill: white;
+}
+
+.icon-white-hover-stroke:hover .icon-hover-target {
+  stroke: white;
 }
 
 .icon-black-hover:hover .icon-hover-target {

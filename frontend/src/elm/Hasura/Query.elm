@@ -68,6 +68,37 @@ articles fillInOptionals object_ =
     Object.selectionForCompositeField "articles" optionalArgs object_ (identity >> Decode.list)
 
 
+type alias ArticlesAggregateOptionalArguments =
+    { distinct_on : OptionalArgument (List Hasura.Enum.Articles_select_column.Articles_select_column)
+    , limit : OptionalArgument Int
+    , offset : OptionalArgument Int
+    , order_by : OptionalArgument (List Hasura.InputObject.Articles_order_by)
+    , where_ : OptionalArgument Hasura.InputObject.Articles_bool_exp
+    }
+
+
+{-| fetch aggregated fields from the table: "articles"
+
+  - distinct\_on - distinct select on columns
+  - limit - limit the number of rows returned
+  - offset - skip the first n rows. Use only with order\_by
+  - order\_by - sort the rows by one or more columns
+  - where\_ - filter the rows returned
+
+-}
+articles_aggregate : (ArticlesAggregateOptionalArguments -> ArticlesAggregateOptionalArguments) -> SelectionSet decodesTo Hasura.Object.Articles_aggregate -> SelectionSet decodesTo RootQuery
+articles_aggregate fillInOptionals object_ =
+    let
+        filledInOptionals =
+            fillInOptionals { distinct_on = Absent, limit = Absent, offset = Absent, order_by = Absent, where_ = Absent }
+
+        optionalArgs =
+            [ Argument.optional "distinct_on" filledInOptionals.distinct_on (Encode.enum Hasura.Enum.Articles_select_column.toString |> Encode.list), Argument.optional "limit" filledInOptionals.limit Encode.int, Argument.optional "offset" filledInOptionals.offset Encode.int, Argument.optional "order_by" filledInOptionals.order_by (Hasura.InputObject.encodeArticles_order_by |> Encode.list), Argument.optional "where" filledInOptionals.where_ Hasura.InputObject.encodeArticles_bool_exp ]
+                |> List.filterMap identity
+    in
+    Object.selectionForCompositeField "articles_aggregate" optionalArgs object_ identity
+
+
 type alias CommentsOptionalArguments =
     { distinct_on : OptionalArgument (List Hasura.Enum.Comments_select_column.Comments_select_column)
     , limit : OptionalArgument Int

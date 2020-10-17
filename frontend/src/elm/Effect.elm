@@ -7,12 +7,13 @@ module Effect exposing
     , deleteComment
     , editArticle
     , followAuthor
+    , getViewport
     , goToArticle
     , likeArticle
     , loadArticle
-    , loadArticles
     , loadAuthorFeed
     , loadFeed
+    , loadHomeFeed
     , loadUrl
     , loadUser
     , logout
@@ -26,6 +27,7 @@ module Effect exposing
     , redirectHome
     , refreshUser
     , removeFromUserFollows
+    , setOffsetY
     , signIn
     , signUp
     , unfollowAuthor
@@ -37,12 +39,14 @@ module Effect exposing
 
 import Api
 import Article exposing (Article)
-import Article.Author.Feed as Author
+import Article.Feed as Feed exposing (Feed)
+import Browser.Dom as Dom exposing (Viewport)
 import Browser.Navigation as Navigation
 import Context exposing (Context)
 import Ports
 import Route exposing (Route)
 import Route.Effect
+import Task
 import Url exposing (Url)
 import User exposing (User)
 
@@ -58,20 +62,23 @@ type Effect msg
     | LoadUrl String
     | NavigateTo Route
     | LoadUser User.Profile
+    | GetViewport (Viewport -> msg)
+    | SetOffsetY msg Float
     | Logout
     | AddToUserFollows Int
     | RemoveFromUserFollows Int
     | CloseMenu
     | SignUp (Api.Mutation User.Profile msg)
     | SignIn (Api.Mutation User.Profile msg)
-    | LoadArticleFeed (Api.Query Article.Feed msg)
-    | LoadArticles (Api.Query (List Article) msg)
+    | LoadHomeFeed (Api.Query Feed.Home msg)
+    | LoadFeed (Api.Query Feed msg)
     | LoadArticle (Api.Query (Maybe Article) msg)
     | RefreshUser (Api.Query User msg)
     | MutateWithEmptyResponse (Api.Mutation () msg)
     | MutationReturningArticle (Api.Mutation Article msg)
+    | MutationReturningArticleId (Api.Mutation Article.Id msg)
     | MutateAuthor (Api.Mutation Int msg)
-    | LoadAuthorFeed (Api.Query (Maybe Author.Feed) msg)
+    | LoadAuthorFeed (Api.Query (Maybe Feed.ForAuthor) msg)
     | MutateSettings (Api.Mutation () msg)
     | UpdateSettings User.SettingsUpdate
     | UpdateUser (Api.Response User)
@@ -85,6 +92,16 @@ none =
 batch : List (Effect msg) -> Effect msg
 batch =
     Batch
+
+
+getViewport : (Viewport -> msg) -> Effect msg
+getViewport =
+    GetViewport
+
+
+setOffsetY : msg -> Viewport -> Effect msg
+setOffsetY msg vp =
+    SetOffsetY msg vp.viewport.y
 
 
 loadUser : User.Profile -> Effect msg
@@ -114,7 +131,7 @@ pushUrl =
 
 redirectHome : Effect msg
 redirectHome =
-    NavigateTo (Route.Home Nothing)
+    NavigateTo Route.home
 
 
 goToArticle : Article.Id -> Effect msg
@@ -147,9 +164,9 @@ refreshUser =
     RefreshUser
 
 
-loadFeed : Api.Query Article.Feed msg -> Effect msg
-loadFeed =
-    LoadArticleFeed
+loadHomeFeed : Api.Query Feed.Home msg -> Effect msg
+loadHomeFeed =
+    LoadHomeFeed
 
 
 loadArticle : Api.Query (Maybe Article) msg -> Effect msg
@@ -157,19 +174,19 @@ loadArticle =
     LoadArticle
 
 
-loadArticles : Api.Query (List Article) msg -> Effect msg
-loadArticles =
-    LoadArticles
+loadFeed : Api.Query Feed msg -> Effect msg
+loadFeed =
+    LoadFeed
 
 
-publishArticle : Api.Mutation () msg -> Effect msg
+publishArticle : Api.Mutation Article.Id msg -> Effect msg
 publishArticle =
-    MutateWithEmptyResponse
+    MutationReturningArticleId
 
 
-editArticle : Api.Mutation () msg -> Effect msg
+editArticle : Api.Mutation Article.Id msg -> Effect msg
 editArticle =
-    MutateWithEmptyResponse
+    MutationReturningArticleId
 
 
 deleteArticle : Api.Mutation () msg -> Effect msg
@@ -212,7 +229,7 @@ unfollowAuthor =
     MutateAuthor
 
 
-loadAuthorFeed : Api.Query (Maybe Author.Feed) msg -> Effect msg
+loadAuthorFeed : Api.Query (Maybe Feed.ForAuthor) msg -> Effect msg
 loadAuthorFeed =
     LoadAuthorFeed
 
@@ -251,6 +268,12 @@ map toMsg effect =
         LoadUser token ->
             LoadUser token
 
+        GetViewport msg ->
+            GetViewport (msg >> toMsg)
+
+        SetOffsetY msg vp ->
+            SetOffsetY (toMsg msg) vp
+
         Logout ->
             Logout
 
@@ -275,14 +298,14 @@ map toMsg effect =
         CloseMenu ->
             CloseMenu
 
-        LoadArticleFeed req ->
-            LoadArticleFeed (Api.map toMsg req)
+        LoadHomeFeed req ->
+            LoadHomeFeed (Api.map toMsg req)
 
         LoadArticle req ->
             LoadArticle (Api.map toMsg req)
 
-        LoadArticles req ->
-            LoadArticles (Api.map toMsg req)
+        LoadFeed req ->
+            LoadFeed (Api.map toMsg req)
 
         RefreshUser req ->
             RefreshUser (Api.map toMsg req)
@@ -292,6 +315,9 @@ map toMsg effect =
 
         MutationReturningArticle req ->
             MutationReturningArticle (Api.map toMsg req)
+
+        MutationReturningArticleId req ->
+            MutationReturningArticleId (Api.map toMsg req)
 
         MutateAuthor req ->
             MutateAuthor (Api.map toMsg req)
@@ -333,11 +359,17 @@ perform pushUrl_ ( model, effect ) =
         NavigateTo route ->
             ( model, pushUrl_ model.navKey (Route.routeToString route) )
 
+        GetViewport msg ->
+            ( model, Task.perform msg Dom.getViewport )
+
+        SetOffsetY msg y ->
+            ( model, Task.perform (always msg) (Dom.setViewport 0 y) )
+
         Logout ->
             ( { model | context = Context.setUser User.Guest model.context }
             , Cmd.batch
                 [ Ports.logout
-                , Route.Home Nothing |> Route.routeToString |> pushUrl_ model.navKey
+                , Route.home |> Route.routeToString |> pushUrl_ model.navKey
                 ]
             )
 
@@ -375,19 +407,22 @@ perform pushUrl_ ( model, effect ) =
         SignIn mutation ->
             ( model, Api.doMutation model.context.user mutation )
 
-        LoadArticleFeed query ->
+        LoadHomeFeed query ->
             ( model, Api.doQuery model.context.user query )
 
         LoadArticle query ->
             ( model, Api.doQuery model.context.user query )
 
-        LoadArticles query ->
+        LoadFeed query ->
             ( model, Api.doQuery model.context.user query )
 
         MutateWithEmptyResponse mutation ->
             ( model, Api.doMutation model.context.user mutation )
 
         MutationReturningArticle mutation ->
+            ( model, Api.doMutation model.context.user mutation )
+
+        MutationReturningArticleId mutation ->
             ( model, Api.doMutation model.context.user mutation )
 
         MutateAuthor mutation ->

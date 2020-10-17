@@ -1,5 +1,5 @@
 module Api.Authors exposing
-    ( ArticlesSelection
+    ( FeedSelection
     , authoredArticles
     , likedArticles
     , loadFeed
@@ -8,9 +8,9 @@ module Api.Authors exposing
 import Api
 import Api.Argument as Argument exposing (..)
 import Api.Articles as Articles
-import Article exposing (Article)
 import Article.Author as Author exposing (Author)
-import Article.Author.Feed as Feed exposing (Feed)
+import Article.Feed as Feed exposing (Feed)
+import Article.Page as Page
 import Effect exposing (Effect)
 import Graphql.Operation exposing (RootQuery)
 import Graphql.SelectionSet as SelectionSet exposing (SelectionSet, with)
@@ -20,40 +20,36 @@ import Hasura.Object.Users as Users
 import Hasura.Query exposing (ArticlesOptionalArguments)
 
 
-type alias ArticlesSelection =
-    Author.Id -> SelectionSet (List Article) RootQuery
+type alias FeedSelection =
+    Author.Id -> Page.Number -> SelectionSet Feed RootQuery
+
+
+authoredArticles : FeedSelection
+authoredArticles id_ page_ =
+    Articles.feedSelection page_ (Articles.newestFirst >> authoredBy id_)
+
+
+likedArticles : FeedSelection
+likedArticles id_ page_ =
+    Articles.feedSelection page_ (Articles.newestFirst >> likedBy id_)
 
 
 
 -- load
 
 
-loadFeed : ArticlesSelection -> Author.Id -> (Api.Response (Maybe Feed) -> msg) -> Effect msg
-loadFeed articles id_ msg =
-    feedSelection id_ articles
+loadFeed : FeedSelection -> Author.Id -> Page.Number -> (Api.Response (Maybe Feed.ForAuthor) -> msg) -> Effect msg
+loadFeed articles id_ page_ msg =
+    authorFeedSelection id_ page_ articles
         |> Api.query msg
         |> Effect.loadAuthorFeed
 
 
-feedSelection : Author.Id -> ArticlesSelection -> SelectionSet (Maybe Feed) RootQuery
-feedSelection id_ selection =
-    SelectionSet.succeed Feed.build
+authorFeedSelection : Author.Id -> Page.Number -> FeedSelection -> SelectionSet (Maybe Feed.ForAuthor) RootQuery
+authorFeedSelection id_ page_ selection =
+    SelectionSet.succeed Feed.forAuthor
         |> with (authorById id_)
-        |> with (selection id_)
-
-
-authoredArticles : ArticlesSelection
-authoredArticles id_ =
-    Hasura.Query.articles
-        (Articles.newestFirst >> authoredBy id_)
-        Articles.articleSelection
-
-
-likedArticles : ArticlesSelection
-likedArticles id_ =
-    Hasura.Query.articles
-        (Articles.newestFirst >> likedBy id_)
-        Articles.articleSelection
+        |> with (selection id_ page_)
 
 
 authoredBy : Author.Id -> ArticlesOptionalArguments -> ArticlesOptionalArguments

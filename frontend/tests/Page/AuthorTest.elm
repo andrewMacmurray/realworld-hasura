@@ -2,6 +2,7 @@ module Page.AuthorTest exposing (suite)
 
 import Article exposing (Article)
 import Article.Author exposing (Author)
+import Article.Feed as Feed
 import Helpers
 import Program
 import Program.Selector exposing (el)
@@ -16,7 +17,7 @@ suite =
         [ test "User sees authored articles on load" <|
             \_ ->
                 Program.withPage authorRoute
-                    |> Program.simulateAuthorFeed (Ok (Just { articles = [ article "foo", article "bar" ], author = author }))
+                    |> Program.simulateAuthorFeed (Ok (toAuthorFeed author [ article "foo", article "bar" ]))
                     |> Program.start
                     |> expectViewHas
                         [ el "active-tab-by-author"
@@ -42,9 +43,17 @@ suite =
         ]
 
 
+toAuthorFeed : Author -> List Article -> Maybe Feed.ForAuthor
+toAuthorFeed author_ articles =
+    Just
+        { feed = Helpers.feed articles
+        , author = author_
+        }
+
+
 authorRoute : Route
 authorRoute =
-    Route.Author 1
+    Route.author author
 
 
 author : Author

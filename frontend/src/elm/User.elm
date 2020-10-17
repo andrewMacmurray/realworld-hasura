@@ -12,6 +12,7 @@ module User exposing
     , follows
     , getProfile
     , id
+    , isFollowingAuthors
     , profile
     , profileImage
     , removeFollowingId
@@ -136,6 +137,11 @@ follows id_ profile_ =
 equals : Profile -> Author -> Bool
 equals p a =
     id p == Author.id a
+
+
+isFollowingAuthors : Profile -> Bool
+isFollowingAuthors profile_ =
+    List.length (following profile_) > 0
 
 
 

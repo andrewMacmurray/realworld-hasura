@@ -10,8 +10,9 @@ import Animation
 import Animation.Named as Animation
 import Api
 import Api.Articles
-import Article exposing (Article)
+import Article.Component.Feed as Feed
 import Article.Feed as Feed
+import Article.Page as Page
 import Context exposing (Context)
 import Effect exposing (Effect)
 import Element exposing (..)
@@ -24,6 +25,8 @@ import Element.Palette as Palette
 import Element.Scale as Scale
 import Element.Tab as Tab
 import Element.Text as Text
+import Graphql.Operation exposing (RootQuery)
+import Graphql.SelectionSet exposing (SelectionSet)
 import Route
 import Tag exposing (Tag)
 import User exposing (User(..))
@@ -43,7 +46,7 @@ type alias Model =
 
 
 type Msg
-    = LoadFeedResponseReceived (Api.Response Article.Feed)
+    = LoadFeedResponseReceived (Api.Response Feed.Home)
     | GlobalFeedClicked
     | YourFeedClicked User.Profile
     | FeedMsg Feed.Msg
@@ -73,22 +76,41 @@ init user tag =
 
 fetchFeed : User -> Maybe Tag -> Effect Msg
 fetchFeed user tag =
+    loadFeed (feedSelection user tag Page.first)
+
+
+feedSelection : User -> Maybe Tag -> Page.Number -> SelectionSet Feed.Feed RootQuery
+feedSelection user tag =
     case ( user, tag ) of
         ( _, Just tag_ ) ->
-            Api.Articles.loadFeed (Api.Articles.byTag tag_) LoadFeedResponseReceived
+            Api.Articles.byTag tag_
 
         ( User.Guest, _ ) ->
-            Api.Articles.loadFeed Api.Articles.all LoadFeedResponseReceived
+            Api.Articles.all
 
         ( User.Author profile_, _ ) ->
-            Api.Articles.loadFeed (Api.Articles.followedByAuthor profile_) LoadFeedResponseReceived
+            authorFeedSelection profile_
+
+
+authorFeedSelection : User.Profile -> Page.Number -> SelectionSet Feed.Feed RootQuery
+authorFeedSelection profile_ page_ =
+    if User.isFollowingAuthors profile_ then
+        Api.Articles.followedByAuthor profile_ page_
+
+    else
+        Api.Articles.all page_
+
+
+loadFeed : SelectionSet Feed.Feed RootQuery -> Effect Msg
+loadFeed where_ =
+    Api.Articles.loadHomeFeed where_ LoadFeedResponseReceived
 
 
 initialModel : User -> Maybe Tag -> Model
 initialModel user tag =
     { pageLoad = Loading
     , activeTab = initTab user tag
-    , feed = Feed.loading
+    , feed = Feed.loading (feedSelection user tag)
     , popularTags = Api.Loading
     }
 
@@ -128,11 +150,11 @@ update msg model =
             Feed.update FeedMsg msg_ model
 
 
-handleFeedResponse : Model -> Api.Response Article.Feed -> Model
+handleFeedResponse : Model -> Api.Response Feed.Home -> Model
 handleFeedResponse model res =
     { model
         | popularTags = Api.mapData .popularTags (Api.fromResponse res)
-        , feed = Feed.fromResponse res
+        , feed = Feed.fromResponse res model.feed
         , pageLoad = Loaded
     }
 
@@ -150,8 +172,7 @@ loadGlobalFeed model =
 
 loadYourFeed : User.Profile -> Model -> ( Model, Effect Msg )
 loadYourFeed profile_ model =
-    Api.Articles.followedByAuthor profile_
-        |> Feed.load
+    Feed.load (Api.Articles.followedByAuthor profile_)
         |> embedFeed { model | activeTab = YourFeed }
 
 
@@ -172,17 +193,19 @@ banner model =
         [ el [ centerX ] (whiteHeadline "conduit")
         , el
             [ centerX
-            , inFront
-                (el [ centerX ]
-                    (Loader.white
-                        { message = "Loading..."
-                        , visible = pageIsLoading model.pageLoad
-                        }
-                    )
-                )
+            , inFront (loadingMessage model.pageLoad)
             ]
             (fadeInWhenPageLoaded model.pageLoad (whiteSubtitle "A place to share your knowledge"))
         ]
+
+
+loadingMessage : PageLoad -> Element msg
+loadingMessage pageLoad =
+    el [ centerX ]
+        (Loader.iconWithMessage "Loading..."
+            |> Loader.white
+            |> Loader.show (pageIsLoading pageLoad)
+        )
 
 
 pageIsLoading : PageLoad -> Bool
@@ -197,7 +220,7 @@ pageIsLoading page =
 
 isLoaded : Feed.Model -> Bool
 isLoaded =
-    not << Api.isLoading
+    not << Api.isLoading << .feed
 
 
 whiteSubtitle : String -> Element msg

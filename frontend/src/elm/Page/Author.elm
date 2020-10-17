@@ -9,9 +9,10 @@ module Page.Author exposing
 import Api
 import Api.Authors as Authors
 import Article.Author as Author exposing (Author)
-import Article.Author.Feed as Author
 import Article.Author.Follow as Follow
+import Article.Component.Feed as Feed
 import Article.Feed as Feed
+import Article.Page as Page
 import Context exposing (Context)
 import Effect exposing (Effect)
 import Element exposing (..)
@@ -40,7 +41,7 @@ type alias Model =
 
 
 type Msg
-    = LoadAuthorResponseReceived (Api.Response (Maybe Author.Feed))
+    = LoadAuthorResponseReceived (Api.Response (Maybe Feed.ForAuthor))
     | LikedArticlesClicked
     | AuthoredArticlesClicked
     | FeedMsg Feed.Msg
@@ -56,22 +57,22 @@ type Tab
 -- Init
 
 
-init : User.Id -> ( Model, Effect Msg )
-init id_ =
-    ( initialModel, fetchAuthorFeed id_ )
+init : Author.Id -> ( Model, Effect Msg )
+init id =
+    ( initialModel id, fetchAuthorFeed id )
 
 
-initialModel : Model
-initialModel =
-    { feed = Feed.loading
+initialModel : Author.Id -> Model
+initialModel id =
+    { feed = Feed.loading (Authors.authoredArticles id)
     , author = Api.Loading
     , activeTab = AuthoredArticles
     }
 
 
-fetchAuthorFeed : User.Id -> Effect Msg
+fetchAuthorFeed : Author.Id -> Effect Msg
 fetchAuthorFeed id_ =
-    Authors.loadFeed Authors.authoredArticles id_ LoadAuthorResponseReceived
+    Authors.loadFeed Authors.authoredArticles id_ Page.first LoadAuthorResponseReceived
 
 
 
@@ -97,11 +98,11 @@ update msg model =
             handleLoadAuthoredArticles model
 
 
-handleLoadResponse : Model -> Api.Response (Maybe Author.Feed) -> Model
+handleLoadResponse : Model -> Api.Response (Maybe Feed.ForAuthor) -> Model
 handleLoadResponse model response =
     { model
         | author = Api.mapData .author (Api.fromNullableResponse response)
-        , feed = Feed.fromNullableResponse response
+        , feed = Feed.fromNullableResponse response model.feed
     }
 
 
@@ -117,7 +118,7 @@ handleLoadAuthoredArticles model =
         |> embedFeed { model | activeTab = AuthoredArticles }
 
 
-loadFeed : Authors.ArticlesSelection -> Model -> ( Feed.Model, Effect Feed.Msg )
+loadFeed : Authors.FeedSelection -> Model -> ( Feed.Model, Effect Feed.Msg )
 loadFeed selection model =
     case model.author of
         Api.Success author ->

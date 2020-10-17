@@ -1,15 +1,15 @@
 module Api.Articles exposing
     ( all
-    , articleSelection
     , byTag
     , delete
     , deleteComment
     , edit
+    , feedSelection
     , followedByAuthor
     , like
-    , load
     , loadArticle
     , loadFeed
+    , loadHomeFeed
     , newestFirst
     , postComment
     , publish
@@ -23,6 +23,8 @@ import Api.Date as Date
 import Article exposing (Article)
 import Article.Author as Author exposing (Author)
 import Article.Comment as Comment exposing (Comment, Comment_)
+import Article.Feed as Feed exposing (Feed)
+import Article.Page as Page
 import Effect exposing (Effect)
 import Graphql.Operation exposing (RootMutation, RootQuery)
 import Graphql.OptionalArgument exposing (OptionalArgument(..))
@@ -33,6 +35,8 @@ import Hasura.InputObject as Input
 import Hasura.Mutation as Mutation
 import Hasura.Object exposing (Articles)
 import Hasura.Object.Articles as Articles exposing (CommentsOptionalArguments)
+import Hasura.Object.Articles_aggregate as ArticlesAggregate
+import Hasura.Object.Articles_aggregate_fields as ArticlesAggregateFields
 import Hasura.Object.Comments as Comments
 import Hasura.Object.Likes as Likes
 import Hasura.Object.Likes_aggregate as LikesAggregate
@@ -44,6 +48,7 @@ import Hasura.Query as Query
 import Tag exposing (Tag)
 import User
 import Utils.SelectionSet as SelectionSet
+import Utils.String as String
 
 
 
@@ -61,33 +66,33 @@ loadArticle id msg =
 --  Articles
 
 
-load : SelectionSet (List Article) RootQuery -> (Api.Response (List Article) -> msg) -> Effect msg
-load selection msg =
+loadFeed : SelectionSet Feed RootQuery -> (Api.Response Feed -> msg) -> Effect msg
+loadFeed selection msg =
     selection
         |> Api.query msg
-        |> Effect.loadArticles
+        |> Effect.loadFeed
 
 
 
 -- Global Feed
 
 
-loadFeed : SelectionSet (List Article) RootQuery -> (Api.Response Article.Feed -> msg) -> Effect msg
-loadFeed articlesSelection_ msg =
-    SelectionSet.succeed Article.Feed
-        |> with articlesSelection_
+loadHomeFeed : SelectionSet Feed RootQuery -> (Api.Response Feed.Home -> msg) -> Effect msg
+loadHomeFeed feedSelection_ msg =
+    SelectionSet.succeed Feed.Home
+        |> with feedSelection_
         |> with popularTagsSelection
         |> Api.query msg
-        |> Effect.loadFeed
+        |> Effect.loadHomeFeed
 
 
 
 -- By Tag
 
 
-byTag : Tag -> SelectionSet (List Article) RootQuery
-byTag tag =
-    Query.articles (newestFirst >> containsTag tag) articleSelection
+byTag : Tag -> Page.Number -> SelectionSet Feed RootQuery
+byTag tag page_ =
+    feedSelection page_ (newestFirst >> containsTag tag)
 
 
 containsTag : Tag -> Query.ArticlesOptionalArguments -> Query.ArticlesOptionalArguments
@@ -103,18 +108,39 @@ containsTag tag_ =
 -- By Author
 
 
-followedByAuthor : User.Profile -> SelectionSet (List Article) RootQuery
-followedByAuthor profile =
-    Query.articles (newestFirst >> followedBy profile) articleSelection
+followedByAuthor : User.Profile -> Page.Number -> SelectionSet Feed RootQuery
+followedByAuthor profile page_ =
+    feedSelection page_ (newestFirst >> followedBy profile)
 
 
-followedBy : User.Profile -> Query.ArticlesOptionalArguments -> Query.ArticlesOptionalArguments
 followedBy profile =
     Argument.combine4
         (where_ Input.buildArticles_bool_exp)
         (author Input.buildUsers_bool_exp)
         (id Input.buildInt_comparison_exp)
         (in_ (User.id profile :: User.following profile))
+
+
+feedSelection : Page.Number -> (Query.ArticlesOptionalArguments -> Query.ArticlesOptionalArguments) -> SelectionSet Feed RootQuery
+feedSelection page where_ =
+    SelectionSet.succeed Feed
+        |> with (Query.articles (where_ >> paginate page) articleSelection)
+        |> with (count where_)
+
+
+count : (Query.ArticlesAggregateOptionalArguments -> Query.ArticlesAggregateOptionalArguments) -> SelectionSet Int RootQuery
+count where_ =
+    Query.articles_aggregate where_ countSelection
+
+
+countSelection : SelectionSet Int Hasura.Object.Articles_aggregate
+countSelection =
+    ArticlesAggregate.aggregate (ArticlesAggregateFields.count identity)
+        |> SelectionSet.map defaultToZero
+
+
+paginate page_ args =
+    { args | offset = Present (Page.offset page_), limit = Present Page.size }
 
 
 
@@ -143,9 +169,9 @@ popularTagSelection =
 -- Articles
 
 
-all : SelectionSet (List Article) RootQuery
-all =
-    Query.articles newestFirst articleSelection
+all : Page.Number -> SelectionSet Feed RootQuery
+all page_ =
+    feedSelection page_ newestFirst
 
 
 articleSelection : SelectionSet Article Hasura.Object.Articles
@@ -204,7 +230,12 @@ likedBySelection =
 likesCountSelection : SelectionSet Int Hasura.Object.Likes_aggregate
 likesCountSelection =
     LikesAggregate.aggregate (LikesAggregateFields.count identity)
-        |> SelectionSet.map (Maybe.andThen identity >> Maybe.withDefault 0)
+        |> SelectionSet.map defaultToZero
+
+
+defaultToZero : Maybe (Maybe number) -> number
+defaultToZero =
+    Maybe.andThen identity >> Maybe.withDefault 0
 
 
 tagSelection : SelectionSet Tag.Tag Hasura.Object.Tags
@@ -212,7 +243,6 @@ tagSelection =
     SelectionSet.map Tag.one Tags.tag
 
 
-newestFirst : Query.ArticlesOptionalArguments -> Query.ArticlesOptionalArguments
 newestFirst =
     Argument.combine2
         (order_by Input.buildArticles_order_by)
@@ -223,9 +253,9 @@ newestFirst =
 -- Publish
 
 
-publish : (Api.Response () -> msg) -> Article.Inputs -> Effect msg
+publish : (Api.Response Article.Id -> msg) -> Article.Inputs -> Effect msg
 publish msg article_ =
-    Mutation.publish_article identity { object = toPublishArgs article_ } SelectionSet.empty
+    Mutation.publish_article identity { object = toPublishArgs article_ } Articles.id
         |> SelectionSet.failOnNothing
         |> Api.mutation msg
         |> Effect.publishArticle
@@ -258,9 +288,9 @@ toTagArg tag_ =
 -- Edit
 
 
-edit : (Api.Response () -> msg) -> Article.Id -> Article.Inputs -> Effect msg
+edit : (Api.Response Article.Id -> msg) -> Article.Id -> Article.Inputs -> Effect msg
 edit msg id_ edits =
-    SelectionSet.succeed (\_ _ _ -> ())
+    SelectionSet.succeed (\_ _ _ -> id_)
         |> with (editArticle id_ edits)
         |> with (insertTags id_ edits)
         |> with (deleteTags id_)
@@ -369,7 +399,7 @@ unlike article msg =
 -- Post Comment
 
 
-postComment : (Api.Response Article -> msg) -> Article -> String -> Effect msg
+postComment : (Api.Response Article -> msg) -> Article -> String.NonEmpty -> Effect msg
 postComment msg article comment =
     mutateCommentsSelection
         |> Mutation.post_comment identity { object = postCommentArgs article comment }
@@ -383,13 +413,13 @@ mutateCommentsSelection =
     Comments.article articleSelection
 
 
-postCommentArgs : Article -> String -> Input.Comments_insert_input
+postCommentArgs : Article -> String.NonEmpty -> Input.Comments_insert_input
 postCommentArgs article comment =
     Input.buildComments_insert_input
         (\args ->
             { args
                 | article_id = Present (Article.id article)
-                , comment = Present comment
+                , comment = Present (String.fromNonEmpty comment)
             }
         )
 

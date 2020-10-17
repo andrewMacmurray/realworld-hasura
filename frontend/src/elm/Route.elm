@@ -7,6 +7,7 @@ module Route exposing
     , fromUrl
     , home
     , link
+    , profile
     , routeToString
     , tagFeed
     )
@@ -71,8 +72,13 @@ editArticle =
 
 
 author : Author -> Route
-author =
-    Author.id >> Author
+author a =
+    Author (Author.id a)
+
+
+profile : User.Profile -> Route
+profile p =
+    Author (User.id p)
 
 
 tagQuery : Query.Parser (Maybe Tag)
