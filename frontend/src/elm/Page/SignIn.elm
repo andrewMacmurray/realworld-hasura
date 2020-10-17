@@ -125,8 +125,10 @@ signup model =
         , column [ spacing Scale.medium, width fill ]
             [ username model.inputs
             , password model.inputs
-            , el [ alignRight ] signInButton
-            , el [ alignRight ] (statusMessage model.request)
+            , column [ alignRight, spacing Scale.small ]
+                [ el [ alignRight ] (signInButton model.request)
+                , el [ alignRight ] (statusMessage model.request)
+                ]
             ]
         ]
 
@@ -144,11 +146,19 @@ statusMessage request =
             Text.error [] reason
 
 
-signInButton : Element Msg
-signInButton =
-    Button.button SignInClicked "Sign In"
-        |> Button.primary
-        |> Button.toElement
+signInButton : SignInRequest -> Element Msg
+signInButton request =
+    case request of
+        InProgress ->
+            Button.decorative "Sign In"
+                |> Button.primary
+                |> Button.loading
+                |> Button.toElement
+
+        _ ->
+            Button.button SignInClicked "Sign In"
+                |> Button.primary
+                |> Button.toElement
 
 
 username : Inputs -> Element Msg

@@ -547,6 +547,16 @@ label options =
             icon icon_ options
 
         ( _, _ ) ->
+            defaultText options
+
+
+defaultText : Options msg -> Element msg
+defaultText options =
+    case options.state of
+        Loading ->
+            el [ inFront (loader [ scale 0.58 ]) ] (hidden (text_ options))
+
+        _ ->
             text_ options
 
 
@@ -556,16 +566,7 @@ textWithIconLabel icon_ options =
         Loading ->
             row [ width fill, spacing Scale.extraSmall ]
                 [ el [ centerY ] (icon icon_ options)
-                , el
-                    [ inFront
-                        (Loader.icon
-                            |> Loader.white
-                            |> Loader.fast
-                            |> Loader.attributes [ centerX, centerY, moveUp 2, moveRight Scale.extraSmall, scale 0.7 ]
-                            |> Loader.show True
-                        )
-                    ]
-                    (el [ alpha 0 ] (text_ options))
+                , el [ inFront (loader [ moveRight Scale.extraSmall, scale 0.7 ]) ] (hidden (text_ options))
                 ]
 
         _ ->
@@ -573,6 +574,20 @@ textWithIconLabel icon_ options =
                 [ el [ centerY ] (icon icon_ options)
                 , el [ centerY ] (text_ options)
                 ]
+
+
+loader : List (Attribute msg) -> Element msg
+loader extras =
+    Loader.icon
+        |> Loader.white
+        |> Loader.fast
+        |> Loader.attributes ([ centerX, centerY, moveUp 2 ] ++ extras)
+        |> Loader.show True
+
+
+hidden : Element msg -> Element msg
+hidden =
+    el [ alpha 0 ]
 
 
 iconHover : Options msg -> List (Attribute msg)
