@@ -193,16 +193,19 @@ banner model =
         [ el [ centerX ] (whiteHeadline "conduit")
         , el
             [ centerX
-            , inFront
-                (el [ centerX ]
-                    (Loader.iconWithMessage "Loading..."
-                        |> Loader.white
-                        |> Loader.show (pageIsLoading model.pageLoad)
-                    )
-                )
+            , inFront (loadingMessage model.pageLoad)
             ]
             (fadeInWhenPageLoaded model.pageLoad (whiteSubtitle "A place to share your knowledge"))
         ]
+
+
+loadingMessage : PageLoad -> Element msg
+loadingMessage pageLoad =
+    el [ centerX ]
+        (Loader.iconWithMessage "Loading..."
+            |> Loader.white
+            |> Loader.show (pageIsLoading pageLoad)
+        )
 
 
 pageIsLoading : PageLoad -> Bool
