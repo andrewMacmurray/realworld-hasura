@@ -20,7 +20,7 @@ import Page exposing (Page)
 import Ports
 import Url exposing (Url)
 import User exposing (User)
-import Utils.Update exposing (andThenWithEffect, updateWith, withCmd)
+import Utils.Update exposing (andThenWithEffect, updateWith)
 
 
 
@@ -54,7 +54,6 @@ type Msg
     = UrlRequest UrlRequest
     | UrlChange Url
     | PageMsg Page.Msg
-    | WakeupResponseReceived
     | RefreshUserResponseReceived (Api.Response User)
 
 
@@ -71,7 +70,6 @@ performInit : Flags -> Url -> Nav.Key -> ( Model Nav.Key, Cmd Msg )
 performInit flags url key =
     init flags url key
         |> Effect.perform Nav.pushUrl
-        |> withCmd wakeup
 
 
 init : Flags -> Url -> key -> ( Model key, Effect Msg )
@@ -80,11 +78,6 @@ init flags url key =
         |> Page.changeTo url (Context.init flags.user)
         |> updatePageWith (initialModel flags key)
         |> andThenWithEffect refreshUser
-
-
-wakeup : Cmd Msg
-wakeup =
-    Api.wakeup WakeupResponseReceived
 
 
 refreshUser : Model model -> Effect Msg
@@ -120,9 +113,6 @@ update msg model =
 
         PageMsg msg_ ->
             updatePage model (Page.update msg_ model.page)
-
-        WakeupResponseReceived ->
-            ( model, Effect.none )
 
         RefreshUserResponseReceived response ->
             ( model, Effect.updateUser response )

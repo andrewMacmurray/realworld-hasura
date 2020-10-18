@@ -14,7 +14,6 @@ module Api exposing
     , mapData
     , mutation
     , query
-    , wakeup
     )
 
 import Api.Token as Token
@@ -22,7 +21,6 @@ import Constants
 import Graphql.Http
 import Graphql.Operation exposing (RootMutation, RootQuery)
 import Graphql.SelectionSet exposing (SelectionSet)
-import Http
 import User exposing (User)
 
 
@@ -190,18 +188,6 @@ bearerToken =
 prepend : String -> String -> String
 prepend str s =
     str ++ s
-
-
-
--- Wakeup
-
-
-wakeup : msg -> Cmd msg
-wakeup msg =
-    Http.get
-        { url = Constants.wakeupUrl
-        , expect = Http.expectWhatever (always msg)
-        }
 
 
 

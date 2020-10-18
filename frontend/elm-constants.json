@@ -2,7 +2,6 @@
   "path": "./src/elm",
   "moduleName": "Constants",
   "values": [
-    "API_URL",
-    "WAKEUP_URL"
+    "API_URL"
   ]
 }
