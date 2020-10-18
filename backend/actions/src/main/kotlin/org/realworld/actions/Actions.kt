@@ -1,7 +1,7 @@
 package org.realworld.actions
 
 import org.http4k.core.Filter
-import org.http4k.core.Method.GET
+import org.http4k.core.Method.POST
 import org.http4k.core.then
 import org.http4k.filter.ServerFilters.CatchLensFailure
 import org.http4k.routing.RoutingHttpHandler
@@ -30,7 +30,7 @@ class Actions : KoinComponent {
     val handler: RoutingHttpHandler =
         routes(
             "/api" bind actionRoutes,
-            "/wakeup" bind GET to Wakeup.handler
+            "/wakeup" bind POST to Wakeup.handler
         )
 
     private val actionRoutes: RoutingHttpHandler
