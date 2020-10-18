@@ -1,11 +1,11 @@
-module Element.Loader exposing
+module Element.Loader.Conduit exposing
     ( alignLeft
     , attributes
     , black
     , default
     , fast
-    , icon
-    , iconWithMessage
+    , loader
+    , loaderWithMessage
     , show
     , white
     )
@@ -74,13 +74,13 @@ defaults style =
 -- Construct
 
 
-iconWithMessage : String -> Loader msg
-iconWithMessage =
+loaderWithMessage : String -> Loader msg
+loaderWithMessage =
     WithMessage >> defaults >> Loader
 
 
-icon : Loader msg
-icon =
+loader : Loader msg
+loader =
     Loader (defaults Icon)
 
 
@@ -134,7 +134,7 @@ withSpeed_ speed (Loader options) =
 
 default : Element msg
 default =
-    icon
+    loader
         |> alignLeft
         |> black
         |> show True

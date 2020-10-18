@@ -20,7 +20,7 @@ import Element.Anchor as Anchor
 import Element.Background as Background
 import Element.Border as Border
 import Element.Layout as Layout
-import Element.Loader as Loader
+import Element.Loader.Conduit as Conduit
 import Element.Palette as Palette
 import Element.Scale as Scale
 import Element.Tab as Tab
@@ -211,9 +211,9 @@ banner model =
 loadingMessage : PageLoad -> Element msg
 loadingMessage pageLoad =
     el [ centerX ]
-        (Loader.iconWithMessage "Loading..."
-            |> Loader.white
-            |> Loader.show (pageIsLoading pageLoad)
+        (Conduit.loaderWithMessage "Loading..."
+            |> Conduit.white
+            |> Conduit.show (pageIsLoading pageLoad)
         )
 
 

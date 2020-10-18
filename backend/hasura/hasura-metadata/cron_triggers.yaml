@@ -1,1 +1,5 @@
-[]
+- name: wakeup-actions
+  webhook: '{{ACTIONS_WAKEUP_URL}}'
+  schedule: 20 * * * *
+  include_in_metadata: true
+  payload: {}

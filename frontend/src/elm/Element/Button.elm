@@ -1,6 +1,7 @@
 module Element.Button exposing
     ( Button
     , button
+    , conduit
     , decorative
     , delete
     , description
@@ -12,11 +13,12 @@ module Element.Button exposing
     , like
     , link
     , loadMore
-    , loading
+    , maybe
     , noText
     , post
     , primary
     , solid
+    , spinner
     , toElement
     , unfollow
     )
@@ -35,7 +37,8 @@ import Element.Icon.Pencil as Pencil
 import Element.Icon.Plane as Plane
 import Element.Icon.Plus as Plus
 import Element.Input as Input
-import Element.Loader as Loader
+import Element.Loader.Conduit as Conduit
+import Element.Loader.Spinner as Spinner
 import Element.Palette as Palette
 import Element.Scale as Scale
 import Element.Text as Text
@@ -66,7 +69,12 @@ type alias Options msg =
 type State msg
     = Active (Action msg)
     | Inactive
-    | Loading
+    | Loading LoadingStyle
+
+
+type LoadingStyle
+    = Conduit
+    | Spinner
 
 
 type Action msg
@@ -157,9 +165,19 @@ disabled =
     decorative >> grey >> hollow
 
 
-loading : Button msg -> Button msg
-loading =
-    withState_ Loading >> solid
+maybe : Maybe msg -> String -> Button msg
+maybe =
+    Maybe.map button >> Maybe.withDefault decorative
+
+
+conduit : Button msg -> Button msg
+conduit =
+    withState_ (Loading Conduit) >> solid
+
+
+spinner : Button msg -> Button msg
+spinner =
+    withState_ (Loading Spinner)
 
 
 
@@ -344,7 +362,7 @@ toAttributes options =
         [ [ fill_ options
           , transition_ options
           , borderColor options
-          , fontColor options
+          , Font.color (fontColor options)
           , Border.width 1
           , borderRadius_ options
           , padding_ options
@@ -420,7 +438,7 @@ hoverStyles options =
         ( Inactive, _ ) ->
             []
 
-        ( Loading, _ ) ->
+        ( Loading _, _ ) ->
             []
 
         ( _, Solid ) ->
@@ -472,20 +490,20 @@ borderColor options =
             Border.color (regularColor options.color)
 
 
-fontColor : Options msg -> Attr decorative msg
+fontColor : Options msg -> Element.Color
 fontColor options =
     case options.fill of
         Solid ->
-            Font.color Palette.white
+            Palette.white
 
         Hollow ->
-            Font.color (fontColor_ options)
+            fontColor_ options
 
         Borderless ->
-            Font.color (fontColor_ options)
+            fontColor_ options
 
         NoFill ->
-            Font.color (fontColor_ options)
+            fontColor_ options
 
 
 fontColor_ : Options msg -> Element.Color
@@ -553,8 +571,14 @@ label options =
 defaultText : Options msg -> Element msg
 defaultText options =
     case options.state of
-        Loading ->
-            el [ inFront (loader [ scale 0.58 ]) ] (hidden (text_ options))
+        Loading Conduit ->
+            el [ inFront (conduitLoader [ scale 0.58 ]) ] (hidden (text_ options))
+
+        Loading Spinner ->
+            row [ spacing Scale.extraSmall ]
+                [ text_ options
+                , Spinner.spinner (fontColor options)
+                ]
 
         _ ->
             text_ options
@@ -563,10 +587,16 @@ defaultText options =
 textWithIconLabel : Icon -> Options msg -> Element msg
 textWithIconLabel icon_ options =
     case options.state of
-        Loading ->
+        Loading Conduit ->
             row [ width fill, spacing Scale.extraSmall ]
                 [ el [ centerY ] (icon icon_ options)
-                , el [ inFront (loader [ moveRight Scale.extraSmall, scale 0.7 ]) ] (hidden (text_ options))
+                , el [ inFront (conduitLoader [ moveRight Scale.extraSmall, scale 0.7 ]) ] (hidden (text_ options))
+                ]
+
+        Loading Spinner ->
+            row [ width fill, spacing Scale.extraSmall ]
+                [ el [ centerY ] (icon icon_ options)
+                , el [ inFront (el [ moveLeft 2, moveDown 2 ] (Spinner.spinner (fontColor options))) ] (hidden (text_ options))
                 ]
 
         _ ->
@@ -576,13 +606,13 @@ textWithIconLabel icon_ options =
                 ]
 
 
-loader : List (Attribute msg) -> Element msg
-loader extras =
-    Loader.icon
-        |> Loader.white
-        |> Loader.fast
-        |> Loader.attributes ([ centerX, centerY, moveUp 2 ] ++ extras)
-        |> Loader.show True
+conduitLoader : List (Attribute msg) -> Element msg
+conduitLoader extras =
+    Conduit.loader
+        |> Conduit.white
+        |> Conduit.fast
+        |> Conduit.attributes ([ centerX, centerY, moveUp 2 ] ++ extras)
+        |> Conduit.show True
 
 
 hidden : Element msg -> Element msg

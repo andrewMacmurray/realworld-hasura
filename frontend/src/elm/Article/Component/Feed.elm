@@ -23,10 +23,10 @@ import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Anchor as Anchor
 import Element.Avatar as Avatar
-import Element.Button as Button
+import Element.Button as Button exposing (Button)
 import Element.Divider as Divider
 import Element.Keyed as Keyed
-import Element.Loader as Loader
+import Element.Loader.Conduit as Loader
 import Element.Scale as Scale exposing (edges)
 import Element.Text as Text
 import Graphql.Operation exposing (RootQuery)
@@ -57,7 +57,7 @@ type alias PageMsg msg =
 type alias Model =
     { feed : Api.Data Feed
     , page : Page.Number
-    , loadMoreRequest : LoadMoreRequest
+    , request : Request
     , selection : FeedSelection
     }
 
@@ -70,17 +70,20 @@ type Msg
     = LoadFeedResponseReceived (Api.Response Feed)
     | LoadMoreResponseReceived Viewport (Api.Response Feed)
     | LoadMoreClicked
-    | UpdateArticleResponseReceived (Api.Response Article)
+    | LikesActionResponseReceived Article.Id (Api.Response Article)
     | PageScrolled
     | ViewportReceived Viewport
     | LikeArticleClicked Article
     | UnLikeArticleClicked Article
 
 
-type LoadMoreRequest
+type Request
     = Idle
-    | Loading
-    | Failure
+    | LoadingMoreArticles
+    | LoadMoreArticlesFailed
+    | LikeInProgress Article.Id
+    | UnlikeInProgress Article.Id
+    | LikesActionFailed Article.Id
 
 
 
@@ -108,7 +111,7 @@ loading : FeedSelection -> Model
 loading selection =
     { feed = Api.Loading
     , page = Page.first
-    , loadMoreRequest = Idle
+    , request = Idle
     , selection = selection
     }
 
@@ -139,14 +142,14 @@ update_ msg model =
             ( { model | feed = Api.fromResponse response }, Effect.none )
 
         LoadMoreClicked ->
-            ( { model | loadMoreRequest = Loading }, Effect.getViewport ViewportReceived )
+            ( { model | request = LoadingMoreArticles }, Effect.getViewport ViewportReceived )
 
         ViewportReceived viewport ->
             ( model, loadMore model viewport )
 
         LoadMoreResponseReceived viewport (Ok feed) ->
             ( { model
-                | loadMoreRequest = Idle
+                | request = Idle
                 , feed = appendToFeed feed model.feed
                 , page = Page.next model.page
               }
@@ -154,19 +157,24 @@ update_ msg model =
             )
 
         LoadMoreResponseReceived _ (Err _) ->
-            ( { model | loadMoreRequest = Failure }, Effect.none )
+            ( { model | request = LoadMoreArticlesFailed }, Effect.none )
 
         LikeArticleClicked article ->
-            ( model, likeArticle article )
+            ( { model | request = LikeInProgress (Article.id article) }, likeArticle article )
 
         UnLikeArticleClicked article ->
-            ( model, unlikeArticle article )
+            ( { model | request = UnlikeInProgress (Article.id article) }, unlikeArticle article )
 
-        UpdateArticleResponseReceived (Ok article) ->
-            ( { model | feed = Api.mapData (updateArticle article) model.feed }, Effect.none )
+        LikesActionResponseReceived _ (Ok article) ->
+            ( { model
+                | feed = Api.mapData (updateArticle article) model.feed
+                , request = Idle
+              }
+            , Effect.none
+            )
 
-        UpdateArticleResponseReceived (Err _) ->
-            ( model, Effect.none )
+        LikesActionResponseReceived id (Err _) ->
+            ( { model | request = LikesActionFailed id }, Effect.none )
 
         PageScrolled ->
             ( model, Effect.none )
@@ -189,12 +197,12 @@ updateArticle article feed =
 
 likeArticle : Article -> Effect Msg
 likeArticle article =
-    Api.Articles.like article UpdateArticleResponseReceived
+    Api.Articles.like article (LikesActionResponseReceived (Article.id article))
 
 
 unlikeArticle : Article -> Effect Msg
 unlikeArticle article =
-    Api.Articles.unlike article UpdateArticleResponseReceived
+    Api.Articles.unlike article (LikesActionResponseReceived (Article.id article))
 
 
 loadMore : Model -> Viewport -> Effect Msg
@@ -257,8 +265,8 @@ viewFeed options feed =
 
 loadMoreButton : Options msg -> Feed -> Element msg
 loadMoreButton options feed =
-    case options.feed.loadMoreRequest of
-        Failure ->
+    case options.feed.request of
+        LoadMoreArticlesFailed ->
             column [ centerX, spacing Scale.medium ]
                 [ el [ centerX ] (loadMoreButton_ options feed)
                 , Text.error [] "Error loading more, try again?"
@@ -273,17 +281,17 @@ loadMoreButton_ options feed =
     Element.map options.msg
         (Page.loadMoreButton
             { totalArticles = feed.count
-            , loading = isLoadingMore options.feed.loadMoreRequest
+            , loading = isLoadingMore options.feed.request
             , page = options.feed.page
             , onClick = LoadMoreClicked
             }
         )
 
 
-isLoadingMore : LoadMoreRequest -> Bool
+isLoadingMore : Request -> Bool
 isLoadingMore request =
     case request of
-        Loading ->
+        LoadingMoreArticles ->
             True
 
         _ ->
@@ -313,33 +321,134 @@ viewArticle options article =
     )
 
 
+
+-- Likes Button
+
+
+type LikesButton msg
+    = GuestLikesButton { count : String }
+    | UnlikeButton { count : String, msg : Maybe msg, description : String }
+    | LikeButton { count : String, msg : Maybe msg, description : String }
+    | LikeInProgressButton { count : String }
+    | UnlikeInProgressButton { count : String }
+
+
 likes : Options msg -> Article -> Element msg
 likes options article =
-    let
-        likeCount =
-            Article.likes article |> String.fromInt
-    in
     el [ alignRight, alignTop ]
-        (case options.user of
-            User.Guest ->
-                Route.button Route.SignIn likeCount
-                    |> Button.like
-                    |> Button.toElement
-
-            User.Author profile_ ->
-                if Article.likedByMe profile_ article then
-                    Button.button (options.msg <| UnLikeArticleClicked article) likeCount
-                        |> Button.description ("unlike-" ++ Article.title article)
-                        |> Button.like
-                        |> Button.solid
-                        |> Button.toElement
-
-                else
-                    Button.button (options.msg <| LikeArticleClicked article) likeCount
-                        |> Button.description ("like-" ++ Article.title article)
-                        |> Button.like
-                        |> Button.toElement
+        (toLikesButton options article
+            |> viewLikesButton
+            |> Button.toElement
         )
+
+
+requestIsInProgress : Request -> Bool
+requestIsInProgress request =
+    case request of
+        Idle ->
+            False
+
+        LoadingMoreArticles ->
+            True
+
+        LoadMoreArticlesFailed ->
+            False
+
+        LikeInProgress _ ->
+            True
+
+        UnlikeInProgress _ ->
+            True
+
+        LikesActionFailed _ ->
+            False
+
+
+toLikesButton : Options msg -> Article -> LikesButton msg
+toLikesButton options article =
+    let
+        count =
+            String.fromInt (Article.likes article)
+
+        description for =
+            for ++ "-" ++ Article.title article
+
+        authorButton profile_ =
+            if Article.likedByMe profile_ article then
+                UnlikeButton
+                    { count = count
+                    , description = description "unlike"
+                    , msg = likeActionMsg options (UnLikeArticleClicked article)
+                    }
+
+            else
+                LikeButton
+                    { count = count
+                    , description = description "like"
+                    , msg = likeActionMsg options (LikeArticleClicked article)
+                    }
+    in
+    case options.user of
+        User.Guest ->
+            GuestLikesButton { count = count }
+
+        User.Author profile_ ->
+            case options.feed.request of
+                LikeInProgress id ->
+                    if Article.id article == id then
+                        LikeInProgressButton { count = count }
+
+                    else
+                        authorButton profile_
+
+                UnlikeInProgress id ->
+                    if Article.id article == id then
+                        UnlikeInProgressButton { count = count }
+
+                    else
+                        authorButton profile_
+
+                _ ->
+                    authorButton profile_
+
+
+likeActionMsg : Options msg -> Msg -> Maybe msg
+likeActionMsg options msg =
+    if requestIsInProgress options.feed.request then
+        Nothing
+
+    else
+        Just (options.msg msg)
+
+
+viewLikesButton : LikesButton msg -> Button msg
+viewLikesButton button =
+    case button of
+        GuestLikesButton { count } ->
+            Route.button Route.SignIn count
+                |> Button.like
+
+        UnlikeButton { msg, count, description } ->
+            Button.maybe msg count
+                |> Button.description description
+                |> Button.like
+                |> Button.solid
+
+        LikeButton { msg, count, description } ->
+            Button.maybe msg count
+                |> Button.description description
+                |> Button.like
+
+        LikeInProgressButton { count } ->
+            Button.decorative count
+                |> Button.like
+                |> Button.spinner
+                |> Button.solid
+
+        UnlikeInProgressButton { count } ->
+            Button.decorative count
+                |> Button.like
+                |> Button.spinner
 
 
 readMore : Article -> Element msg
