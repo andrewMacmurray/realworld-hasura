@@ -13,10 +13,12 @@ module Element.Button exposing
     , link
     , loadMore
     , loading
+    , maybe
     , noText
     , post
     , primary
     , solid
+    , spinner
     , toElement
     , unfollow
     )
@@ -36,6 +38,7 @@ import Element.Icon.Plane as Plane
 import Element.Icon.Plus as Plus
 import Element.Input as Input
 import Element.Loader as Loader
+import Element.Loader.Spinner as Spinner
 import Element.Palette as Palette
 import Element.Scale as Scale
 import Element.Text as Text
@@ -66,7 +69,12 @@ type alias Options msg =
 type State msg
     = Active (Action msg)
     | Inactive
-    | Loading
+    | Loading LoadingStyle
+
+
+type LoadingStyle
+    = Conduit
+    | Spinner
 
 
 type Action msg
@@ -157,9 +165,19 @@ disabled =
     decorative >> grey >> hollow
 
 
+maybe : Maybe msg -> String -> Button msg
+maybe =
+    Maybe.map button >> Maybe.withDefault decorative
+
+
 loading : Button msg -> Button msg
 loading =
-    withState_ Loading >> solid
+    withState_ (Loading Conduit) >> solid
+
+
+spinner : Button msg -> Button msg
+spinner =
+    withState_ (Loading Spinner)
 
 
 
@@ -344,7 +362,7 @@ toAttributes options =
         [ [ fill_ options
           , transition_ options
           , borderColor options
-          , fontColor options
+          , Font.color (fontColor options)
           , Border.width 1
           , borderRadius_ options
           , padding_ options
@@ -420,7 +438,7 @@ hoverStyles options =
         ( Inactive, _ ) ->
             []
 
-        ( Loading, _ ) ->
+        ( Loading _, _ ) ->
             []
 
         ( _, Solid ) ->
@@ -472,20 +490,20 @@ borderColor options =
             Border.color (regularColor options.color)
 
 
-fontColor : Options msg -> Attr decorative msg
+fontColor : Options msg -> Element.Color
 fontColor options =
     case options.fill of
         Solid ->
-            Font.color Palette.white
+            Palette.white
 
         Hollow ->
-            Font.color (fontColor_ options)
+            fontColor_ options
 
         Borderless ->
-            Font.color (fontColor_ options)
+            fontColor_ options
 
         NoFill ->
-            Font.color (fontColor_ options)
+            fontColor_ options
 
 
 fontColor_ : Options msg -> Element.Color
@@ -553,8 +571,14 @@ label options =
 defaultText : Options msg -> Element msg
 defaultText options =
     case options.state of
-        Loading ->
+        Loading Conduit ->
             el [ inFront (loader [ scale 0.58 ]) ] (hidden (text_ options))
+
+        Loading Spinner ->
+            row [ spacing Scale.extraSmall ]
+                [ text_ options
+                , Spinner.spinner (fontColor options)
+                ]
 
         _ ->
             text_ options
@@ -563,10 +587,16 @@ defaultText options =
 textWithIconLabel : Icon -> Options msg -> Element msg
 textWithIconLabel icon_ options =
     case options.state of
-        Loading ->
+        Loading Conduit ->
             row [ width fill, spacing Scale.extraSmall ]
                 [ el [ centerY ] (icon icon_ options)
                 , el [ inFront (loader [ moveRight Scale.extraSmall, scale 0.7 ]) ] (hidden (text_ options))
+                ]
+
+        Loading Spinner ->
+            row [ width fill, spacing Scale.extraSmall ]
+                [ el [ centerY ] (icon icon_ options)
+                , el [ inFront (el [ moveLeft 2, moveDown 2 ] (Spinner.spinner (fontColor options))) ] (hidden (text_ options))
                 ]
 
         _ ->
