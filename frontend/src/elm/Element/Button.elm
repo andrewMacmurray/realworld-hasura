@@ -1,6 +1,7 @@
 module Element.Button exposing
     ( Button
     , button
+    , conduit
     , decorative
     , delete
     , description
@@ -12,7 +13,6 @@ module Element.Button exposing
     , like
     , link
     , loadMore
-    , loading
     , maybe
     , noText
     , post
@@ -37,7 +37,7 @@ import Element.Icon.Pencil as Pencil
 import Element.Icon.Plane as Plane
 import Element.Icon.Plus as Plus
 import Element.Input as Input
-import Element.Loader as Loader
+import Element.Loader.Conduit as Conduit
 import Element.Loader.Spinner as Spinner
 import Element.Palette as Palette
 import Element.Scale as Scale
@@ -170,8 +170,8 @@ maybe =
     Maybe.map button >> Maybe.withDefault decorative
 
 
-loading : Button msg -> Button msg
-loading =
+conduit : Button msg -> Button msg
+conduit =
     withState_ (Loading Conduit) >> solid
 
 
@@ -572,7 +572,7 @@ defaultText : Options msg -> Element msg
 defaultText options =
     case options.state of
         Loading Conduit ->
-            el [ inFront (loader [ scale 0.58 ]) ] (hidden (text_ options))
+            el [ inFront (conduitLoader [ scale 0.58 ]) ] (hidden (text_ options))
 
         Loading Spinner ->
             row [ spacing Scale.extraSmall ]
@@ -590,7 +590,7 @@ textWithIconLabel icon_ options =
         Loading Conduit ->
             row [ width fill, spacing Scale.extraSmall ]
                 [ el [ centerY ] (icon icon_ options)
-                , el [ inFront (loader [ moveRight Scale.extraSmall, scale 0.7 ]) ] (hidden (text_ options))
+                , el [ inFront (conduitLoader [ moveRight Scale.extraSmall, scale 0.7 ]) ] (hidden (text_ options))
                 ]
 
         Loading Spinner ->
@@ -606,13 +606,13 @@ textWithIconLabel icon_ options =
                 ]
 
 
-loader : List (Attribute msg) -> Element msg
-loader extras =
-    Loader.icon
-        |> Loader.white
-        |> Loader.fast
-        |> Loader.attributes ([ centerX, centerY, moveUp 2 ] ++ extras)
-        |> Loader.show True
+conduitLoader : List (Attribute msg) -> Element msg
+conduitLoader extras =
+    Conduit.loader
+        |> Conduit.white
+        |> Conduit.fast
+        |> Conduit.attributes ([ centerX, centerY, moveUp 2 ] ++ extras)
+        |> Conduit.show True
 
 
 hidden : Element msg -> Element msg

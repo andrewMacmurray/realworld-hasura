@@ -14,7 +14,7 @@ import Context exposing (Context)
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Layout as Layout
-import Element.Loader as Loader
+import Element.Loader.Conduit as Loader
 import Element.Scale as Scale
 import Element.Text as Text
 import Form.Button as Button

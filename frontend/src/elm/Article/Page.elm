@@ -101,7 +101,7 @@ loadMore options =
     if options.loading then
         Button.decorative text
             |> Button.loadMore
-            |> Button.loading
+            |> Button.conduit
             |> Button.toElement
 
     else

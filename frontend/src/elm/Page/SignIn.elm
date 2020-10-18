@@ -152,7 +152,7 @@ signInButton request =
         InProgress ->
             Button.decorative "Sign In"
                 |> Button.primary
-                |> Button.loading
+                |> Button.conduit
                 |> Button.toElement
 
         _ ->

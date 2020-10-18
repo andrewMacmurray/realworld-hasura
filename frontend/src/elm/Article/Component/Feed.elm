@@ -26,7 +26,7 @@ import Element.Avatar as Avatar
 import Element.Button as Button exposing (Button)
 import Element.Divider as Divider
 import Element.Keyed as Keyed
-import Element.Loader as Loader
+import Element.Loader.Conduit as Loader
 import Element.Scale as Scale exposing (edges)
 import Element.Text as Text
 import Graphql.Operation exposing (RootQuery)
