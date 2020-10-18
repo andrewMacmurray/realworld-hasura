@@ -43,27 +43,30 @@ validateOnInput { validation, label, style, onSubmit, inputs } =
 type alias ValidateOnSubmitOptions inputs output msg =
     { label : String
     , validation : Validation inputs output
+    , style : Button msg -> Button msg
     , inputs : inputs
-    , showError : Bool
     , onSubmit : output -> msg
-    , onError : msg
+    , onError : inputs -> msg
     }
 
 
-validateOnSubmit : ValidateOnSubmitOptions inputs output msg -> Element msg
-validateOnSubmit { inputs, validation, onSubmit, label, showError, onError } =
+validateOnSubmit : ValidateOnSubmitOptions { inputs | errorsVisible : Bool } output msg -> Element msg
+validateOnSubmit { inputs, style, validation, onSubmit, label, onError } =
     case Validation.run inputs validation of
         Validation.Success output ->
             Button.button (onSubmit output) label
                 |> Button.description label
+                |> style
                 |> Button.toElement
 
         Validation.Failure _ ->
-            if showError then
+            if inputs.errorsVisible then
                 Button.disabled label
+                    |> style
                     |> Button.toElement
 
             else
-                Button.button onError label
+                Button.button (onError { inputs | errorsVisible = True }) label
                     |> Button.description label
+                    |> style
                     |> Button.toElement

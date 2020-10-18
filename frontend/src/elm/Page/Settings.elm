@@ -11,6 +11,7 @@ import Api.Users
 import Context exposing (Context)
 import Effect exposing (Effect)
 import Element exposing (..)
+import Element.Button as Button exposing (Button)
 import Element.Divider as Divider
 import Element.Layout as Layout
 import Element.Scale as Scale
@@ -161,8 +162,24 @@ updateButton profile model =
         , validation = validation profile
         , inputs = model.inputs
         , onSubmit = UpdateSettingsClicked
-        , style = identity
+        , style = buttonStyle model.request
         }
+
+
+buttonStyle : Request -> Button msg -> Button msg
+buttonStyle request =
+    case request of
+        Idle ->
+            identity
+
+        Loading ->
+            Button.conduit
+
+        Success ->
+            identity
+
+        Failure _ ->
+            identity
 
 
 email : User.Profile -> Inputs -> Element Msg

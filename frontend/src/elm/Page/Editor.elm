@@ -13,6 +13,7 @@ import Article exposing (Article)
 import Context exposing (Context)
 import Effect exposing (Effect)
 import Element exposing (..)
+import Element.Button as Button exposing (Button)
 import Element.Layout as Layout
 import Element.Loader.Conduit as Loader
 import Element.Scale as Scale
@@ -32,14 +33,14 @@ import User exposing (User(..))
 type alias Model =
     { inputs : Api.Data Inputs
     , mode : Mode
-    , errorsVisible : Bool
+    , request : Request
     }
 
 
 type Msg
     = LoadArticleResponseReceived (Api.Response (Maybe Article))
     | InputsChanged Inputs
-    | PublishClickedWithErrors
+    | PublishClickedWithErrors Inputs
     | PublishClicked Article.Inputs
     | PublishResponseReceived (Api.Response Article.Id)
     | EditResponseReceived (Api.Response Article.Id)
@@ -50,11 +51,18 @@ type Mode
     | NewArticle
 
 
+type Request
+    = Idle
+    | InProgress
+    | Failed String
+
+
 type alias Inputs =
     { title : String
     , about : String
     , content : String
     , tags : String
+    , errorsVisible : Bool
     }
 
 
@@ -75,8 +83,8 @@ init mode =
 initialModel : Mode -> Api.Data Inputs -> Model
 initialModel mode inputs =
     { inputs = inputs
+    , request = Idle
     , mode = mode
-    , errorsVisible = False
     }
 
 
@@ -86,6 +94,7 @@ emptyInputs =
     , about = ""
     , content = ""
     , tags = ""
+    , errorsVisible = False
     }
 
 
@@ -110,22 +119,32 @@ update msg model =
             ( { model | inputs = Api.Success inputs }, Effect.none )
 
         PublishClicked toCreate ->
-            ( model, publishArticle model.mode toCreate )
+            ( { model | request = InProgress }, publishArticle model.mode toCreate )
 
         PublishResponseReceived (Ok id) ->
             ( model, Effect.goToArticle id )
 
         PublishResponseReceived (Err _) ->
-            ( model, Effect.none )
+            ( { model | request = publishFailed }, Effect.none )
 
-        PublishClickedWithErrors ->
-            ( { model | errorsVisible = True }, Effect.none )
+        PublishClickedWithErrors inputs ->
+            ( { model | inputs = Api.Success inputs }, Effect.none )
 
         EditResponseReceived (Ok id) ->
             ( model, Effect.goToArticle id )
 
         EditResponseReceived (Err _) ->
-            ( model, Effect.none )
+            ( { model | request = editFailed }, Effect.none )
+
+
+editFailed : Request
+editFailed =
+    Failed "Couldn't update article, try again?"
+
+
+publishFailed : Request
+publishFailed =
+    Failed "Couldn't publish article, try again?"
 
 
 toInputs : Article -> Inputs
@@ -134,6 +153,7 @@ toInputs article =
     , about = Article.about article
     , content = Article.content article
     , tags = tagsToString article
+    , errorsVisible = False
     }
 
 
@@ -176,40 +196,69 @@ page model =
             Text.error [] "Error loading article"
 
         Api.Success inputs_ ->
-            page_ inputs_ model
+            page_ model inputs_
 
 
-page_ : Inputs -> Model -> Element Msg
-page_ inputs model =
+page_ : Model -> Inputs -> Element Msg
+page_ model inputs =
     column
         [ width fill
         , spacing Scale.medium
         , paddingXY 0 Scale.large
         ]
-        [ title inputs model
-        , about inputs model
-        , content inputs model
+        [ title inputs
+        , about inputs
+        , content inputs
         , tags inputs
         , showTags inputs.tags
-        , publishButton inputs model
+        , publishButton model inputs
         ]
 
 
-publishButton : Inputs -> Model -> Element Msg
-publishButton inputs model =
-    el [ alignRight ] (publishButton_ inputs model)
+publishButton : Model -> Inputs -> Element Msg
+publishButton model inputs =
+    column [ alignRight, spacing Scale.small ]
+        [ el [ alignRight ] (publishButton_ model inputs)
+        , el [ alignRight ] (errorMessage model.request)
+        ]
 
 
-publishButton_ : Inputs -> Model -> Element Msg
-publishButton_ inputs model =
+publishButton_ : Model -> Inputs -> Element Msg
+publishButton_ model inputs =
     Button.validateOnSubmit
         { label = "Publish Article"
         , validation = validation inputs
         , inputs = inputs
-        , showError = model.errorsVisible
+        , style = buttonStyle model.request
         , onSubmit = PublishClicked
         , onError = PublishClickedWithErrors
         }
+
+
+buttonStyle : Request -> Button msg -> Button msg
+buttonStyle request =
+    case request of
+        InProgress ->
+            Button.conduit
+
+        Idle ->
+            identity
+
+        Failed _ ->
+            identity
+
+
+errorMessage : Request -> Element msg
+errorMessage request =
+    case request of
+        InProgress ->
+            none
+
+        Idle ->
+            none
+
+        Failed reason ->
+            Text.error [] reason
 
 
 validation : Inputs -> Validation Inputs Article.Inputs
@@ -233,27 +282,27 @@ showTag tag_ =
     Text.text [ Text.green, Text.description "visible-tag" ] ("#" ++ Tag.value tag_)
 
 
-title : Inputs -> Model -> Element Msg
-title inputs model =
+title : Inputs -> Element Msg
+title inputs =
     title_
         |> Field.large
-        |> validate inputs model
+        |> validate inputs
         |> textInput inputs
 
 
-about : Inputs -> Model -> Element Msg
-about inputs model =
+about : Inputs -> Element Msg
+about inputs =
     about_
         |> Field.small
-        |> validate inputs model
+        |> validate inputs
         |> textInput inputs
 
 
-content : Inputs -> Model -> Element Msg
-content inputs model =
+content : Inputs -> Element Msg
+content inputs =
     content_
         |> Field.area
-        |> validate inputs model
+        |> validate inputs
         |> textInput inputs
 
 
@@ -264,9 +313,9 @@ tags inputs =
         |> textInput inputs
 
 
-validate : Inputs -> Model -> Field.View Inputs Article.Inputs -> Field.View Inputs Article.Inputs
-validate inputs model =
-    Field.validateWith (validation inputs) >> Field.showErrorsIf model.errorsVisible
+validate : Inputs -> Field.View Inputs Article.Inputs -> Field.View Inputs Article.Inputs
+validate inputs =
+    Field.validateWith (validation inputs) >> Field.showErrorsIf inputs.errorsVisible
 
 
 
