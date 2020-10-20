@@ -1,6 +1,6 @@
 locals {
-  actions_api_name = "realworld-actions"
-  actions_api_url  = "https://${local.actions_api_name}.herokuapp.com/api"
+  actions_api_name       = "realworld-actions"
+  hasura_app_graphql_url = "https://trusty-mastodon-93.hasura.app/v1/graphql"
 }
 
 resource "heroku_app" "actions" {
