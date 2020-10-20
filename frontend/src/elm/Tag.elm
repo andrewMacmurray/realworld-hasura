@@ -41,6 +41,7 @@ parse =
     Regex.replace specialCharacters (always " ")
         >> String.words
         >> removeEmpties
+        >> format
         >> removeDuplicates
         >> List.map Tag
 
@@ -48,6 +49,11 @@ parse =
 removeEmpties : List String -> List String
 removeEmpties =
     List.filter (not << String.isEmpty)
+
+
+format : List String -> List String
+format =
+    List.map String.toLower
 
 
 removeDuplicates : List a -> List a
