@@ -12,7 +12,7 @@ A Realworld inspired blogging platform using `Hasura` + `Kotlin` + `Elm`
 
 ### Performance Caveats
 
-- The backend is running on free infrastructure (free heroku postgres db, hasura cloud free and a free heroku dyno), it will very likely topple over if put under load!
+- The backend is running on free infrastructure (hasura cloud free and a free heroku dyno), it will very likely topple over if put under load!
 
 ### Some notable differences to reference Realworld
 
