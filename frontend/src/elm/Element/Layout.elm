@@ -153,7 +153,7 @@ toPage context page (Layout options) =
 
 withBackdrop : Element msg -> Element msg
 withBackdrop =
-    el [ width fill, Backrgound.color Palette.white ]
+    el [ width fill, height fill, Backrgound.color Palette.white ]
 
 
 toBanner : Options msg -> Element msg

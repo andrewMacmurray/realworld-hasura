@@ -127,7 +127,7 @@ signup model =
             , password model.inputs
             , column [ alignRight, spacing Scale.small ]
                 [ el [ alignRight ] (signInButton model.request)
-                , el [ alignRight ] (statusMessage model.request)
+                , el [ alignRight, paddingXY Scale.extraSmall 0 ] (statusMessage model.request)
                 ]
             ]
         ]
