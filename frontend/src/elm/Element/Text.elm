@@ -15,6 +15,7 @@ module Element.Text exposing
     , large
     , link
     , medium
+    , mobileHeadline
     , pointer
     , regular
     , small
@@ -33,6 +34,7 @@ import Element.Anchor as Anchor
 import Element.Font as Font
 import Element.Palette as Palette
 import Html.Attributes
+import Utils.Element as Element
 
 
 
@@ -186,6 +188,14 @@ description d properties =
 headline : List Option -> String -> Element msg
 headline =
     text_ [ withSize Headline, headingFont ]
+
+
+mobileHeadline : List Option -> String -> Element msg
+mobileHeadline options content =
+    Element.column []
+        [ Element.showOnMobile (title options content)
+        , Element.showOnDesktop (headline options content)
+        ]
 
 
 title : List Option -> String -> Element msg

@@ -16,7 +16,7 @@ import Element.Background as Backrgound
 import Element.Keyed as Keyed
 import Element.Layout.Menu as Menu exposing (Menu)
 import Element.Palette as Palette
-import Element.Scale as Scale
+import Element.Scale as Scale exposing (edges)
 import Element.Text as Text
 import Html exposing (Html)
 import Route
@@ -133,7 +133,11 @@ authenticated user context =
 
 toPage : Context context -> Element msg -> Layout msg -> Element msg
 toPage context page (Layout options) =
-    Keyed.column [ width fill, height fill ]
+    Keyed.column
+        [ width fill
+        , height fill
+        , paddingEach { edges | bottom = Scale.extraLarge }
+        ]
         [ ( "desktopNav", toDesktopNav context )
         , ( "mobileNav", toMobileNav context )
         , ( "banner", toBanner options )

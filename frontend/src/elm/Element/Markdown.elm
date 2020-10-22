@@ -16,12 +16,16 @@ import Markdown.Parser
 import Markdown.Renderer
 
 
-view : String -> List (Element msg)
+view : String -> Element msg
 view =
     Markdown.Parser.parse
         >> Result.mapError (List.map Markdown.Parser.deadEndToString >> String.join "\n")
         >> Result.andThen (Markdown.Renderer.render renderer)
         >> Result.withDefault []
+        >> column
+            [ width fill
+            , spacingXY 0 Scale.large
+            ]
 
 
 renderer : Markdown.Renderer.Renderer (Element msg)
