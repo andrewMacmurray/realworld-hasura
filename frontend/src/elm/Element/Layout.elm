@@ -4,7 +4,6 @@ module Element.Layout exposing
     , halfWidth
     , layout
     , maxWidth
-    , measured
     , toHtml
     , toPage
     , withBanner
@@ -49,7 +48,6 @@ type alias Context context =
 
 type Width
     = Full
-    | Measured
     | Half
 
 
@@ -86,11 +84,6 @@ layout =
 withBanner : List (Attribute msg) -> Element msg -> Layout msg -> Layout msg
 withBanner attr el (Layout options) =
     Layout { options | banner = Just ( attr, el ) }
-
-
-measured : Layout msg -> Layout msg
-measured =
-    withWidth_ Measured
 
 
 halfWidth : Layout msg -> Layout msg
@@ -257,9 +250,6 @@ toWidth_ options =
     case options.width of
         Full ->
             maxWidth
-
-        Measured ->
-            790
 
         Half ->
             maxWidth // 2
