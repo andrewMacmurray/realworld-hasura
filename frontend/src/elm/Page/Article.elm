@@ -24,6 +24,7 @@ import Element.Font as Font
 import Element.Layout as Layout exposing (Layout)
 import Element.Layout.Block as Block
 import Element.Loader.Conduit as Loader
+import Element.Markdown as Markdown
 import Element.Palette as Palette
 import Element.Scale as Scale exposing (edges)
 import Element.Text as Text
@@ -357,7 +358,12 @@ showArticleBody user model article =
     column [ spacing Scale.large, width fill, height fill, paddingEach { edges | bottom = Scale.extraLarge } ]
         [ Element.mobileOnly el [] (tags Text.grey article)
         , paragraph [] [ Text.title [] (Article.about article) ]
-        , paragraph [ Font.color Palette.black ] [ Text.text [] (Article.content article) ]
+        , column
+            [ Font.color Palette.black
+            , width fill
+            , spacingXY 0 Scale.large
+            ]
+            (Markdown.view (Article.content article))
         , el [ width fill, paddingEach { edges | top = Scale.extraLarge } ]
             (comments user model article)
         ]
