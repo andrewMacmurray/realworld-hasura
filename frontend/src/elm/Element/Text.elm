@@ -192,7 +192,7 @@ headline =
 
 mobileHeadline : List Option -> String -> Element msg
 mobileHeadline options content =
-    Element.column []
+    Element.paragraph []
         [ Element.showOnMobile (title options content)
         , Element.showOnDesktop (headline options content)
         ]

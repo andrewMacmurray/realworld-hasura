@@ -6,7 +6,23 @@ on:
       - main
 
 jobs:
-  build-actions:
+  build-frontend:
+    defaults:
+      run:
+        working-directory: ./frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/upload-artifact@v2
+        with:
+          name: frontend-build
+          path: ./frontend/dist
+  deploy-actions:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -29,34 +45,8 @@ jobs:
       - run: ./gradlew shadowJar
       - run: heroku container:login
       - run: heroku container:push --app realworld-actions web
-  build-frontend:
-    defaults:
-      run:
-        working-directory: ./frontend
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 12.x
-      - run: npm ci
-      - run: npm run build
-      - uses: actions/upload-artifact@v2
-        with:
-          name: frontend-build
-          path: ./frontend/dist
-  deploy-actions:
-    needs: [build-actions, build-frontend]
-    env:
-      HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - run: heroku container:login
       - run: heroku container:release --app realworld-actions web
-        working-directory: ./backend/actions
   migrate-hasura:
-    needs: [deploy-actions]
     runs-on: ubuntu-latest
     env:
       HASURA_ENDPOINT: ${{ secrets.HASURA_ENDPOINT }}
@@ -71,7 +61,7 @@ jobs:
         with:
           args: metadata apply
   deploy-frontend:
-    needs: [migrate-hasura]
+    needs: [migrate-hasura, deploy-actions]
     defaults:
       run:
         working-directory: ./frontend
