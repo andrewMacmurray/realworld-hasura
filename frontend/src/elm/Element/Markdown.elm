@@ -29,51 +29,51 @@ renderer =
     { heading = heading
     , paragraph = paragraph []
     , thematicBreak = none
-    , text = \value -> paragraph [] [ Text.text [] value ]
-    , strong = paragraph [ Font.bold ]
-    , emphasis = paragraph [ Font.italic ]
+    , text = Text.text []
+    , strong = row [ class "bold-override" ]
+    , emphasis = row [ Font.italic ]
     , codeSpan = code
-    , link =
-        \{ title, destination } body ->
-            newTabLink []
-                { url = destination
-                , label =
-                    paragraph
-                        [ Font.color (Element.rgb255 0 0 255)
-                        , htmlAttribute (Html.Attributes.style "overflow-wrap" "break-word")
-                        , htmlAttribute (Html.Attributes.style "word-break" "break-word")
-                        ]
-                        body
-                }
+    , link = toLink
     , hardLineBreak = html (Html.br [] [])
     , image = toImage
-    , blockQuote =
-        Element.paragraph
-            [ Border.widthEach { edges | left = 10 }
-            , padding Scale.medium
-            , Border.color Palette.black
-            , Background.color Palette.lightGrey
-            ]
+    , blockQuote = blockQuote
     , unorderedList = unorderedList
-    , orderedList =
-        \startingIndex items ->
-            column [ spacing Scale.medium ]
-                (items
-                    |> List.indexedMap
-                        (\index itemBlocks ->
-                            paragraph [ spacing Scale.medium, width fill ]
-                                [ paragraph [ alignTop ] (text (String.fromInt (index + startingIndex) ++ " ") :: itemBlocks) ]
-                        )
-                )
+    , orderedList = orderedList
     , codeBlock = codeBlock
     , table = column [ width fill ]
     , tableHeader = column [ Font.bold, width fill, Font.center ]
     , tableBody = column [ width fill ]
     , tableRow = row [ height fill, width fill ]
-    , tableHeaderCell = \_ children -> paragraph tableBorder children
-    , tableCell = \_ children -> paragraph tableBorder children
+    , tableHeaderCell = \_ -> paragraph tableBorder
+    , tableCell = \_ -> paragraph tableBorder
     , html = Markdown.Html.oneOf []
     }
+
+
+blockQuote : List (Element msg) -> Element msg
+blockQuote =
+    paragraph
+        [ Border.widthEach { edges | left = Scale.small }
+        , padding Scale.medium
+        , Border.color Palette.black
+        , Background.color Palette.lightGrey
+        ]
+
+
+toLink : { a | destination : String } -> List (Element msg) -> Element msg
+toLink { destination } body =
+    row []
+        [ newTabLink []
+            { url = destination
+            , label =
+                paragraph
+                    [ Font.color (Element.rgb255 0 0 255)
+                    , style "overflow-wrap" "break-word"
+                    , style "word-break" "break-word"
+                    ]
+                    body
+            }
+        ]
 
 
 toImage : { title : Maybe String, src : String, alt : String } -> Element msg
@@ -84,6 +84,17 @@ toImage img =
 
         Nothing ->
             image [ width fill ] { src = img.src, description = img.alt }
+
+
+orderedList : Int -> List (List (Element msg)) -> Element msg
+orderedList i items =
+    column [ spacing Scale.medium ] (List.indexedMap (orderedItem i) items)
+
+
+orderedItem : Int -> Int -> List (Element msg) -> Element msg
+orderedItem start i blocks =
+    paragraph [ spacing Scale.medium, width fill ]
+        [ paragraph [ alignTop ] (text (String.fromInt (i + start) ++ " ") :: blocks) ]
 
 
 unorderedList : List (ListItem (Element msg)) -> Element msg
@@ -170,9 +181,19 @@ codeBlock : { body : String, language : Maybe String } -> Element msg
 codeBlock details =
     paragraph
         [ Background.color (Element.rgba 0 0 0 0.03)
-        , htmlAttribute (Html.Attributes.style "white-space" "pre-wrap")
-        , htmlAttribute (Html.Attributes.style "overflow-wrap" "break-word")
-        , htmlAttribute (Html.Attributes.style "word-break" "break-word")
+        , style "white-space" "pre-wrap"
+        , style "overflow-wrap" "break-word"
+        , style "word-break" "break-word"
         , padding 20
         ]
         [ html (Html.code [] [ Html.text details.body ]) ]
+
+
+style : String -> String -> Attribute msg
+style a b =
+    htmlAttribute (Html.Attributes.style a b)
+
+
+class : String -> Attribute msg
+class =
+    htmlAttribute << Html.Attributes.class
