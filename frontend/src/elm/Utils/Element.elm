@@ -4,6 +4,7 @@ module Utils.Element exposing
     , mobileOnly
     , showOnDesktop
     , showOnMobile
+    , wrappedRow_
     )
 
 import Element exposing (Element, el, fill, htmlAttribute, width)
@@ -17,6 +18,17 @@ import Html.Attributes exposing (class)
 maybe : (a -> Element msg) -> Maybe a -> Element msg
 maybe toElement =
     Maybe.map toElement >> Maybe.withDefault Element.none
+
+
+wrappedRow_ : List (Element.Attribute msg) -> List (Element msg) -> Element msg
+wrappedRow_ attrs =
+    -- Hack to stop element from overflowing page's width
+    Element.wrappedRow (forceRowFill :: attrs)
+
+
+forceRowFill : Element.Attribute msg
+forceRowFill =
+    htmlAttribute (Html.Attributes.class "force-wrapped-row-fill")
 
 
 

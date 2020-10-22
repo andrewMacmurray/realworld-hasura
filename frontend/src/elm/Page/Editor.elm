@@ -16,7 +16,8 @@ import Element exposing (..)
 import Element.Button as Button exposing (Button)
 import Element.Layout as Layout
 import Element.Loader.Conduit as Loader
-import Element.Scale as Scale
+import Element.Markdown as Markdown
+import Element.Scale as Scale exposing (edges)
 import Element.Text as Text
 import Form.Button as Button
 import Form.Field as Field exposing (Field)
@@ -24,6 +25,7 @@ import Form.Validation as Validation exposing (Validation)
 import Form.View.Field as Field
 import Tag exposing (Tag)
 import User exposing (User(..))
+import Utils.Element exposing (wrappedRow_)
 
 
 
@@ -178,9 +180,7 @@ publishArticle mode =
 
 view : User.Profile -> Context -> Model -> Element Msg
 view user context model =
-    Layout.layout
-        |> Layout.measured
-        |> Layout.authenticated user context (page model)
+    Layout.authenticated user context (page model) Layout.layout
 
 
 page : Model -> Element Msg
@@ -201,17 +201,31 @@ page model =
 
 page_ : Model -> Inputs -> Element Msg
 page_ model inputs =
-    column
-        [ width fill
-        , spacing Scale.medium
-        , paddingXY 0 Scale.large
+    column [ width fill, spacing Scale.small ]
+        [ column
+            [ width fill
+            , spacing Scale.medium
+            , paddingEach { edges | top = Scale.large }
+            ]
+            [ title inputs
+            , about inputs
+            , content inputs
+            , tags inputs
+            , showTags inputs.tags
+            , publishButton model inputs
+            ]
+        , preview inputs
         ]
-        [ title inputs
-        , about inputs
-        , content inputs
-        , tags inputs
-        , showTags inputs.tags
-        , publishButton model inputs
+
+
+preview : Inputs -> Element msg
+preview inputs =
+    column [ spacing Scale.extraLarge, width fill ]
+        [ column [ spacing Scale.medium, width fill ]
+            [ Text.mobileHeadline [ Text.grey ] inputs.title
+            , Text.title [ Text.grey ] inputs.about
+            ]
+        , Markdown.view inputs.content
         ]
 
 
@@ -274,7 +288,7 @@ showTags : String -> Element msg
 showTags =
     Tag.parse
         >> List.map showTag
-        >> wrappedRow [ spacing Scale.small ]
+        >> wrappedRow_ [ spacing Scale.small, width fill ]
 
 
 showTag : Tag -> Element msg

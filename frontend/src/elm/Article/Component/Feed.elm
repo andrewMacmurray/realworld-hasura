@@ -256,7 +256,6 @@ viewFeed options feed =
     column
         [ width fill
         , spacing Scale.extraLarge
-        , paddingEach { edges | bottom = Scale.large }
         ]
         [ Keyed.column [ spacing Scale.large, width fill ] (List.map (viewArticle options) feed.articles)
         , loadMoreButton options feed

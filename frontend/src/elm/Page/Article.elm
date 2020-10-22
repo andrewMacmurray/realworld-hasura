@@ -20,10 +20,10 @@ import Element.Avatar as Avatar
 import Element.Background as Background
 import Element.Button as Button exposing (Button)
 import Element.Events exposing (onClick)
-import Element.Font as Font
 import Element.Layout as Layout exposing (Layout)
 import Element.Layout.Block as Block
 import Element.Loader.Conduit as Loader
+import Element.Markdown as Markdown
 import Element.Palette as Palette
 import Element.Scale as Scale exposing (edges)
 import Element.Text as Text
@@ -303,15 +303,12 @@ viewTag textOption tag =
 
 headline : Article -> Element msg
 headline article =
-    paragraph []
-        [ Element.showOnDesktop (headline_ Text.headline article)
-        , Element.showOnMobile (headline_ Text.title article)
-        ]
+    paragraph [] [ headline_ article ]
 
 
-headline_ : (List Text.Option -> String -> Element msg) -> Article -> Element msg
-headline_ textStyle article =
-    textStyle
+headline_ : Article -> Element msg
+headline_ article =
+    Text.mobileHeadline
         [ Text.white
         , Text.description "article-title"
         ]
@@ -356,11 +353,15 @@ showArticleBody : User -> Model -> Article -> Element Msg
 showArticleBody user model article =
     column [ spacing Scale.large, width fill, height fill, paddingEach { edges | bottom = Scale.extraLarge } ]
         [ Element.mobileOnly el [] (tags Text.grey article)
-        , paragraph [] [ Text.title [] (Article.about article) ]
-        , paragraph [ Font.color Palette.black ] [ Text.text [] (Article.content article) ]
-        , el [ width fill, paddingEach { edges | top = Scale.extraLarge } ]
-            (comments user model article)
+        , paragraph [] [ Text.title [ Text.green ] (Article.about article) ]
+        , content article
+        , comments user model article
         ]
+
+
+content : Article -> Element msg
+content article =
+    el [ paddingEach { edges | top = Scale.large }, width fill ] (Markdown.view (Article.content article))
 
 
 
@@ -369,6 +370,11 @@ showArticleBody user model article =
 
 comments : User -> Model -> Article -> Element Msg
 comments user model article =
+    el [ width fill, paddingEach { edges | top = Scale.extraLarge } ] (comments_ user model article)
+
+
+comments_ : User -> Model -> Article -> Element Msg
+comments_ user model article =
     Block.halfWidthPlus 100
         (column
             [ spacing Scale.large
@@ -436,8 +442,8 @@ commentField =
 
 
 commentsTitle : List Comment -> String
-commentsTitle comments_ =
-    String.pluralize "comment" (List.length comments_)
+commentsTitle =
+    String.pluralize "comment" << List.length
 
 
 showComment : CommentAction -> User -> Comment -> Element Msg

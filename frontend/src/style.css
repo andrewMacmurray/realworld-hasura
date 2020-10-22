@@ -76,3 +76,8 @@
     transform: rotate(360deg);
   }
 }
+
+.bold-override div div {
+  font-weight: bold;
+  color: rgb(56, 58, 60);
+}
