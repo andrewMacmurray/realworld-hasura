@@ -1,0 +1,79 @@
+module Api.Scopes where
+
+data Scope__Articles
+
+data Scope__ArticlesAggregate
+
+data Scope__ArticlesAggregateFields
+
+data Scope__ArticlesAvgFields
+
+data Scope__ArticlesMaxFields
+
+data Scope__ArticlesMinFields
+
+data Scope__ArticlesMutationResponse
+
+data Scope__ArticlesStddevFields
+
+data Scope__ArticlesStddevPopFields
+
+data Scope__ArticlesStddevSampFields
+
+data Scope__ArticlesSumFields
+
+data Scope__ArticlesVarPopFields
+
+data Scope__ArticlesVarSampFields
+
+data Scope__ArticlesVarianceFields
+
+data Scope__Comments
+
+data Scope__CommentsMutationResponse
+
+data Scope__Follows
+
+data Scope__FollowsMutationResponse
+
+data Scope__Likes
+
+data Scope__LikesAggregate
+
+data Scope__LikesAggregateFields
+
+data Scope__LikesAvgFields
+
+data Scope__LikesMaxFields
+
+data Scope__LikesMinFields
+
+data Scope__LikesMutationResponse
+
+data Scope__LikesStddevFields
+
+data Scope__LikesStddevPopFields
+
+data Scope__LikesStddevSampFields
+
+data Scope__LikesSumFields
+
+data Scope__LikesVarPopFields
+
+data Scope__LikesVarSampFields
+
+data Scope__LikesVarianceFields
+
+data Scope__Profile
+
+data Scope__Tags
+
+data Scope__TagsMutationResponse
+
+data Scope__TokenResponse
+
+data Scope__UnlikeResponse
+
+data Scope__Users
+
+data Scope__UsersMutationResponse

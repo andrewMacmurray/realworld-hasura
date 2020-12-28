@@ -1,0 +1,17 @@
+{
+  "name": "actions3",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "client": "purescript-graphql-client-generator --input-url http://localhost:8080/v1/graphql --output src/Api --header 'x-hasura-admin-secret: ilovebread' --header 'x-hasura-role: user'"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "purescript-graphql-client": "git+https://github.com/purescript-graphql-client/purescript-graphql-client.git#fad4a2881153975870ef349a707c0b331f958572"
+  }
+}
