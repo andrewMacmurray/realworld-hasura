@@ -13,7 +13,7 @@ import GraphQLClient
   )
 
 -- | original name - articles_update_column
-data ArticlesUpdateColumn = About | Content | Title
+data ArticlesUpdateColumn = About | AuthorId | Content | CreatedAt | Id | Title
 
 derive instance genericArticlesUpdateColumn :: Generic ArticlesUpdateColumn _
 
@@ -26,7 +26,10 @@ derive instance ordArticlesUpdateColumn :: Ord ArticlesUpdateColumn
 
 fromToMap :: Array (Tuple String ArticlesUpdateColumn)
 fromToMap = [ Tuple "about" About
+            , Tuple "author_id" AuthorId
             , Tuple "content" Content
+            , Tuple "created_at" CreatedAt
+            , Tuple "id" Id
             , Tuple "title" Title
             ]
 
@@ -41,5 +44,8 @@ instance articlesUpdateColumnToGraphQLArgumentValue :: ToGraphQLArgumentValue
   toGraphQLArgumentValue =
     case _ of
       About -> ArgumentValueEnum "about"
+      AuthorId -> ArgumentValueEnum "author_id"
       Content -> ArgumentValueEnum "content"
+      CreatedAt -> ArgumentValueEnum "created_at"
+      Id -> ArgumentValueEnum "id"
       Title -> ArgumentValueEnum "title"

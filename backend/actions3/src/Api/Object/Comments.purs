@@ -20,6 +20,12 @@ article = selectionForCompositeField
           []
           graphqlDefaultResponseFunctorOrScalarDecoderTransformer
 
+article_id :: SelectionSet Scope__Comments Int
+article_id = selectionForField
+             "article_id"
+             []
+             graphqlDefaultResponseScalarDecoder
+
 comment :: SelectionSet Scope__Comments String
 comment = selectionForField "comment" [] graphqlDefaultResponseScalarDecoder
 
@@ -37,3 +43,6 @@ user = selectionForCompositeField
        "user"
        []
        graphqlDefaultResponseFunctorOrScalarDecoderTransformer
+
+user_id :: SelectionSet Scope__Comments Int
+user_id = selectionForField "user_id" [] graphqlDefaultResponseScalarDecoder

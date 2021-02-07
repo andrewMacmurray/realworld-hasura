@@ -20,8 +20,17 @@ article = selectionForCompositeField
           []
           graphqlDefaultResponseFunctorOrScalarDecoderTransformer
 
+article_id :: SelectionSet Scope__Tags Int
+article_id = selectionForField
+             "article_id"
+             []
+             graphqlDefaultResponseScalarDecoder
+
 count :: SelectionSet Scope__Tags (Maybe Int)
 count = selectionForField "count" [] graphqlDefaultResponseScalarDecoder
+
+id :: SelectionSet Scope__Tags Int
+id = selectionForField "id" [] graphqlDefaultResponseScalarDecoder
 
 tag :: SelectionSet Scope__Tags String
 tag = selectionForField "tag" [] graphqlDefaultResponseScalarDecoder

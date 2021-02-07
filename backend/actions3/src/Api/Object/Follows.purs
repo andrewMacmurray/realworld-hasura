@@ -15,8 +15,14 @@ following_id = selectionForField
                []
                graphqlDefaultResponseScalarDecoder
 
+id :: SelectionSet Scope__Follows Int
+id = selectionForField "id" [] graphqlDefaultResponseScalarDecoder
+
 user :: forall r . SelectionSet Scope__Users r -> SelectionSet Scope__Follows r
 user = selectionForCompositeField
        "user"
        []
        graphqlDefaultResponseFunctorOrScalarDecoderTransformer
+
+user_id :: SelectionSet Scope__Follows Int
+user_id = selectionForField "user_id" [] graphqlDefaultResponseScalarDecoder

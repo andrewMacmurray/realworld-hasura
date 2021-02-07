@@ -12,7 +12,7 @@ actions:
 - name: signup
   definition:
     kind: synchronous
-    handler: '{{ACTIONS_BASE_URL}}/signup'
+    handler: '{{NEW_ACTIONS_BASE_URL}}/signup'
     headers:
     - name: actions-secret
       value_from_env: ACTIONS_SECRET

@@ -13,7 +13,7 @@ import GraphQLClient
   )
 
 -- | original name - follows_select_column
-data FollowsSelectColumn = FollowingId
+data FollowsSelectColumn = FollowingId | Id | UserId
 
 derive instance genericFollowsSelectColumn :: Generic FollowsSelectColumn _
 
@@ -25,7 +25,10 @@ derive instance eqFollowsSelectColumn :: Eq FollowsSelectColumn
 derive instance ordFollowsSelectColumn :: Ord FollowsSelectColumn
 
 fromToMap :: Array (Tuple String FollowsSelectColumn)
-fromToMap = [ Tuple "following_id" FollowingId ]
+fromToMap = [ Tuple "following_id" FollowingId
+            , Tuple "id" Id
+            , Tuple "user_id" UserId
+            ]
 
 instance followsSelectColumnGraphQLDefaultResponseScalarDecoder :: GraphQLDefaultResponseScalarDecoder
                                                                    FollowsSelectColumn where
@@ -38,3 +41,5 @@ instance followsSelectColumnToGraphQLArgumentValue :: ToGraphQLArgumentValue
   toGraphQLArgumentValue =
     case _ of
       FollowingId -> ArgumentValueEnum "following_id"
+      Id -> ArgumentValueEnum "id"
+      UserId -> ArgumentValueEnum "user_id"

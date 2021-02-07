@@ -25,6 +25,9 @@ article_id = selectionForField
              []
              graphqlDefaultResponseScalarDecoder
 
+id :: SelectionSet Scope__Likes Int
+id = selectionForField "id" [] graphqlDefaultResponseScalarDecoder
+
 user :: forall r . SelectionSet Scope__Users r -> SelectionSet Scope__Likes r
 user = selectionForCompositeField
        "user"

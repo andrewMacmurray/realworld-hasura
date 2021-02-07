@@ -13,7 +13,7 @@ import GraphQLClient
   )
 
 -- | original name - comments_update_column
-data CommentsUpdateColumn = Comment
+data CommentsUpdateColumn = ArticleId | Comment | CreatedAt | Id | UserId
 
 derive instance genericCommentsUpdateColumn :: Generic CommentsUpdateColumn _
 
@@ -25,7 +25,12 @@ derive instance eqCommentsUpdateColumn :: Eq CommentsUpdateColumn
 derive instance ordCommentsUpdateColumn :: Ord CommentsUpdateColumn
 
 fromToMap :: Array (Tuple String CommentsUpdateColumn)
-fromToMap = [ Tuple "comment" Comment ]
+fromToMap = [ Tuple "article_id" ArticleId
+            , Tuple "comment" Comment
+            , Tuple "created_at" CreatedAt
+            , Tuple "id" Id
+            , Tuple "user_id" UserId
+            ]
 
 instance commentsUpdateColumnGraphQLDefaultResponseScalarDecoder :: GraphQLDefaultResponseScalarDecoder
                                                                     CommentsUpdateColumn where
@@ -37,4 +42,8 @@ instance commentsUpdateColumnToGraphQLArgumentValue :: ToGraphQLArgumentValue
                                                        CommentsUpdateColumn where
   toGraphQLArgumentValue =
     case _ of
+      ArticleId -> ArgumentValueEnum "article_id"
       Comment -> ArgumentValueEnum "comment"
+      CreatedAt -> ArgumentValueEnum "created_at"
+      Id -> ArgumentValueEnum "id"
+      UserId -> ArgumentValueEnum "user_id"

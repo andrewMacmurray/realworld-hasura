@@ -6,11 +6,17 @@ import Data.Generic.Rep (class Generic)
 import Data.Newtype (class Newtype)
 import Api.Enum.OrderBy (OrderBy)
 import Data.Maybe (Maybe)
+import Api.Scalars (Timestamptz, Json)
 import Api.Enum.ArticlesConstraint (ArticlesConstraint)
 import Api.Enum.ArticlesUpdateColumn (ArticlesUpdateColumn)
 import Api.Enum.CommentsConstraint (CommentsConstraint)
 import Api.Enum.CommentsUpdateColumn (CommentsUpdateColumn)
-import Api.Scalars (Json, Timestamptz)
+import Api.Enum.FollowsConstraint (FollowsConstraint)
+import Api.Enum.FollowsUpdateColumn (FollowsUpdateColumn)
+import Api.Enum.LikesConstraint (LikesConstraint)
+import Api.Enum.LikesUpdateColumn (LikesUpdateColumn)
+import Api.Enum.TagsConstraint (TagsConstraint)
+import Api.Enum.TagsUpdateColumn (TagsUpdateColumn)
 import Api.Enum.UsersConstraint (UsersConstraint)
 import Api.Enum.UsersUpdateColumn (UsersUpdateColumn)
 
@@ -117,7 +123,9 @@ instance toGraphQLArgumentValueArticlesArrRelInsertInput :: ToGraphQLArgumentVal
                                                          x
 
 -- | original name - articles_avg_order_by
-newtype ArticlesAvgOrderBy = ArticlesAvgOrderBy { id :: Optional OrderBy }
+newtype ArticlesAvgOrderBy = ArticlesAvgOrderBy { author_id :: Optional OrderBy
+                                                , id :: Optional OrderBy
+                                                }
 
 derive instance genericArticlesAvgOrderBy :: Generic ArticlesAvgOrderBy _
 
@@ -140,6 +148,8 @@ newtype ArticlesBoolExp = ArticlesBoolExp { "_and" :: Optional
                                           , about :: Optional
                                                      StringComparisonExp
                                           , author :: Optional UsersBoolExp
+                                          , author_id :: Optional
+                                                         IntComparisonExp
                                           , comments :: Optional CommentsBoolExp
                                           , content :: Optional
                                                        StringComparisonExp
@@ -160,11 +170,30 @@ instance toGraphQLArgumentValueArticlesBoolExp :: ToGraphQLArgumentValue
                                                   ArticlesBoolExp where
   toGraphQLArgumentValue (ArticlesBoolExp x) = toGraphQLArgumentValue x
 
+-- | original name - articles_inc_input
+newtype ArticlesIncInput = ArticlesIncInput { author_id :: Optional Int
+                                            , id :: Optional Int
+                                            }
+
+derive instance genericArticlesIncInput :: Generic ArticlesIncInput _
+
+derive instance newtypeArticlesIncInput :: Newtype ArticlesIncInput _
+
+instance toGraphQLArgumentValueArticlesIncInput :: ToGraphQLArgumentValue
+                                                   ArticlesIncInput where
+  toGraphQLArgumentValue (ArticlesIncInput x) = toGraphQLArgumentValue x
+
 -- | original name - articles_insert_input
 newtype ArticlesInsertInput = ArticlesInsertInput { about :: Optional String
+                                                  , author :: Optional
+                                                              UsersObjRelInsertInput
+                                                  , author_id :: Optional Int
                                                   , comments :: Optional
                                                                 CommentsArrRelInsertInput
                                                   , content :: Optional String
+                                                  , created_at :: Optional
+                                                                  Timestamptz
+                                                  , id :: Optional Int
                                                   , likes :: Optional
                                                              LikesArrRelInsertInput
                                                   , tags :: Optional
@@ -182,6 +211,7 @@ instance toGraphQLArgumentValueArticlesInsertInput :: ToGraphQLArgumentValue
 
 -- | original name - articles_max_order_by
 newtype ArticlesMaxOrderBy = ArticlesMaxOrderBy { about :: Optional OrderBy
+                                                , author_id :: Optional OrderBy
                                                 , content :: Optional OrderBy
                                                 , created_at :: Optional OrderBy
                                                 , id :: Optional OrderBy
@@ -198,6 +228,7 @@ instance toGraphQLArgumentValueArticlesMaxOrderBy :: ToGraphQLArgumentValue
 
 -- | original name - articles_min_order_by
 newtype ArticlesMinOrderBy = ArticlesMinOrderBy { about :: Optional OrderBy
+                                                , author_id :: Optional OrderBy
                                                 , content :: Optional OrderBy
                                                 , created_at :: Optional OrderBy
                                                 , id :: Optional OrderBy
@@ -246,11 +277,16 @@ instance toGraphQLArgumentValueArticlesOnConflict :: ToGraphQLArgumentValue
 -- | original name - articles_order_by
 newtype ArticlesOrderBy = ArticlesOrderBy { about :: Optional OrderBy
                                           , author :: Optional UsersOrderBy
+                                          , author_id :: Optional OrderBy
+                                          , comments_aggregate :: Optional
+                                                                  CommentsAggregateOrderBy
                                           , content :: Optional OrderBy
                                           , created_at :: Optional OrderBy
                                           , id :: Optional OrderBy
                                           , likes_aggregate :: Optional
                                                                LikesAggregateOrderBy
+                                          , tags_aggregate :: Optional
+                                                              TagsAggregateOrderBy
                                           , title :: Optional OrderBy
                                           }
 
@@ -275,7 +311,10 @@ instance toGraphQLArgumentValueArticlesPkColumnsInput :: ToGraphQLArgumentValue
 
 -- | original name - articles_set_input
 newtype ArticlesSetInput = ArticlesSetInput { about :: Optional String
+                                            , author_id :: Optional Int
                                             , content :: Optional String
+                                            , created_at :: Optional Timestamptz
+                                            , id :: Optional Int
                                             , title :: Optional String
                                             }
 
@@ -288,7 +327,10 @@ instance toGraphQLArgumentValueArticlesSetInput :: ToGraphQLArgumentValue
   toGraphQLArgumentValue (ArticlesSetInput x) = toGraphQLArgumentValue x
 
 -- | original name - articles_stddev_order_by
-newtype ArticlesStddevOrderBy = ArticlesStddevOrderBy { id :: Optional OrderBy }
+newtype ArticlesStddevOrderBy = ArticlesStddevOrderBy { author_id :: Optional
+                                                                     OrderBy
+                                                      , id :: Optional OrderBy
+                                                      }
 
 derive instance genericArticlesStddevOrderBy :: Generic ArticlesStddevOrderBy _
 
@@ -299,7 +341,9 @@ instance toGraphQLArgumentValueArticlesStddevOrderBy :: ToGraphQLArgumentValue
   toGraphQLArgumentValue (ArticlesStddevOrderBy x) = toGraphQLArgumentValue x
 
 -- | original name - articles_stddev_pop_order_by
-newtype ArticlesStddevPopOrderBy = ArticlesStddevPopOrderBy { id :: Optional
+newtype ArticlesStddevPopOrderBy = ArticlesStddevPopOrderBy { author_id :: Optional
+                                                                           OrderBy
+                                                            , id :: Optional
                                                                     OrderBy
                                                             }
 
@@ -312,7 +356,9 @@ instance toGraphQLArgumentValueArticlesStddevPopOrderBy :: ToGraphQLArgumentValu
   toGraphQLArgumentValue (ArticlesStddevPopOrderBy x) = toGraphQLArgumentValue x
 
 -- | original name - articles_stddev_samp_order_by
-newtype ArticlesStddevSampOrderBy = ArticlesStddevSampOrderBy { id :: Optional
+newtype ArticlesStddevSampOrderBy = ArticlesStddevSampOrderBy { author_id :: Optional
+                                                                             OrderBy
+                                                              , id :: Optional
                                                                       OrderBy
                                                               }
 
@@ -326,7 +372,9 @@ instance toGraphQLArgumentValueArticlesStddevSampOrderBy :: ToGraphQLArgumentVal
                                                          x
 
 -- | original name - articles_sum_order_by
-newtype ArticlesSumOrderBy = ArticlesSumOrderBy { id :: Optional OrderBy }
+newtype ArticlesSumOrderBy = ArticlesSumOrderBy { author_id :: Optional OrderBy
+                                                , id :: Optional OrderBy
+                                                }
 
 derive instance genericArticlesSumOrderBy :: Generic ArticlesSumOrderBy _
 
@@ -337,7 +385,10 @@ instance toGraphQLArgumentValueArticlesSumOrderBy :: ToGraphQLArgumentValue
   toGraphQLArgumentValue (ArticlesSumOrderBy x) = toGraphQLArgumentValue x
 
 -- | original name - articles_var_pop_order_by
-newtype ArticlesVarPopOrderBy = ArticlesVarPopOrderBy { id :: Optional OrderBy }
+newtype ArticlesVarPopOrderBy = ArticlesVarPopOrderBy { author_id :: Optional
+                                                                     OrderBy
+                                                      , id :: Optional OrderBy
+                                                      }
 
 derive instance genericArticlesVarPopOrderBy :: Generic ArticlesVarPopOrderBy _
 
@@ -348,7 +399,9 @@ instance toGraphQLArgumentValueArticlesVarPopOrderBy :: ToGraphQLArgumentValue
   toGraphQLArgumentValue (ArticlesVarPopOrderBy x) = toGraphQLArgumentValue x
 
 -- | original name - articles_var_samp_order_by
-newtype ArticlesVarSampOrderBy = ArticlesVarSampOrderBy { id :: Optional OrderBy
+newtype ArticlesVarSampOrderBy = ArticlesVarSampOrderBy { author_id :: Optional
+                                                                       OrderBy
+                                                        , id :: Optional OrderBy
                                                         }
 
 derive instance genericArticlesVarSampOrderBy :: Generic ArticlesVarSampOrderBy _
@@ -360,7 +413,9 @@ instance toGraphQLArgumentValueArticlesVarSampOrderBy :: ToGraphQLArgumentValue
   toGraphQLArgumentValue (ArticlesVarSampOrderBy x) = toGraphQLArgumentValue x
 
 -- | original name - articles_variance_order_by
-newtype ArticlesVarianceOrderBy = ArticlesVarianceOrderBy { id :: Optional
+newtype ArticlesVarianceOrderBy = ArticlesVarianceOrderBy { author_id :: Optional
+                                                                         OrderBy
+                                                          , id :: Optional
                                                                   OrderBy
                                                           }
 
@@ -371,6 +426,39 @@ derive instance newtypeArticlesVarianceOrderBy :: Newtype ArticlesVarianceOrderB
 instance toGraphQLArgumentValueArticlesVarianceOrderBy :: ToGraphQLArgumentValue
                                                           ArticlesVarianceOrderBy where
   toGraphQLArgumentValue (ArticlesVarianceOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - comments_aggregate_order_by
+newtype CommentsAggregateOrderBy = CommentsAggregateOrderBy { avg :: Optional
+                                                                     CommentsAvgOrderBy
+                                                            , count :: Optional
+                                                                       OrderBy
+                                                            , max :: Optional
+                                                                     CommentsMaxOrderBy
+                                                            , min :: Optional
+                                                                     CommentsMinOrderBy
+                                                            , stddev :: Optional
+                                                                        CommentsStddevOrderBy
+                                                            , stddev_pop :: Optional
+                                                                            CommentsStddevPopOrderBy
+                                                            , stddev_samp :: Optional
+                                                                             CommentsStddevSampOrderBy
+                                                            , sum :: Optional
+                                                                     CommentsSumOrderBy
+                                                            , var_pop :: Optional
+                                                                         CommentsVarPopOrderBy
+                                                            , var_samp :: Optional
+                                                                          CommentsVarSampOrderBy
+                                                            , variance :: Optional
+                                                                          CommentsVarianceOrderBy
+                                                            }
+
+derive instance genericCommentsAggregateOrderBy :: Generic CommentsAggregateOrderBy _
+
+derive instance newtypeCommentsAggregateOrderBy :: Newtype CommentsAggregateOrderBy _
+
+instance toGraphQLArgumentValueCommentsAggregateOrderBy :: ToGraphQLArgumentValue
+                                                           CommentsAggregateOrderBy where
+  toGraphQLArgumentValue (CommentsAggregateOrderBy x) = toGraphQLArgumentValue x
 
 -- | original name - comments_arr_rel_insert_input
 newtype CommentsArrRelInsertInput = CommentsArrRelInsertInput { "data" :: Array
@@ -388,6 +476,20 @@ instance toGraphQLArgumentValueCommentsArrRelInsertInput :: ToGraphQLArgumentVal
   toGraphQLArgumentValue (CommentsArrRelInsertInput x) = toGraphQLArgumentValue
                                                          x
 
+-- | original name - comments_avg_order_by
+newtype CommentsAvgOrderBy = CommentsAvgOrderBy { article_id :: Optional OrderBy
+                                                , id :: Optional OrderBy
+                                                , user_id :: Optional OrderBy
+                                                }
+
+derive instance genericCommentsAvgOrderBy :: Generic CommentsAvgOrderBy _
+
+derive instance newtypeCommentsAvgOrderBy :: Newtype CommentsAvgOrderBy _
+
+instance toGraphQLArgumentValueCommentsAvgOrderBy :: ToGraphQLArgumentValue
+                                                     CommentsAvgOrderBy where
+  toGraphQLArgumentValue (CommentsAvgOrderBy x) = toGraphQLArgumentValue x
+
 -- | original name - comments_bool_exp
 newtype CommentsBoolExp = CommentsBoolExp { "_and" :: Optional
                                                       (Array
@@ -399,12 +501,15 @@ newtype CommentsBoolExp = CommentsBoolExp { "_and" :: Optional
                                                       (Maybe
                                                        CommentsBoolExp))
                                           , article :: Optional ArticlesBoolExp
+                                          , article_id :: Optional
+                                                          IntComparisonExp
                                           , comment :: Optional
                                                        StringComparisonExp
                                           , created_at :: Optional
                                                           TimestamptzComparisonExp
                                           , id :: Optional IntComparisonExp
                                           , user :: Optional UsersBoolExp
+                                          , user_id :: Optional IntComparisonExp
                                           }
 
 derive instance genericCommentsBoolExp :: Generic CommentsBoolExp _
@@ -415,11 +520,31 @@ instance toGraphQLArgumentValueCommentsBoolExp :: ToGraphQLArgumentValue
                                                   CommentsBoolExp where
   toGraphQLArgumentValue (CommentsBoolExp x) = toGraphQLArgumentValue x
 
+-- | original name - comments_inc_input
+newtype CommentsIncInput = CommentsIncInput { article_id :: Optional Int
+                                            , id :: Optional Int
+                                            , user_id :: Optional Int
+                                            }
+
+derive instance genericCommentsIncInput :: Generic CommentsIncInput _
+
+derive instance newtypeCommentsIncInput :: Newtype CommentsIncInput _
+
+instance toGraphQLArgumentValueCommentsIncInput :: ToGraphQLArgumentValue
+                                                   CommentsIncInput where
+  toGraphQLArgumentValue (CommentsIncInput x) = toGraphQLArgumentValue x
+
 -- | original name - comments_insert_input
 newtype CommentsInsertInput = CommentsInsertInput { article :: Optional
                                                                ArticlesObjRelInsertInput
                                                   , article_id :: Optional Int
                                                   , comment :: Optional String
+                                                  , created_at :: Optional
+                                                                  Timestamptz
+                                                  , id :: Optional Int
+                                                  , user :: Optional
+                                                            UsersObjRelInsertInput
+                                                  , user_id :: Optional Int
                                                   }
 
 derive instance genericCommentsInsertInput :: Generic CommentsInsertInput _
@@ -429,6 +554,38 @@ derive instance newtypeCommentsInsertInput :: Newtype CommentsInsertInput _
 instance toGraphQLArgumentValueCommentsInsertInput :: ToGraphQLArgumentValue
                                                       CommentsInsertInput where
   toGraphQLArgumentValue (CommentsInsertInput x) = toGraphQLArgumentValue x
+
+-- | original name - comments_max_order_by
+newtype CommentsMaxOrderBy = CommentsMaxOrderBy { article_id :: Optional OrderBy
+                                                , comment :: Optional OrderBy
+                                                , created_at :: Optional OrderBy
+                                                , id :: Optional OrderBy
+                                                , user_id :: Optional OrderBy
+                                                }
+
+derive instance genericCommentsMaxOrderBy :: Generic CommentsMaxOrderBy _
+
+derive instance newtypeCommentsMaxOrderBy :: Newtype CommentsMaxOrderBy _
+
+instance toGraphQLArgumentValueCommentsMaxOrderBy :: ToGraphQLArgumentValue
+                                                     CommentsMaxOrderBy where
+  toGraphQLArgumentValue (CommentsMaxOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - comments_min_order_by
+newtype CommentsMinOrderBy = CommentsMinOrderBy { article_id :: Optional OrderBy
+                                                , comment :: Optional OrderBy
+                                                , created_at :: Optional OrderBy
+                                                , id :: Optional OrderBy
+                                                , user_id :: Optional OrderBy
+                                                }
+
+derive instance genericCommentsMinOrderBy :: Generic CommentsMinOrderBy _
+
+derive instance newtypeCommentsMinOrderBy :: Newtype CommentsMinOrderBy _
+
+instance toGraphQLArgumentValueCommentsMinOrderBy :: ToGraphQLArgumentValue
+                                                     CommentsMinOrderBy where
+  toGraphQLArgumentValue (CommentsMinOrderBy x) = toGraphQLArgumentValue x
 
 -- | original name - comments_obj_rel_insert_input
 newtype CommentsObjRelInsertInput = CommentsObjRelInsertInput { "data" :: CommentsInsertInput
@@ -463,10 +620,12 @@ instance toGraphQLArgumentValueCommentsOnConflict :: ToGraphQLArgumentValue
 
 -- | original name - comments_order_by
 newtype CommentsOrderBy = CommentsOrderBy { article :: Optional ArticlesOrderBy
+                                          , article_id :: Optional OrderBy
                                           , comment :: Optional OrderBy
                                           , created_at :: Optional OrderBy
                                           , id :: Optional OrderBy
                                           , user :: Optional UsersOrderBy
+                                          , user_id :: Optional OrderBy
                                           }
 
 derive instance genericCommentsOrderBy :: Generic CommentsOrderBy _
@@ -489,7 +648,12 @@ instance toGraphQLArgumentValueCommentsPkColumnsInput :: ToGraphQLArgumentValue
   toGraphQLArgumentValue (CommentsPkColumnsInput x) = toGraphQLArgumentValue x
 
 -- | original name - comments_set_input
-newtype CommentsSetInput = CommentsSetInput { comment :: Optional String }
+newtype CommentsSetInput = CommentsSetInput { article_id :: Optional Int
+                                            , comment :: Optional String
+                                            , created_at :: Optional Timestamptz
+                                            , id :: Optional Int
+                                            , user_id :: Optional Int
+                                            }
 
 derive instance genericCommentsSetInput :: Generic CommentsSetInput _
 
@@ -499,9 +663,158 @@ instance toGraphQLArgumentValueCommentsSetInput :: ToGraphQLArgumentValue
                                                    CommentsSetInput where
   toGraphQLArgumentValue (CommentsSetInput x) = toGraphQLArgumentValue x
 
+-- | original name - comments_stddev_order_by
+newtype CommentsStddevOrderBy = CommentsStddevOrderBy { article_id :: Optional
+                                                                      OrderBy
+                                                      , id :: Optional OrderBy
+                                                      , user_id :: Optional
+                                                                   OrderBy
+                                                      }
+
+derive instance genericCommentsStddevOrderBy :: Generic CommentsStddevOrderBy _
+
+derive instance newtypeCommentsStddevOrderBy :: Newtype CommentsStddevOrderBy _
+
+instance toGraphQLArgumentValueCommentsStddevOrderBy :: ToGraphQLArgumentValue
+                                                        CommentsStddevOrderBy where
+  toGraphQLArgumentValue (CommentsStddevOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - comments_stddev_pop_order_by
+newtype CommentsStddevPopOrderBy = CommentsStddevPopOrderBy { article_id :: Optional
+                                                                            OrderBy
+                                                            , id :: Optional
+                                                                    OrderBy
+                                                            , user_id :: Optional
+                                                                         OrderBy
+                                                            }
+
+derive instance genericCommentsStddevPopOrderBy :: Generic CommentsStddevPopOrderBy _
+
+derive instance newtypeCommentsStddevPopOrderBy :: Newtype CommentsStddevPopOrderBy _
+
+instance toGraphQLArgumentValueCommentsStddevPopOrderBy :: ToGraphQLArgumentValue
+                                                           CommentsStddevPopOrderBy where
+  toGraphQLArgumentValue (CommentsStddevPopOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - comments_stddev_samp_order_by
+newtype CommentsStddevSampOrderBy = CommentsStddevSampOrderBy { article_id :: Optional
+                                                                              OrderBy
+                                                              , id :: Optional
+                                                                      OrderBy
+                                                              , user_id :: Optional
+                                                                           OrderBy
+                                                              }
+
+derive instance genericCommentsStddevSampOrderBy :: Generic CommentsStddevSampOrderBy _
+
+derive instance newtypeCommentsStddevSampOrderBy :: Newtype CommentsStddevSampOrderBy _
+
+instance toGraphQLArgumentValueCommentsStddevSampOrderBy :: ToGraphQLArgumentValue
+                                                            CommentsStddevSampOrderBy where
+  toGraphQLArgumentValue (CommentsStddevSampOrderBy x) = toGraphQLArgumentValue
+                                                         x
+
+-- | original name - comments_sum_order_by
+newtype CommentsSumOrderBy = CommentsSumOrderBy { article_id :: Optional OrderBy
+                                                , id :: Optional OrderBy
+                                                , user_id :: Optional OrderBy
+                                                }
+
+derive instance genericCommentsSumOrderBy :: Generic CommentsSumOrderBy _
+
+derive instance newtypeCommentsSumOrderBy :: Newtype CommentsSumOrderBy _
+
+instance toGraphQLArgumentValueCommentsSumOrderBy :: ToGraphQLArgumentValue
+                                                     CommentsSumOrderBy where
+  toGraphQLArgumentValue (CommentsSumOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - comments_var_pop_order_by
+newtype CommentsVarPopOrderBy = CommentsVarPopOrderBy { article_id :: Optional
+                                                                      OrderBy
+                                                      , id :: Optional OrderBy
+                                                      , user_id :: Optional
+                                                                   OrderBy
+                                                      }
+
+derive instance genericCommentsVarPopOrderBy :: Generic CommentsVarPopOrderBy _
+
+derive instance newtypeCommentsVarPopOrderBy :: Newtype CommentsVarPopOrderBy _
+
+instance toGraphQLArgumentValueCommentsVarPopOrderBy :: ToGraphQLArgumentValue
+                                                        CommentsVarPopOrderBy where
+  toGraphQLArgumentValue (CommentsVarPopOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - comments_var_samp_order_by
+newtype CommentsVarSampOrderBy = CommentsVarSampOrderBy { article_id :: Optional
+                                                                        OrderBy
+                                                        , id :: Optional OrderBy
+                                                        , user_id :: Optional
+                                                                     OrderBy
+                                                        }
+
+derive instance genericCommentsVarSampOrderBy :: Generic CommentsVarSampOrderBy _
+
+derive instance newtypeCommentsVarSampOrderBy :: Newtype CommentsVarSampOrderBy _
+
+instance toGraphQLArgumentValueCommentsVarSampOrderBy :: ToGraphQLArgumentValue
+                                                         CommentsVarSampOrderBy where
+  toGraphQLArgumentValue (CommentsVarSampOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - comments_variance_order_by
+newtype CommentsVarianceOrderBy = CommentsVarianceOrderBy { article_id :: Optional
+                                                                          OrderBy
+                                                          , id :: Optional
+                                                                  OrderBy
+                                                          , user_id :: Optional
+                                                                       OrderBy
+                                                          }
+
+derive instance genericCommentsVarianceOrderBy :: Generic CommentsVarianceOrderBy _
+
+derive instance newtypeCommentsVarianceOrderBy :: Newtype CommentsVarianceOrderBy _
+
+instance toGraphQLArgumentValueCommentsVarianceOrderBy :: ToGraphQLArgumentValue
+                                                          CommentsVarianceOrderBy where
+  toGraphQLArgumentValue (CommentsVarianceOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - follows_aggregate_order_by
+newtype FollowsAggregateOrderBy = FollowsAggregateOrderBy { avg :: Optional
+                                                                   FollowsAvgOrderBy
+                                                          , count :: Optional
+                                                                     OrderBy
+                                                          , max :: Optional
+                                                                   FollowsMaxOrderBy
+                                                          , min :: Optional
+                                                                   FollowsMinOrderBy
+                                                          , stddev :: Optional
+                                                                      FollowsStddevOrderBy
+                                                          , stddev_pop :: Optional
+                                                                          FollowsStddevPopOrderBy
+                                                          , stddev_samp :: Optional
+                                                                           FollowsStddevSampOrderBy
+                                                          , sum :: Optional
+                                                                   FollowsSumOrderBy
+                                                          , var_pop :: Optional
+                                                                       FollowsVarPopOrderBy
+                                                          , var_samp :: Optional
+                                                                        FollowsVarSampOrderBy
+                                                          , variance :: Optional
+                                                                        FollowsVarianceOrderBy
+                                                          }
+
+derive instance genericFollowsAggregateOrderBy :: Generic FollowsAggregateOrderBy _
+
+derive instance newtypeFollowsAggregateOrderBy :: Newtype FollowsAggregateOrderBy _
+
+instance toGraphQLArgumentValueFollowsAggregateOrderBy :: ToGraphQLArgumentValue
+                                                          FollowsAggregateOrderBy where
+  toGraphQLArgumentValue (FollowsAggregateOrderBy x) = toGraphQLArgumentValue x
+
 -- | original name - follows_arr_rel_insert_input
 newtype FollowsArrRelInsertInput = FollowsArrRelInsertInput { "data" :: Array
                                                                         FollowsInsertInput
+                                                            , on_conflict :: Optional
+                                                                             FollowsOnConflict
                                                             }
 
 derive instance genericFollowsArrRelInsertInput :: Generic FollowsArrRelInsertInput _
@@ -511,6 +824,20 @@ derive instance newtypeFollowsArrRelInsertInput :: Newtype FollowsArrRelInsertIn
 instance toGraphQLArgumentValueFollowsArrRelInsertInput :: ToGraphQLArgumentValue
                                                            FollowsArrRelInsertInput where
   toGraphQLArgumentValue (FollowsArrRelInsertInput x) = toGraphQLArgumentValue x
+
+-- | original name - follows_avg_order_by
+newtype FollowsAvgOrderBy = FollowsAvgOrderBy { following_id :: Optional OrderBy
+                                              , id :: Optional OrderBy
+                                              , user_id :: Optional OrderBy
+                                              }
+
+derive instance genericFollowsAvgOrderBy :: Generic FollowsAvgOrderBy _
+
+derive instance newtypeFollowsAvgOrderBy :: Newtype FollowsAvgOrderBy _
+
+instance toGraphQLArgumentValueFollowsAvgOrderBy :: ToGraphQLArgumentValue
+                                                    FollowsAvgOrderBy where
+  toGraphQLArgumentValue (FollowsAvgOrderBy x) = toGraphQLArgumentValue x
 
 -- | original name - follows_bool_exp
 newtype FollowsBoolExp = FollowsBoolExp { "_and" :: Optional
@@ -524,7 +851,9 @@ newtype FollowsBoolExp = FollowsBoolExp { "_and" :: Optional
                                                      FollowsBoolExp))
                                         , following_id :: Optional
                                                           IntComparisonExp
+                                        , id :: Optional IntComparisonExp
                                         , user :: Optional UsersBoolExp
+                                        , user_id :: Optional IntComparisonExp
                                         }
 
 derive instance genericFollowsBoolExp :: Generic FollowsBoolExp _
@@ -535,8 +864,27 @@ instance toGraphQLArgumentValueFollowsBoolExp :: ToGraphQLArgumentValue
                                                  FollowsBoolExp where
   toGraphQLArgumentValue (FollowsBoolExp x) = toGraphQLArgumentValue x
 
+-- | original name - follows_inc_input
+newtype FollowsIncInput = FollowsIncInput { following_id :: Optional Int
+                                          , id :: Optional Int
+                                          , user_id :: Optional Int
+                                          }
+
+derive instance genericFollowsIncInput :: Generic FollowsIncInput _
+
+derive instance newtypeFollowsIncInput :: Newtype FollowsIncInput _
+
+instance toGraphQLArgumentValueFollowsIncInput :: ToGraphQLArgumentValue
+                                                  FollowsIncInput where
+  toGraphQLArgumentValue (FollowsIncInput x) = toGraphQLArgumentValue x
+
 -- | original name - follows_insert_input
-newtype FollowsInsertInput = FollowsInsertInput { following_id :: Optional Int }
+newtype FollowsInsertInput = FollowsInsertInput { following_id :: Optional Int
+                                                , id :: Optional Int
+                                                , user :: Optional
+                                                          UsersObjRelInsertInput
+                                                , user_id :: Optional Int
+                                                }
 
 derive instance genericFollowsInsertInput :: Generic FollowsInsertInput _
 
@@ -546,8 +894,38 @@ instance toGraphQLArgumentValueFollowsInsertInput :: ToGraphQLArgumentValue
                                                      FollowsInsertInput where
   toGraphQLArgumentValue (FollowsInsertInput x) = toGraphQLArgumentValue x
 
+-- | original name - follows_max_order_by
+newtype FollowsMaxOrderBy = FollowsMaxOrderBy { following_id :: Optional OrderBy
+                                              , id :: Optional OrderBy
+                                              , user_id :: Optional OrderBy
+                                              }
+
+derive instance genericFollowsMaxOrderBy :: Generic FollowsMaxOrderBy _
+
+derive instance newtypeFollowsMaxOrderBy :: Newtype FollowsMaxOrderBy _
+
+instance toGraphQLArgumentValueFollowsMaxOrderBy :: ToGraphQLArgumentValue
+                                                    FollowsMaxOrderBy where
+  toGraphQLArgumentValue (FollowsMaxOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - follows_min_order_by
+newtype FollowsMinOrderBy = FollowsMinOrderBy { following_id :: Optional OrderBy
+                                              , id :: Optional OrderBy
+                                              , user_id :: Optional OrderBy
+                                              }
+
+derive instance genericFollowsMinOrderBy :: Generic FollowsMinOrderBy _
+
+derive instance newtypeFollowsMinOrderBy :: Newtype FollowsMinOrderBy _
+
+instance toGraphQLArgumentValueFollowsMinOrderBy :: ToGraphQLArgumentValue
+                                                    FollowsMinOrderBy where
+  toGraphQLArgumentValue (FollowsMinOrderBy x) = toGraphQLArgumentValue x
+
 -- | original name - follows_obj_rel_insert_input
 newtype FollowsObjRelInsertInput = FollowsObjRelInsertInput { "data" :: FollowsInsertInput
+                                                            , on_conflict :: Optional
+                                                                             FollowsOnConflict
                                                             }
 
 derive instance genericFollowsObjRelInsertInput :: Generic FollowsObjRelInsertInput _
@@ -558,9 +936,27 @@ instance toGraphQLArgumentValueFollowsObjRelInsertInput :: ToGraphQLArgumentValu
                                                            FollowsObjRelInsertInput where
   toGraphQLArgumentValue (FollowsObjRelInsertInput x) = toGraphQLArgumentValue x
 
+-- | original name - follows_on_conflict
+newtype FollowsOnConflict = FollowsOnConflict { constraint :: FollowsConstraint
+                                              , update_columns :: Array
+                                                                  FollowsUpdateColumn
+                                              , "where" :: Optional
+                                                           FollowsBoolExp
+                                              }
+
+derive instance genericFollowsOnConflict :: Generic FollowsOnConflict _
+
+derive instance newtypeFollowsOnConflict :: Newtype FollowsOnConflict _
+
+instance toGraphQLArgumentValueFollowsOnConflict :: ToGraphQLArgumentValue
+                                                    FollowsOnConflict where
+  toGraphQLArgumentValue (FollowsOnConflict x) = toGraphQLArgumentValue x
+
 -- | original name - follows_order_by
 newtype FollowsOrderBy = FollowsOrderBy { following_id :: Optional OrderBy
+                                        , id :: Optional OrderBy
                                         , user :: Optional UsersOrderBy
+                                        , user_id :: Optional OrderBy
                                         }
 
 derive instance genericFollowsOrderBy :: Generic FollowsOrderBy _
@@ -581,6 +977,132 @@ derive instance newtypeFollowsPkColumnsInput :: Newtype FollowsPkColumnsInput _
 instance toGraphQLArgumentValueFollowsPkColumnsInput :: ToGraphQLArgumentValue
                                                         FollowsPkColumnsInput where
   toGraphQLArgumentValue (FollowsPkColumnsInput x) = toGraphQLArgumentValue x
+
+-- | original name - follows_set_input
+newtype FollowsSetInput = FollowsSetInput { following_id :: Optional Int
+                                          , id :: Optional Int
+                                          , user_id :: Optional Int
+                                          }
+
+derive instance genericFollowsSetInput :: Generic FollowsSetInput _
+
+derive instance newtypeFollowsSetInput :: Newtype FollowsSetInput _
+
+instance toGraphQLArgumentValueFollowsSetInput :: ToGraphQLArgumentValue
+                                                  FollowsSetInput where
+  toGraphQLArgumentValue (FollowsSetInput x) = toGraphQLArgumentValue x
+
+-- | original name - follows_stddev_order_by
+newtype FollowsStddevOrderBy = FollowsStddevOrderBy { following_id :: Optional
+                                                                      OrderBy
+                                                    , id :: Optional OrderBy
+                                                    , user_id :: Optional
+                                                                 OrderBy
+                                                    }
+
+derive instance genericFollowsStddevOrderBy :: Generic FollowsStddevOrderBy _
+
+derive instance newtypeFollowsStddevOrderBy :: Newtype FollowsStddevOrderBy _
+
+instance toGraphQLArgumentValueFollowsStddevOrderBy :: ToGraphQLArgumentValue
+                                                       FollowsStddevOrderBy where
+  toGraphQLArgumentValue (FollowsStddevOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - follows_stddev_pop_order_by
+newtype FollowsStddevPopOrderBy = FollowsStddevPopOrderBy { following_id :: Optional
+                                                                            OrderBy
+                                                          , id :: Optional
+                                                                  OrderBy
+                                                          , user_id :: Optional
+                                                                       OrderBy
+                                                          }
+
+derive instance genericFollowsStddevPopOrderBy :: Generic FollowsStddevPopOrderBy _
+
+derive instance newtypeFollowsStddevPopOrderBy :: Newtype FollowsStddevPopOrderBy _
+
+instance toGraphQLArgumentValueFollowsStddevPopOrderBy :: ToGraphQLArgumentValue
+                                                          FollowsStddevPopOrderBy where
+  toGraphQLArgumentValue (FollowsStddevPopOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - follows_stddev_samp_order_by
+newtype FollowsStddevSampOrderBy = FollowsStddevSampOrderBy { following_id :: Optional
+                                                                              OrderBy
+                                                            , id :: Optional
+                                                                    OrderBy
+                                                            , user_id :: Optional
+                                                                         OrderBy
+                                                            }
+
+derive instance genericFollowsStddevSampOrderBy :: Generic FollowsStddevSampOrderBy _
+
+derive instance newtypeFollowsStddevSampOrderBy :: Newtype FollowsStddevSampOrderBy _
+
+instance toGraphQLArgumentValueFollowsStddevSampOrderBy :: ToGraphQLArgumentValue
+                                                           FollowsStddevSampOrderBy where
+  toGraphQLArgumentValue (FollowsStddevSampOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - follows_sum_order_by
+newtype FollowsSumOrderBy = FollowsSumOrderBy { following_id :: Optional OrderBy
+                                              , id :: Optional OrderBy
+                                              , user_id :: Optional OrderBy
+                                              }
+
+derive instance genericFollowsSumOrderBy :: Generic FollowsSumOrderBy _
+
+derive instance newtypeFollowsSumOrderBy :: Newtype FollowsSumOrderBy _
+
+instance toGraphQLArgumentValueFollowsSumOrderBy :: ToGraphQLArgumentValue
+                                                    FollowsSumOrderBy where
+  toGraphQLArgumentValue (FollowsSumOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - follows_var_pop_order_by
+newtype FollowsVarPopOrderBy = FollowsVarPopOrderBy { following_id :: Optional
+                                                                      OrderBy
+                                                    , id :: Optional OrderBy
+                                                    , user_id :: Optional
+                                                                 OrderBy
+                                                    }
+
+derive instance genericFollowsVarPopOrderBy :: Generic FollowsVarPopOrderBy _
+
+derive instance newtypeFollowsVarPopOrderBy :: Newtype FollowsVarPopOrderBy _
+
+instance toGraphQLArgumentValueFollowsVarPopOrderBy :: ToGraphQLArgumentValue
+                                                       FollowsVarPopOrderBy where
+  toGraphQLArgumentValue (FollowsVarPopOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - follows_var_samp_order_by
+newtype FollowsVarSampOrderBy = FollowsVarSampOrderBy { following_id :: Optional
+                                                                        OrderBy
+                                                      , id :: Optional OrderBy
+                                                      , user_id :: Optional
+                                                                   OrderBy
+                                                      }
+
+derive instance genericFollowsVarSampOrderBy :: Generic FollowsVarSampOrderBy _
+
+derive instance newtypeFollowsVarSampOrderBy :: Newtype FollowsVarSampOrderBy _
+
+instance toGraphQLArgumentValueFollowsVarSampOrderBy :: ToGraphQLArgumentValue
+                                                        FollowsVarSampOrderBy where
+  toGraphQLArgumentValue (FollowsVarSampOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - follows_variance_order_by
+newtype FollowsVarianceOrderBy = FollowsVarianceOrderBy { following_id :: Optional
+                                                                          OrderBy
+                                                        , id :: Optional OrderBy
+                                                        , user_id :: Optional
+                                                                     OrderBy
+                                                        }
+
+derive instance genericFollowsVarianceOrderBy :: Generic FollowsVarianceOrderBy _
+
+derive instance newtypeFollowsVarianceOrderBy :: Newtype FollowsVarianceOrderBy _
+
+instance toGraphQLArgumentValueFollowsVarianceOrderBy :: ToGraphQLArgumentValue
+                                                         FollowsVarianceOrderBy where
+  toGraphQLArgumentValue (FollowsVarianceOrderBy x) = toGraphQLArgumentValue x
 
 -- | original name - json_comparison_exp
 newtype JsonComparisonExp = JsonComparisonExp { "_eq" :: Optional Json
@@ -638,6 +1160,8 @@ instance toGraphQLArgumentValueLikesAggregateOrderBy :: ToGraphQLArgumentValue
 -- | original name - likes_arr_rel_insert_input
 newtype LikesArrRelInsertInput = LikesArrRelInsertInput { "data" :: Array
                                                                     LikesInsertInput
+                                                        , on_conflict :: Optional
+                                                                         LikesOnConflict
                                                         }
 
 derive instance genericLikesArrRelInsertInput :: Generic LikesArrRelInsertInput _
@@ -650,6 +1174,7 @@ instance toGraphQLArgumentValueLikesArrRelInsertInput :: ToGraphQLArgumentValue
 
 -- | original name - likes_avg_order_by
 newtype LikesAvgOrderBy = LikesAvgOrderBy { article_id :: Optional OrderBy
+                                          , id :: Optional OrderBy
                                           , user_id :: Optional OrderBy
                                           }
 
@@ -673,6 +1198,7 @@ newtype LikesBoolExp = LikesBoolExp { "_and" :: Optional
                                                  LikesBoolExp))
                                     , article :: Optional ArticlesBoolExp
                                     , article_id :: Optional IntComparisonExp
+                                    , id :: Optional IntComparisonExp
                                     , user :: Optional UsersBoolExp
                                     , user_id :: Optional IntComparisonExp
                                     }
@@ -685,10 +1211,28 @@ instance toGraphQLArgumentValueLikesBoolExp :: ToGraphQLArgumentValue
                                                LikesBoolExp where
   toGraphQLArgumentValue (LikesBoolExp x) = toGraphQLArgumentValue x
 
+-- | original name - likes_inc_input
+newtype LikesIncInput = LikesIncInput { article_id :: Optional Int
+                                      , id :: Optional Int
+                                      , user_id :: Optional Int
+                                      }
+
+derive instance genericLikesIncInput :: Generic LikesIncInput _
+
+derive instance newtypeLikesIncInput :: Newtype LikesIncInput _
+
+instance toGraphQLArgumentValueLikesIncInput :: ToGraphQLArgumentValue
+                                                LikesIncInput where
+  toGraphQLArgumentValue (LikesIncInput x) = toGraphQLArgumentValue x
+
 -- | original name - likes_insert_input
 newtype LikesInsertInput = LikesInsertInput { article :: Optional
                                                          ArticlesObjRelInsertInput
                                             , article_id :: Optional Int
+                                            , id :: Optional Int
+                                            , user :: Optional
+                                                      UsersObjRelInsertInput
+                                            , user_id :: Optional Int
                                             }
 
 derive instance genericLikesInsertInput :: Generic LikesInsertInput _
@@ -701,6 +1245,7 @@ instance toGraphQLArgumentValueLikesInsertInput :: ToGraphQLArgumentValue
 
 -- | original name - likes_max_order_by
 newtype LikesMaxOrderBy = LikesMaxOrderBy { article_id :: Optional OrderBy
+                                          , id :: Optional OrderBy
                                           , user_id :: Optional OrderBy
                                           }
 
@@ -714,6 +1259,7 @@ instance toGraphQLArgumentValueLikesMaxOrderBy :: ToGraphQLArgumentValue
 
 -- | original name - likes_min_order_by
 newtype LikesMinOrderBy = LikesMinOrderBy { article_id :: Optional OrderBy
+                                          , id :: Optional OrderBy
                                           , user_id :: Optional OrderBy
                                           }
 
@@ -727,6 +1273,8 @@ instance toGraphQLArgumentValueLikesMinOrderBy :: ToGraphQLArgumentValue
 
 -- | original name - likes_obj_rel_insert_input
 newtype LikesObjRelInsertInput = LikesObjRelInsertInput { "data" :: LikesInsertInput
+                                                        , on_conflict :: Optional
+                                                                         LikesOnConflict
                                                         }
 
 derive instance genericLikesObjRelInsertInput :: Generic LikesObjRelInsertInput _
@@ -737,9 +1285,25 @@ instance toGraphQLArgumentValueLikesObjRelInsertInput :: ToGraphQLArgumentValue
                                                          LikesObjRelInsertInput where
   toGraphQLArgumentValue (LikesObjRelInsertInput x) = toGraphQLArgumentValue x
 
+-- | original name - likes_on_conflict
+newtype LikesOnConflict = LikesOnConflict { constraint :: LikesConstraint
+                                          , update_columns :: Array
+                                                              LikesUpdateColumn
+                                          , "where" :: Optional LikesBoolExp
+                                          }
+
+derive instance genericLikesOnConflict :: Generic LikesOnConflict _
+
+derive instance newtypeLikesOnConflict :: Newtype LikesOnConflict _
+
+instance toGraphQLArgumentValueLikesOnConflict :: ToGraphQLArgumentValue
+                                                  LikesOnConflict where
+  toGraphQLArgumentValue (LikesOnConflict x) = toGraphQLArgumentValue x
+
 -- | original name - likes_order_by
 newtype LikesOrderBy = LikesOrderBy { article :: Optional ArticlesOrderBy
                                     , article_id :: Optional OrderBy
+                                    , id :: Optional OrderBy
                                     , user :: Optional UsersOrderBy
                                     , user_id :: Optional OrderBy
                                     }
@@ -763,8 +1327,23 @@ instance toGraphQLArgumentValueLikesPkColumnsInput :: ToGraphQLArgumentValue
                                                       LikesPkColumnsInput where
   toGraphQLArgumentValue (LikesPkColumnsInput x) = toGraphQLArgumentValue x
 
+-- | original name - likes_set_input
+newtype LikesSetInput = LikesSetInput { article_id :: Optional Int
+                                      , id :: Optional Int
+                                      , user_id :: Optional Int
+                                      }
+
+derive instance genericLikesSetInput :: Generic LikesSetInput _
+
+derive instance newtypeLikesSetInput :: Newtype LikesSetInput _
+
+instance toGraphQLArgumentValueLikesSetInput :: ToGraphQLArgumentValue
+                                                LikesSetInput where
+  toGraphQLArgumentValue (LikesSetInput x) = toGraphQLArgumentValue x
+
 -- | original name - likes_stddev_order_by
 newtype LikesStddevOrderBy = LikesStddevOrderBy { article_id :: Optional OrderBy
+                                                , id :: Optional OrderBy
                                                 , user_id :: Optional OrderBy
                                                 }
 
@@ -779,6 +1358,7 @@ instance toGraphQLArgumentValueLikesStddevOrderBy :: ToGraphQLArgumentValue
 -- | original name - likes_stddev_pop_order_by
 newtype LikesStddevPopOrderBy = LikesStddevPopOrderBy { article_id :: Optional
                                                                       OrderBy
+                                                      , id :: Optional OrderBy
                                                       , user_id :: Optional
                                                                    OrderBy
                                                       }
@@ -794,6 +1374,7 @@ instance toGraphQLArgumentValueLikesStddevPopOrderBy :: ToGraphQLArgumentValue
 -- | original name - likes_stddev_samp_order_by
 newtype LikesStddevSampOrderBy = LikesStddevSampOrderBy { article_id :: Optional
                                                                         OrderBy
+                                                        , id :: Optional OrderBy
                                                         , user_id :: Optional
                                                                      OrderBy
                                                         }
@@ -808,6 +1389,7 @@ instance toGraphQLArgumentValueLikesStddevSampOrderBy :: ToGraphQLArgumentValue
 
 -- | original name - likes_sum_order_by
 newtype LikesSumOrderBy = LikesSumOrderBy { article_id :: Optional OrderBy
+                                          , id :: Optional OrderBy
                                           , user_id :: Optional OrderBy
                                           }
 
@@ -821,6 +1403,7 @@ instance toGraphQLArgumentValueLikesSumOrderBy :: ToGraphQLArgumentValue
 
 -- | original name - likes_var_pop_order_by
 newtype LikesVarPopOrderBy = LikesVarPopOrderBy { article_id :: Optional OrderBy
+                                                , id :: Optional OrderBy
                                                 , user_id :: Optional OrderBy
                                                 }
 
@@ -835,6 +1418,7 @@ instance toGraphQLArgumentValueLikesVarPopOrderBy :: ToGraphQLArgumentValue
 -- | original name - likes_var_samp_order_by
 newtype LikesVarSampOrderBy = LikesVarSampOrderBy { article_id :: Optional
                                                                   OrderBy
+                                                  , id :: Optional OrderBy
                                                   , user_id :: Optional OrderBy
                                                   }
 
@@ -849,6 +1433,7 @@ instance toGraphQLArgumentValueLikesVarSampOrderBy :: ToGraphQLArgumentValue
 -- | original name - likes_variance_order_by
 newtype LikesVarianceOrderBy = LikesVarianceOrderBy { article_id :: Optional
                                                                     OrderBy
+                                                    , id :: Optional OrderBy
                                                     , user_id :: Optional
                                                                  OrderBy
                                                     }
@@ -860,6 +1445,63 @@ derive instance newtypeLikesVarianceOrderBy :: Newtype LikesVarianceOrderBy _
 instance toGraphQLArgumentValueLikesVarianceOrderBy :: ToGraphQLArgumentValue
                                                        LikesVarianceOrderBy where
   toGraphQLArgumentValue (LikesVarianceOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - profile_aggregate_order_by
+newtype ProfileAggregateOrderBy = ProfileAggregateOrderBy { avg :: Optional
+                                                                   ProfileAvgOrderBy
+                                                          , count :: Optional
+                                                                     OrderBy
+                                                          , max :: Optional
+                                                                   ProfileMaxOrderBy
+                                                          , min :: Optional
+                                                                   ProfileMinOrderBy
+                                                          , stddev :: Optional
+                                                                      ProfileStddevOrderBy
+                                                          , stddev_pop :: Optional
+                                                                          ProfileStddevPopOrderBy
+                                                          , stddev_samp :: Optional
+                                                                           ProfileStddevSampOrderBy
+                                                          , sum :: Optional
+                                                                   ProfileSumOrderBy
+                                                          , var_pop :: Optional
+                                                                       ProfileVarPopOrderBy
+                                                          , var_samp :: Optional
+                                                                        ProfileVarSampOrderBy
+                                                          , variance :: Optional
+                                                                        ProfileVarianceOrderBy
+                                                          }
+
+derive instance genericProfileAggregateOrderBy :: Generic ProfileAggregateOrderBy _
+
+derive instance newtypeProfileAggregateOrderBy :: Newtype ProfileAggregateOrderBy _
+
+instance toGraphQLArgumentValueProfileAggregateOrderBy :: ToGraphQLArgumentValue
+                                                          ProfileAggregateOrderBy where
+  toGraphQLArgumentValue (ProfileAggregateOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - profile_arr_rel_insert_input
+newtype ProfileArrRelInsertInput = ProfileArrRelInsertInput { "data" :: Array
+                                                                        ProfileInsertInput
+                                                            }
+
+derive instance genericProfileArrRelInsertInput :: Generic ProfileArrRelInsertInput _
+
+derive instance newtypeProfileArrRelInsertInput :: Newtype ProfileArrRelInsertInput _
+
+instance toGraphQLArgumentValueProfileArrRelInsertInput :: ToGraphQLArgumentValue
+                                                           ProfileArrRelInsertInput where
+  toGraphQLArgumentValue (ProfileArrRelInsertInput x) = toGraphQLArgumentValue x
+
+-- | original name - profile_avg_order_by
+newtype ProfileAvgOrderBy = ProfileAvgOrderBy { user_id :: Optional OrderBy }
+
+derive instance genericProfileAvgOrderBy :: Generic ProfileAvgOrderBy _
+
+derive instance newtypeProfileAvgOrderBy :: Newtype ProfileAvgOrderBy _
+
+instance toGraphQLArgumentValueProfileAvgOrderBy :: ToGraphQLArgumentValue
+                                                    ProfileAvgOrderBy where
+  toGraphQLArgumentValue (ProfileAvgOrderBy x) = toGraphQLArgumentValue x
 
 -- | original name - profile_bool_exp
 newtype ProfileBoolExp = ProfileBoolExp { "_and" :: Optional
@@ -889,9 +1531,87 @@ instance toGraphQLArgumentValueProfileBoolExp :: ToGraphQLArgumentValue
                                                  ProfileBoolExp where
   toGraphQLArgumentValue (ProfileBoolExp x) = toGraphQLArgumentValue x
 
+-- | original name - profile_inc_input
+newtype ProfileIncInput = ProfileIncInput { user_id :: Optional Int }
+
+derive instance genericProfileIncInput :: Generic ProfileIncInput _
+
+derive instance newtypeProfileIncInput :: Newtype ProfileIncInput _
+
+instance toGraphQLArgumentValueProfileIncInput :: ToGraphQLArgumentValue
+                                                  ProfileIncInput where
+  toGraphQLArgumentValue (ProfileIncInput x) = toGraphQLArgumentValue x
+
+-- | original name - profile_insert_input
+newtype ProfileInsertInput = ProfileInsertInput { bio :: Optional String
+                                                , email :: Optional String
+                                                , follows :: Optional
+                                                             FollowsArrRelInsertInput
+                                                , profile_image :: Optional
+                                                                   String
+                                                , user_id :: Optional Int
+                                                , username :: Optional String
+                                                }
+
+derive instance genericProfileInsertInput :: Generic ProfileInsertInput _
+
+derive instance newtypeProfileInsertInput :: Newtype ProfileInsertInput _
+
+instance toGraphQLArgumentValueProfileInsertInput :: ToGraphQLArgumentValue
+                                                     ProfileInsertInput where
+  toGraphQLArgumentValue (ProfileInsertInput x) = toGraphQLArgumentValue x
+
+-- | original name - profile_max_order_by
+newtype ProfileMaxOrderBy = ProfileMaxOrderBy { bio :: Optional OrderBy
+                                              , email :: Optional OrderBy
+                                              , profile_image :: Optional
+                                                                 OrderBy
+                                              , user_id :: Optional OrderBy
+                                              , username :: Optional OrderBy
+                                              }
+
+derive instance genericProfileMaxOrderBy :: Generic ProfileMaxOrderBy _
+
+derive instance newtypeProfileMaxOrderBy :: Newtype ProfileMaxOrderBy _
+
+instance toGraphQLArgumentValueProfileMaxOrderBy :: ToGraphQLArgumentValue
+                                                    ProfileMaxOrderBy where
+  toGraphQLArgumentValue (ProfileMaxOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - profile_min_order_by
+newtype ProfileMinOrderBy = ProfileMinOrderBy { bio :: Optional OrderBy
+                                              , email :: Optional OrderBy
+                                              , profile_image :: Optional
+                                                                 OrderBy
+                                              , user_id :: Optional OrderBy
+                                              , username :: Optional OrderBy
+                                              }
+
+derive instance genericProfileMinOrderBy :: Generic ProfileMinOrderBy _
+
+derive instance newtypeProfileMinOrderBy :: Newtype ProfileMinOrderBy _
+
+instance toGraphQLArgumentValueProfileMinOrderBy :: ToGraphQLArgumentValue
+                                                    ProfileMinOrderBy where
+  toGraphQLArgumentValue (ProfileMinOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - profile_obj_rel_insert_input
+newtype ProfileObjRelInsertInput = ProfileObjRelInsertInput { "data" :: ProfileInsertInput
+                                                            }
+
+derive instance genericProfileObjRelInsertInput :: Generic ProfileObjRelInsertInput _
+
+derive instance newtypeProfileObjRelInsertInput :: Newtype ProfileObjRelInsertInput _
+
+instance toGraphQLArgumentValueProfileObjRelInsertInput :: ToGraphQLArgumentValue
+                                                           ProfileObjRelInsertInput where
+  toGraphQLArgumentValue (ProfileObjRelInsertInput x) = toGraphQLArgumentValue x
+
 -- | original name - profile_order_by
 newtype ProfileOrderBy = ProfileOrderBy { bio :: Optional OrderBy
                                         , email :: Optional OrderBy
+                                        , follows_aggregate :: Optional
+                                                               FollowsAggregateOrderBy
                                         , profile_image :: Optional OrderBy
                                         , user_id :: Optional OrderBy
                                         , username :: Optional OrderBy
@@ -905,9 +1625,148 @@ instance toGraphQLArgumentValueProfileOrderBy :: ToGraphQLArgumentValue
                                                  ProfileOrderBy where
   toGraphQLArgumentValue (ProfileOrderBy x) = toGraphQLArgumentValue x
 
+-- | original name - profile_set_input
+newtype ProfileSetInput = ProfileSetInput { bio :: Optional String
+                                          , email :: Optional String
+                                          , profile_image :: Optional String
+                                          , user_id :: Optional Int
+                                          , username :: Optional String
+                                          }
+
+derive instance genericProfileSetInput :: Generic ProfileSetInput _
+
+derive instance newtypeProfileSetInput :: Newtype ProfileSetInput _
+
+instance toGraphQLArgumentValueProfileSetInput :: ToGraphQLArgumentValue
+                                                  ProfileSetInput where
+  toGraphQLArgumentValue (ProfileSetInput x) = toGraphQLArgumentValue x
+
+-- | original name - profile_stddev_order_by
+newtype ProfileStddevOrderBy = ProfileStddevOrderBy { user_id :: Optional
+                                                                 OrderBy
+                                                    }
+
+derive instance genericProfileStddevOrderBy :: Generic ProfileStddevOrderBy _
+
+derive instance newtypeProfileStddevOrderBy :: Newtype ProfileStddevOrderBy _
+
+instance toGraphQLArgumentValueProfileStddevOrderBy :: ToGraphQLArgumentValue
+                                                       ProfileStddevOrderBy where
+  toGraphQLArgumentValue (ProfileStddevOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - profile_stddev_pop_order_by
+newtype ProfileStddevPopOrderBy = ProfileStddevPopOrderBy { user_id :: Optional
+                                                                       OrderBy
+                                                          }
+
+derive instance genericProfileStddevPopOrderBy :: Generic ProfileStddevPopOrderBy _
+
+derive instance newtypeProfileStddevPopOrderBy :: Newtype ProfileStddevPopOrderBy _
+
+instance toGraphQLArgumentValueProfileStddevPopOrderBy :: ToGraphQLArgumentValue
+                                                          ProfileStddevPopOrderBy where
+  toGraphQLArgumentValue (ProfileStddevPopOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - profile_stddev_samp_order_by
+newtype ProfileStddevSampOrderBy = ProfileStddevSampOrderBy { user_id :: Optional
+                                                                         OrderBy
+                                                            }
+
+derive instance genericProfileStddevSampOrderBy :: Generic ProfileStddevSampOrderBy _
+
+derive instance newtypeProfileStddevSampOrderBy :: Newtype ProfileStddevSampOrderBy _
+
+instance toGraphQLArgumentValueProfileStddevSampOrderBy :: ToGraphQLArgumentValue
+                                                           ProfileStddevSampOrderBy where
+  toGraphQLArgumentValue (ProfileStddevSampOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - profile_sum_order_by
+newtype ProfileSumOrderBy = ProfileSumOrderBy { user_id :: Optional OrderBy }
+
+derive instance genericProfileSumOrderBy :: Generic ProfileSumOrderBy _
+
+derive instance newtypeProfileSumOrderBy :: Newtype ProfileSumOrderBy _
+
+instance toGraphQLArgumentValueProfileSumOrderBy :: ToGraphQLArgumentValue
+                                                    ProfileSumOrderBy where
+  toGraphQLArgumentValue (ProfileSumOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - profile_var_pop_order_by
+newtype ProfileVarPopOrderBy = ProfileVarPopOrderBy { user_id :: Optional
+                                                                 OrderBy
+                                                    }
+
+derive instance genericProfileVarPopOrderBy :: Generic ProfileVarPopOrderBy _
+
+derive instance newtypeProfileVarPopOrderBy :: Newtype ProfileVarPopOrderBy _
+
+instance toGraphQLArgumentValueProfileVarPopOrderBy :: ToGraphQLArgumentValue
+                                                       ProfileVarPopOrderBy where
+  toGraphQLArgumentValue (ProfileVarPopOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - profile_var_samp_order_by
+newtype ProfileVarSampOrderBy = ProfileVarSampOrderBy { user_id :: Optional
+                                                                   OrderBy
+                                                      }
+
+derive instance genericProfileVarSampOrderBy :: Generic ProfileVarSampOrderBy _
+
+derive instance newtypeProfileVarSampOrderBy :: Newtype ProfileVarSampOrderBy _
+
+instance toGraphQLArgumentValueProfileVarSampOrderBy :: ToGraphQLArgumentValue
+                                                        ProfileVarSampOrderBy where
+  toGraphQLArgumentValue (ProfileVarSampOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - profile_variance_order_by
+newtype ProfileVarianceOrderBy = ProfileVarianceOrderBy { user_id :: Optional
+                                                                     OrderBy
+                                                        }
+
+derive instance genericProfileVarianceOrderBy :: Generic ProfileVarianceOrderBy _
+
+derive instance newtypeProfileVarianceOrderBy :: Newtype ProfileVarianceOrderBy _
+
+instance toGraphQLArgumentValueProfileVarianceOrderBy :: ToGraphQLArgumentValue
+                                                         ProfileVarianceOrderBy where
+  toGraphQLArgumentValue (ProfileVarianceOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - tags_aggregate_order_by
+newtype TagsAggregateOrderBy = TagsAggregateOrderBy { avg :: Optional
+                                                             TagsAvgOrderBy
+                                                    , count :: Optional OrderBy
+                                                    , max :: Optional
+                                                             TagsMaxOrderBy
+                                                    , min :: Optional
+                                                             TagsMinOrderBy
+                                                    , stddev :: Optional
+                                                                TagsStddevOrderBy
+                                                    , stddev_pop :: Optional
+                                                                    TagsStddevPopOrderBy
+                                                    , stddev_samp :: Optional
+                                                                     TagsStddevSampOrderBy
+                                                    , sum :: Optional
+                                                             TagsSumOrderBy
+                                                    , var_pop :: Optional
+                                                                 TagsVarPopOrderBy
+                                                    , var_samp :: Optional
+                                                                  TagsVarSampOrderBy
+                                                    , variance :: Optional
+                                                                  TagsVarianceOrderBy
+                                                    }
+
+derive instance genericTagsAggregateOrderBy :: Generic TagsAggregateOrderBy _
+
+derive instance newtypeTagsAggregateOrderBy :: Newtype TagsAggregateOrderBy _
+
+instance toGraphQLArgumentValueTagsAggregateOrderBy :: ToGraphQLArgumentValue
+                                                       TagsAggregateOrderBy where
+  toGraphQLArgumentValue (TagsAggregateOrderBy x) = toGraphQLArgumentValue x
+
 -- | original name - tags_arr_rel_insert_input
 newtype TagsArrRelInsertInput = TagsArrRelInsertInput { "data" :: Array
                                                                   TagsInsertInput
+                                                      , on_conflict :: Optional
+                                                                       TagsOnConflict
                                                       }
 
 derive instance genericTagsArrRelInsertInput :: Generic TagsArrRelInsertInput _
@@ -917,6 +1776,19 @@ derive instance newtypeTagsArrRelInsertInput :: Newtype TagsArrRelInsertInput _
 instance toGraphQLArgumentValueTagsArrRelInsertInput :: ToGraphQLArgumentValue
                                                         TagsArrRelInsertInput where
   toGraphQLArgumentValue (TagsArrRelInsertInput x) = toGraphQLArgumentValue x
+
+-- | original name - tags_avg_order_by
+newtype TagsAvgOrderBy = TagsAvgOrderBy { article_id :: Optional OrderBy
+                                        , id :: Optional OrderBy
+                                        }
+
+derive instance genericTagsAvgOrderBy :: Generic TagsAvgOrderBy _
+
+derive instance newtypeTagsAvgOrderBy :: Newtype TagsAvgOrderBy _
+
+instance toGraphQLArgumentValueTagsAvgOrderBy :: ToGraphQLArgumentValue
+                                                 TagsAvgOrderBy where
+  toGraphQLArgumentValue (TagsAvgOrderBy x) = toGraphQLArgumentValue x
 
 -- | original name - tags_bool_exp
 newtype TagsBoolExp = TagsBoolExp { "_and" :: Optional
@@ -929,6 +1801,8 @@ newtype TagsBoolExp = TagsBoolExp { "_and" :: Optional
                                               (Maybe
                                                TagsBoolExp))
                                   , article :: Optional ArticlesBoolExp
+                                  , article_id :: Optional IntComparisonExp
+                                  , id :: Optional IntComparisonExp
                                   , tag :: Optional StringComparisonExp
                                   }
 
@@ -939,10 +1813,24 @@ derive instance newtypeTagsBoolExp :: Newtype TagsBoolExp _
 instance toGraphQLArgumentValueTagsBoolExp :: ToGraphQLArgumentValue TagsBoolExp where
   toGraphQLArgumentValue (TagsBoolExp x) = toGraphQLArgumentValue x
 
+-- | original name - tags_inc_input
+newtype TagsIncInput = TagsIncInput { article_id :: Optional Int
+                                    , id :: Optional Int
+                                    }
+
+derive instance genericTagsIncInput :: Generic TagsIncInput _
+
+derive instance newtypeTagsIncInput :: Newtype TagsIncInput _
+
+instance toGraphQLArgumentValueTagsIncInput :: ToGraphQLArgumentValue
+                                               TagsIncInput where
+  toGraphQLArgumentValue (TagsIncInput x) = toGraphQLArgumentValue x
+
 -- | original name - tags_insert_input
 newtype TagsInsertInput = TagsInsertInput { article :: Optional
                                                        ArticlesObjRelInsertInput
                                           , article_id :: Optional Int
+                                          , id :: Optional Int
                                           , tag :: Optional String
                                           }
 
@@ -954,8 +1842,38 @@ instance toGraphQLArgumentValueTagsInsertInput :: ToGraphQLArgumentValue
                                                   TagsInsertInput where
   toGraphQLArgumentValue (TagsInsertInput x) = toGraphQLArgumentValue x
 
+-- | original name - tags_max_order_by
+newtype TagsMaxOrderBy = TagsMaxOrderBy { article_id :: Optional OrderBy
+                                        , id :: Optional OrderBy
+                                        , tag :: Optional OrderBy
+                                        }
+
+derive instance genericTagsMaxOrderBy :: Generic TagsMaxOrderBy _
+
+derive instance newtypeTagsMaxOrderBy :: Newtype TagsMaxOrderBy _
+
+instance toGraphQLArgumentValueTagsMaxOrderBy :: ToGraphQLArgumentValue
+                                                 TagsMaxOrderBy where
+  toGraphQLArgumentValue (TagsMaxOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - tags_min_order_by
+newtype TagsMinOrderBy = TagsMinOrderBy { article_id :: Optional OrderBy
+                                        , id :: Optional OrderBy
+                                        , tag :: Optional OrderBy
+                                        }
+
+derive instance genericTagsMinOrderBy :: Generic TagsMinOrderBy _
+
+derive instance newtypeTagsMinOrderBy :: Newtype TagsMinOrderBy _
+
+instance toGraphQLArgumentValueTagsMinOrderBy :: ToGraphQLArgumentValue
+                                                 TagsMinOrderBy where
+  toGraphQLArgumentValue (TagsMinOrderBy x) = toGraphQLArgumentValue x
+
 -- | original name - tags_obj_rel_insert_input
 newtype TagsObjRelInsertInput = TagsObjRelInsertInput { "data" :: TagsInsertInput
+                                                      , on_conflict :: Optional
+                                                                       TagsOnConflict
                                                       }
 
 derive instance genericTagsObjRelInsertInput :: Generic TagsObjRelInsertInput _
@@ -966,8 +1884,25 @@ instance toGraphQLArgumentValueTagsObjRelInsertInput :: ToGraphQLArgumentValue
                                                         TagsObjRelInsertInput where
   toGraphQLArgumentValue (TagsObjRelInsertInput x) = toGraphQLArgumentValue x
 
+-- | original name - tags_on_conflict
+newtype TagsOnConflict = TagsOnConflict { constraint :: TagsConstraint
+                                        , update_columns :: Array
+                                                            TagsUpdateColumn
+                                        , "where" :: Optional TagsBoolExp
+                                        }
+
+derive instance genericTagsOnConflict :: Generic TagsOnConflict _
+
+derive instance newtypeTagsOnConflict :: Newtype TagsOnConflict _
+
+instance toGraphQLArgumentValueTagsOnConflict :: ToGraphQLArgumentValue
+                                                 TagsOnConflict where
+  toGraphQLArgumentValue (TagsOnConflict x) = toGraphQLArgumentValue x
+
 -- | original name - tags_order_by
 newtype TagsOrderBy = TagsOrderBy { article :: Optional ArticlesOrderBy
+                                  , article_id :: Optional OrderBy
+                                  , id :: Optional OrderBy
                                   , tag :: Optional OrderBy
                                   }
 
@@ -988,6 +1923,114 @@ derive instance newtypeTagsPkColumnsInput :: Newtype TagsPkColumnsInput _
 instance toGraphQLArgumentValueTagsPkColumnsInput :: ToGraphQLArgumentValue
                                                      TagsPkColumnsInput where
   toGraphQLArgumentValue (TagsPkColumnsInput x) = toGraphQLArgumentValue x
+
+-- | original name - tags_set_input
+newtype TagsSetInput = TagsSetInput { article_id :: Optional Int
+                                    , id :: Optional Int
+                                    , tag :: Optional String
+                                    }
+
+derive instance genericTagsSetInput :: Generic TagsSetInput _
+
+derive instance newtypeTagsSetInput :: Newtype TagsSetInput _
+
+instance toGraphQLArgumentValueTagsSetInput :: ToGraphQLArgumentValue
+                                               TagsSetInput where
+  toGraphQLArgumentValue (TagsSetInput x) = toGraphQLArgumentValue x
+
+-- | original name - tags_stddev_order_by
+newtype TagsStddevOrderBy = TagsStddevOrderBy { article_id :: Optional OrderBy
+                                              , id :: Optional OrderBy
+                                              }
+
+derive instance genericTagsStddevOrderBy :: Generic TagsStddevOrderBy _
+
+derive instance newtypeTagsStddevOrderBy :: Newtype TagsStddevOrderBy _
+
+instance toGraphQLArgumentValueTagsStddevOrderBy :: ToGraphQLArgumentValue
+                                                    TagsStddevOrderBy where
+  toGraphQLArgumentValue (TagsStddevOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - tags_stddev_pop_order_by
+newtype TagsStddevPopOrderBy = TagsStddevPopOrderBy { article_id :: Optional
+                                                                    OrderBy
+                                                    , id :: Optional OrderBy
+                                                    }
+
+derive instance genericTagsStddevPopOrderBy :: Generic TagsStddevPopOrderBy _
+
+derive instance newtypeTagsStddevPopOrderBy :: Newtype TagsStddevPopOrderBy _
+
+instance toGraphQLArgumentValueTagsStddevPopOrderBy :: ToGraphQLArgumentValue
+                                                       TagsStddevPopOrderBy where
+  toGraphQLArgumentValue (TagsStddevPopOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - tags_stddev_samp_order_by
+newtype TagsStddevSampOrderBy = TagsStddevSampOrderBy { article_id :: Optional
+                                                                      OrderBy
+                                                      , id :: Optional OrderBy
+                                                      }
+
+derive instance genericTagsStddevSampOrderBy :: Generic TagsStddevSampOrderBy _
+
+derive instance newtypeTagsStddevSampOrderBy :: Newtype TagsStddevSampOrderBy _
+
+instance toGraphQLArgumentValueTagsStddevSampOrderBy :: ToGraphQLArgumentValue
+                                                        TagsStddevSampOrderBy where
+  toGraphQLArgumentValue (TagsStddevSampOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - tags_sum_order_by
+newtype TagsSumOrderBy = TagsSumOrderBy { article_id :: Optional OrderBy
+                                        , id :: Optional OrderBy
+                                        }
+
+derive instance genericTagsSumOrderBy :: Generic TagsSumOrderBy _
+
+derive instance newtypeTagsSumOrderBy :: Newtype TagsSumOrderBy _
+
+instance toGraphQLArgumentValueTagsSumOrderBy :: ToGraphQLArgumentValue
+                                                 TagsSumOrderBy where
+  toGraphQLArgumentValue (TagsSumOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - tags_var_pop_order_by
+newtype TagsVarPopOrderBy = TagsVarPopOrderBy { article_id :: Optional OrderBy
+                                              , id :: Optional OrderBy
+                                              }
+
+derive instance genericTagsVarPopOrderBy :: Generic TagsVarPopOrderBy _
+
+derive instance newtypeTagsVarPopOrderBy :: Newtype TagsVarPopOrderBy _
+
+instance toGraphQLArgumentValueTagsVarPopOrderBy :: ToGraphQLArgumentValue
+                                                    TagsVarPopOrderBy where
+  toGraphQLArgumentValue (TagsVarPopOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - tags_var_samp_order_by
+newtype TagsVarSampOrderBy = TagsVarSampOrderBy { article_id :: Optional OrderBy
+                                                , id :: Optional OrderBy
+                                                }
+
+derive instance genericTagsVarSampOrderBy :: Generic TagsVarSampOrderBy _
+
+derive instance newtypeTagsVarSampOrderBy :: Newtype TagsVarSampOrderBy _
+
+instance toGraphQLArgumentValueTagsVarSampOrderBy :: ToGraphQLArgumentValue
+                                                     TagsVarSampOrderBy where
+  toGraphQLArgumentValue (TagsVarSampOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - tags_variance_order_by
+newtype TagsVarianceOrderBy = TagsVarianceOrderBy { article_id :: Optional
+                                                                  OrderBy
+                                                  , id :: Optional OrderBy
+                                                  }
+
+derive instance genericTagsVarianceOrderBy :: Generic TagsVarianceOrderBy _
+
+derive instance newtypeTagsVarianceOrderBy :: Newtype TagsVarianceOrderBy _
+
+instance toGraphQLArgumentValueTagsVarianceOrderBy :: ToGraphQLArgumentValue
+                                                      TagsVarianceOrderBy where
+  toGraphQLArgumentValue (TagsVarianceOrderBy x) = toGraphQLArgumentValue x
 
 -- | original name - timestamptz_comparison_exp
 newtype TimestamptzComparisonExp = TimestamptzComparisonExp { "_eq" :: Optional
@@ -1020,6 +2063,65 @@ instance toGraphQLArgumentValueTimestamptzComparisonExp :: ToGraphQLArgumentValu
                                                            TimestamptzComparisonExp where
   toGraphQLArgumentValue (TimestamptzComparisonExp x) = toGraphQLArgumentValue x
 
+-- | original name - users_aggregate_order_by
+newtype UsersAggregateOrderBy = UsersAggregateOrderBy { avg :: Optional
+                                                               UsersAvgOrderBy
+                                                      , count :: Optional
+                                                                 OrderBy
+                                                      , max :: Optional
+                                                               UsersMaxOrderBy
+                                                      , min :: Optional
+                                                               UsersMinOrderBy
+                                                      , stddev :: Optional
+                                                                  UsersStddevOrderBy
+                                                      , stddev_pop :: Optional
+                                                                      UsersStddevPopOrderBy
+                                                      , stddev_samp :: Optional
+                                                                       UsersStddevSampOrderBy
+                                                      , sum :: Optional
+                                                               UsersSumOrderBy
+                                                      , var_pop :: Optional
+                                                                   UsersVarPopOrderBy
+                                                      , var_samp :: Optional
+                                                                    UsersVarSampOrderBy
+                                                      , variance :: Optional
+                                                                    UsersVarianceOrderBy
+                                                      }
+
+derive instance genericUsersAggregateOrderBy :: Generic UsersAggregateOrderBy _
+
+derive instance newtypeUsersAggregateOrderBy :: Newtype UsersAggregateOrderBy _
+
+instance toGraphQLArgumentValueUsersAggregateOrderBy :: ToGraphQLArgumentValue
+                                                        UsersAggregateOrderBy where
+  toGraphQLArgumentValue (UsersAggregateOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - users_arr_rel_insert_input
+newtype UsersArrRelInsertInput = UsersArrRelInsertInput { "data" :: Array
+                                                                    UsersInsertInput
+                                                        , on_conflict :: Optional
+                                                                         UsersOnConflict
+                                                        }
+
+derive instance genericUsersArrRelInsertInput :: Generic UsersArrRelInsertInput _
+
+derive instance newtypeUsersArrRelInsertInput :: Newtype UsersArrRelInsertInput _
+
+instance toGraphQLArgumentValueUsersArrRelInsertInput :: ToGraphQLArgumentValue
+                                                         UsersArrRelInsertInput where
+  toGraphQLArgumentValue (UsersArrRelInsertInput x) = toGraphQLArgumentValue x
+
+-- | original name - users_avg_order_by
+newtype UsersAvgOrderBy = UsersAvgOrderBy { id :: Optional OrderBy }
+
+derive instance genericUsersAvgOrderBy :: Generic UsersAvgOrderBy _
+
+derive instance newtypeUsersAvgOrderBy :: Newtype UsersAvgOrderBy _
+
+instance toGraphQLArgumentValueUsersAvgOrderBy :: ToGraphQLArgumentValue
+                                                  UsersAvgOrderBy where
+  toGraphQLArgumentValue (UsersAvgOrderBy x) = toGraphQLArgumentValue x
+
 -- | original name - users_bool_exp
 newtype UsersBoolExp = UsersBoolExp { "_and" :: Optional
                                                 (Array
@@ -1031,8 +2133,12 @@ newtype UsersBoolExp = UsersBoolExp { "_and" :: Optional
                                                 (Maybe
                                                  UsersBoolExp))
                                     , articles :: Optional ArticlesBoolExp
+                                    , bio :: Optional StringComparisonExp
+                                    , email :: Optional StringComparisonExp
                                     , follows :: Optional FollowsBoolExp
                                     , id :: Optional IntComparisonExp
+                                    , password_hash :: Optional
+                                                       StringComparisonExp
                                     , profile_image :: Optional
                                                        StringComparisonExp
                                     , username :: Optional StringComparisonExp
@@ -1045,6 +2151,86 @@ derive instance newtypeUsersBoolExp :: Newtype UsersBoolExp _
 instance toGraphQLArgumentValueUsersBoolExp :: ToGraphQLArgumentValue
                                                UsersBoolExp where
   toGraphQLArgumentValue (UsersBoolExp x) = toGraphQLArgumentValue x
+
+-- | original name - users_inc_input
+newtype UsersIncInput = UsersIncInput { id :: Optional Int }
+
+derive instance genericUsersIncInput :: Generic UsersIncInput _
+
+derive instance newtypeUsersIncInput :: Newtype UsersIncInput _
+
+instance toGraphQLArgumentValueUsersIncInput :: ToGraphQLArgumentValue
+                                                UsersIncInput where
+  toGraphQLArgumentValue (UsersIncInput x) = toGraphQLArgumentValue x
+
+-- | original name - users_insert_input
+newtype UsersInsertInput = UsersInsertInput { articles :: Optional
+                                                          ArticlesArrRelInsertInput
+                                            , bio :: Optional String
+                                            , email :: Optional String
+                                            , follows :: Optional
+                                                         FollowsArrRelInsertInput
+                                            , id :: Optional Int
+                                            , password_hash :: Optional String
+                                            , profile_image :: Optional String
+                                            , username :: Optional String
+                                            }
+
+derive instance genericUsersInsertInput :: Generic UsersInsertInput _
+
+derive instance newtypeUsersInsertInput :: Newtype UsersInsertInput _
+
+instance toGraphQLArgumentValueUsersInsertInput :: ToGraphQLArgumentValue
+                                                   UsersInsertInput where
+  toGraphQLArgumentValue (UsersInsertInput x) = toGraphQLArgumentValue x
+
+-- | original name - users_max_order_by
+newtype UsersMaxOrderBy = UsersMaxOrderBy { bio :: Optional OrderBy
+                                          , email :: Optional OrderBy
+                                          , id :: Optional OrderBy
+                                          , password_hash :: Optional OrderBy
+                                          , profile_image :: Optional OrderBy
+                                          , username :: Optional OrderBy
+                                          }
+
+derive instance genericUsersMaxOrderBy :: Generic UsersMaxOrderBy _
+
+derive instance newtypeUsersMaxOrderBy :: Newtype UsersMaxOrderBy _
+
+instance toGraphQLArgumentValueUsersMaxOrderBy :: ToGraphQLArgumentValue
+                                                  UsersMaxOrderBy where
+  toGraphQLArgumentValue (UsersMaxOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - users_min_order_by
+newtype UsersMinOrderBy = UsersMinOrderBy { bio :: Optional OrderBy
+                                          , email :: Optional OrderBy
+                                          , id :: Optional OrderBy
+                                          , password_hash :: Optional OrderBy
+                                          , profile_image :: Optional OrderBy
+                                          , username :: Optional OrderBy
+                                          }
+
+derive instance genericUsersMinOrderBy :: Generic UsersMinOrderBy _
+
+derive instance newtypeUsersMinOrderBy :: Newtype UsersMinOrderBy _
+
+instance toGraphQLArgumentValueUsersMinOrderBy :: ToGraphQLArgumentValue
+                                                  UsersMinOrderBy where
+  toGraphQLArgumentValue (UsersMinOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - users_obj_rel_insert_input
+newtype UsersObjRelInsertInput = UsersObjRelInsertInput { "data" :: UsersInsertInput
+                                                        , on_conflict :: Optional
+                                                                         UsersOnConflict
+                                                        }
+
+derive instance genericUsersObjRelInsertInput :: Generic UsersObjRelInsertInput _
+
+derive instance newtypeUsersObjRelInsertInput :: Newtype UsersObjRelInsertInput _
+
+instance toGraphQLArgumentValueUsersObjRelInsertInput :: ToGraphQLArgumentValue
+                                                         UsersObjRelInsertInput where
+  toGraphQLArgumentValue (UsersObjRelInsertInput x) = toGraphQLArgumentValue x
 
 -- | original name - users_on_conflict
 newtype UsersOnConflict = UsersOnConflict { constraint :: UsersConstraint
@@ -1064,7 +2250,12 @@ instance toGraphQLArgumentValueUsersOnConflict :: ToGraphQLArgumentValue
 -- | original name - users_order_by
 newtype UsersOrderBy = UsersOrderBy { articles_aggregate :: Optional
                                                             ArticlesAggregateOrderBy
+                                    , bio :: Optional OrderBy
+                                    , email :: Optional OrderBy
+                                    , follows_aggregate :: Optional
+                                                           FollowsAggregateOrderBy
                                     , id :: Optional OrderBy
+                                    , password_hash :: Optional OrderBy
                                     , profile_image :: Optional OrderBy
                                     , username :: Optional OrderBy
                                     }
@@ -1091,6 +2282,8 @@ instance toGraphQLArgumentValueUsersPkColumnsInput :: ToGraphQLArgumentValue
 -- | original name - users_set_input
 newtype UsersSetInput = UsersSetInput { bio :: Optional String
                                       , email :: Optional String
+                                      , id :: Optional Int
+                                      , password_hash :: Optional String
                                       , profile_image :: Optional String
                                       , username :: Optional String
                                       }
@@ -1102,3 +2295,81 @@ derive instance newtypeUsersSetInput :: Newtype UsersSetInput _
 instance toGraphQLArgumentValueUsersSetInput :: ToGraphQLArgumentValue
                                                 UsersSetInput where
   toGraphQLArgumentValue (UsersSetInput x) = toGraphQLArgumentValue x
+
+-- | original name - users_stddev_order_by
+newtype UsersStddevOrderBy = UsersStddevOrderBy { id :: Optional OrderBy }
+
+derive instance genericUsersStddevOrderBy :: Generic UsersStddevOrderBy _
+
+derive instance newtypeUsersStddevOrderBy :: Newtype UsersStddevOrderBy _
+
+instance toGraphQLArgumentValueUsersStddevOrderBy :: ToGraphQLArgumentValue
+                                                     UsersStddevOrderBy where
+  toGraphQLArgumentValue (UsersStddevOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - users_stddev_pop_order_by
+newtype UsersStddevPopOrderBy = UsersStddevPopOrderBy { id :: Optional OrderBy }
+
+derive instance genericUsersStddevPopOrderBy :: Generic UsersStddevPopOrderBy _
+
+derive instance newtypeUsersStddevPopOrderBy :: Newtype UsersStddevPopOrderBy _
+
+instance toGraphQLArgumentValueUsersStddevPopOrderBy :: ToGraphQLArgumentValue
+                                                        UsersStddevPopOrderBy where
+  toGraphQLArgumentValue (UsersStddevPopOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - users_stddev_samp_order_by
+newtype UsersStddevSampOrderBy = UsersStddevSampOrderBy { id :: Optional OrderBy
+                                                        }
+
+derive instance genericUsersStddevSampOrderBy :: Generic UsersStddevSampOrderBy _
+
+derive instance newtypeUsersStddevSampOrderBy :: Newtype UsersStddevSampOrderBy _
+
+instance toGraphQLArgumentValueUsersStddevSampOrderBy :: ToGraphQLArgumentValue
+                                                         UsersStddevSampOrderBy where
+  toGraphQLArgumentValue (UsersStddevSampOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - users_sum_order_by
+newtype UsersSumOrderBy = UsersSumOrderBy { id :: Optional OrderBy }
+
+derive instance genericUsersSumOrderBy :: Generic UsersSumOrderBy _
+
+derive instance newtypeUsersSumOrderBy :: Newtype UsersSumOrderBy _
+
+instance toGraphQLArgumentValueUsersSumOrderBy :: ToGraphQLArgumentValue
+                                                  UsersSumOrderBy where
+  toGraphQLArgumentValue (UsersSumOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - users_var_pop_order_by
+newtype UsersVarPopOrderBy = UsersVarPopOrderBy { id :: Optional OrderBy }
+
+derive instance genericUsersVarPopOrderBy :: Generic UsersVarPopOrderBy _
+
+derive instance newtypeUsersVarPopOrderBy :: Newtype UsersVarPopOrderBy _
+
+instance toGraphQLArgumentValueUsersVarPopOrderBy :: ToGraphQLArgumentValue
+                                                     UsersVarPopOrderBy where
+  toGraphQLArgumentValue (UsersVarPopOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - users_var_samp_order_by
+newtype UsersVarSampOrderBy = UsersVarSampOrderBy { id :: Optional OrderBy }
+
+derive instance genericUsersVarSampOrderBy :: Generic UsersVarSampOrderBy _
+
+derive instance newtypeUsersVarSampOrderBy :: Newtype UsersVarSampOrderBy _
+
+instance toGraphQLArgumentValueUsersVarSampOrderBy :: ToGraphQLArgumentValue
+                                                      UsersVarSampOrderBy where
+  toGraphQLArgumentValue (UsersVarSampOrderBy x) = toGraphQLArgumentValue x
+
+-- | original name - users_variance_order_by
+newtype UsersVarianceOrderBy = UsersVarianceOrderBy { id :: Optional OrderBy }
+
+derive instance genericUsersVarianceOrderBy :: Generic UsersVarianceOrderBy _
+
+derive instance newtypeUsersVarianceOrderBy :: Newtype UsersVarianceOrderBy _
+
+instance toGraphQLArgumentValueUsersVarianceOrderBy :: ToGraphQLArgumentValue
+                                                       UsersVarianceOrderBy where
+  toGraphQLArgumentValue (UsersVarianceOrderBy x) = toGraphQLArgumentValue x

@@ -13,7 +13,7 @@ import GraphQLClient
   )
 
 -- | original name - likes_select_column
-data LikesSelectColumn = ArticleId | UserId
+data LikesSelectColumn = ArticleId | Id | UserId
 
 derive instance genericLikesSelectColumn :: Generic LikesSelectColumn _
 
@@ -25,7 +25,10 @@ derive instance eqLikesSelectColumn :: Eq LikesSelectColumn
 derive instance ordLikesSelectColumn :: Ord LikesSelectColumn
 
 fromToMap :: Array (Tuple String LikesSelectColumn)
-fromToMap = [ Tuple "article_id" ArticleId, Tuple "user_id" UserId ]
+fromToMap = [ Tuple "article_id" ArticleId
+            , Tuple "id" Id
+            , Tuple "user_id" UserId
+            ]
 
 instance likesSelectColumnGraphQLDefaultResponseScalarDecoder :: GraphQLDefaultResponseScalarDecoder
                                                                  LikesSelectColumn where
@@ -38,4 +41,5 @@ instance likesSelectColumnToGraphQLArgumentValue :: ToGraphQLArgumentValue
   toGraphQLArgumentValue =
     case _ of
       ArticleId -> ArgumentValueEnum "article_id"
+      Id -> ArgumentValueEnum "id"
       UserId -> ArgumentValueEnum "user_id"

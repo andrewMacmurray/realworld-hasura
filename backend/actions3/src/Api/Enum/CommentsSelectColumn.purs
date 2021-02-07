@@ -13,7 +13,7 @@ import GraphQLClient
   )
 
 -- | original name - comments_select_column
-data CommentsSelectColumn = Comment | CreatedAt | Id
+data CommentsSelectColumn = ArticleId | Comment | CreatedAt | Id | UserId
 
 derive instance genericCommentsSelectColumn :: Generic CommentsSelectColumn _
 
@@ -25,9 +25,11 @@ derive instance eqCommentsSelectColumn :: Eq CommentsSelectColumn
 derive instance ordCommentsSelectColumn :: Ord CommentsSelectColumn
 
 fromToMap :: Array (Tuple String CommentsSelectColumn)
-fromToMap = [ Tuple "comment" Comment
+fromToMap = [ Tuple "article_id" ArticleId
+            , Tuple "comment" Comment
             , Tuple "created_at" CreatedAt
             , Tuple "id" Id
+            , Tuple "user_id" UserId
             ]
 
 instance commentsSelectColumnGraphQLDefaultResponseScalarDecoder :: GraphQLDefaultResponseScalarDecoder
@@ -40,6 +42,8 @@ instance commentsSelectColumnToGraphQLArgumentValue :: ToGraphQLArgumentValue
                                                        CommentsSelectColumn where
   toGraphQLArgumentValue =
     case _ of
+      ArticleId -> ArgumentValueEnum "article_id"
       Comment -> ArgumentValueEnum "comment"
       CreatedAt -> ArgumentValueEnum "created_at"
       Id -> ArgumentValueEnum "id"
+      UserId -> ArgumentValueEnum "user_id"

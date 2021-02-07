@@ -11,5 +11,8 @@ article_id = selectionForField
              []
              graphqlDefaultResponseScalarDecoder
 
+id :: SelectionSet Scope__LikesMinFields (Maybe Int)
+id = selectionForField "id" [] graphqlDefaultResponseScalarDecoder
+
 user_id :: SelectionSet Scope__LikesMinFields (Maybe Int)
 user_id = selectionForField "user_id" [] graphqlDefaultResponseScalarDecoder

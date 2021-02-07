@@ -20,5 +20,6 @@ services:
       HASURA_GRAPHQL_UNAUTHORIZED_ROLE: anonymous
       HASURA_GRAPHQL_JWT_SECRET: '{"type":"HS256","key":"3EK6FD+o0+c7tzBNVfjpMkNDi2yARAAKzQlk8O2IKoxQu4nF7EdAh8s3TwpHwrdWT6R"}'
       ACTIONS_BASE_URL: http://host.docker.internal:4000/api
+      NEW_ACTIONS_BASE_URL: http://host.docker.internal:3000/api
       ACTIONS_SECRET: ilovebread
       ACTIONS_WAKEUP_URL: http://host.docker.internal:4000/wakeup

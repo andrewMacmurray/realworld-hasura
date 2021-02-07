@@ -13,9 +13,11 @@ import Api.Scopes
   ( Scope__Articles
   , Scope__Users
   , Scope__Comments
+  , Scope__CommentsAggregate
   , Scope__Likes
   , Scope__LikesAggregate
   , Scope__Tags
+  , Scope__TagsAggregate
   )
 import Api.Enum.CommentsSelectColumn (CommentsSelectColumn)
 import Api.InputObject
@@ -44,6 +46,9 @@ author = selectionForCompositeField
          []
          graphqlDefaultResponseFunctorOrScalarDecoderTransformer
 
+author_id :: SelectionSet Scope__Articles Int
+author_id = selectionForField "author_id" [] graphqlDefaultResponseScalarDecoder
+
 type CommentsInputRowOptional r = ( distinct_on :: Optional
                                                    (Array
                                                     CommentsSelectColumn)
@@ -70,6 +75,32 @@ comments input = selectionForCompositeField
                  (toGraphQLArguments
                   input)
                  graphqlDefaultResponseFunctorOrScalarDecoderTransformer
+
+type CommentsAggregateInputRowOptional r = ( distinct_on :: Optional
+                                                            (Array
+                                                             CommentsSelectColumn)
+                                           , limit :: Optional Int
+                                           , offset :: Optional Int
+                                           , order_by :: Optional
+                                                         (Array
+                                                          Api.InputObject.CommentsOrderBy)
+                                           , "where" :: Optional
+                                                        Api.InputObject.CommentsBoolExp
+                                           | r
+                                           )
+
+type CommentsAggregateInput = { | CommentsAggregateInputRowOptional + () }
+
+comments_aggregate :: forall r . CommentsAggregateInput -> SelectionSet
+                                                           Scope__CommentsAggregate
+                                                           r -> SelectionSet
+                                                                Scope__Articles
+                                                                r
+comments_aggregate input = selectionForCompositeField
+                           "comments_aggregate"
+                           (toGraphQLArguments
+                            input)
+                           graphqlDefaultResponseFunctorOrScalarDecoderTransformer
 
 content :: SelectionSet Scope__Articles String
 content = selectionForField "content" [] graphqlDefaultResponseScalarDecoder
@@ -159,6 +190,32 @@ tags input = selectionForCompositeField
              (toGraphQLArguments
               input)
              graphqlDefaultResponseFunctorOrScalarDecoderTransformer
+
+type TagsAggregateInputRowOptional r = ( distinct_on :: Optional
+                                                        (Array
+                                                         TagsSelectColumn)
+                                       , limit :: Optional Int
+                                       , offset :: Optional Int
+                                       , order_by :: Optional
+                                                     (Array
+                                                      Api.InputObject.TagsOrderBy)
+                                       , "where" :: Optional
+                                                    Api.InputObject.TagsBoolExp
+                                       | r
+                                       )
+
+type TagsAggregateInput = { | TagsAggregateInputRowOptional + () }
+
+tags_aggregate :: forall r . TagsAggregateInput -> SelectionSet
+                                                   Scope__TagsAggregate
+                                                   r -> SelectionSet
+                                                        Scope__Articles
+                                                        r
+tags_aggregate input = selectionForCompositeField
+                       "tags_aggregate"
+                       (toGraphQLArguments
+                        input)
+                       graphqlDefaultResponseFunctorOrScalarDecoderTransformer
 
 title :: SelectionSet Scope__Articles String
 title = selectionForField "title" [] graphqlDefaultResponseScalarDecoder

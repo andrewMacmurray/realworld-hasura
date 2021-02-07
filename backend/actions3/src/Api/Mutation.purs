@@ -1,51 +1,100 @@
 module Api.Mutation where
 
-import Type.Row (type (+))
 import GraphQLClient
-  ( SelectionSet
+  ( Optional
+  , SelectionSet
   , Scope__RootMutation
   , selectionForCompositeField
   , toGraphQLArguments
   , graphqlDefaultResponseFunctorOrScalarDecoderTransformer
-  , Optional
   )
-import Api.Scopes
-  ( Scope__Articles
-  , Scope__ArticlesMutationResponse
-  , Scope__Comments
-  , Scope__CommentsMutationResponse
-  , Scope__Follows
-  , Scope__TagsMutationResponse
-  , Scope__Tags
-  , Scope__FollowsMutationResponse
-  , Scope__Likes
-  , Scope__LikesMutationResponse
-  , Scope__TokenResponse
-  , Scope__UnlikeResponse
-  , Scope__Users
-  , Scope__UsersMutationResponse
-  )
-import Data.Maybe (Maybe)
 import Api.InputObject
-  ( ArticlesBoolExp
+  ( UsersOnConflict
+  , UsersInsertInput
+  , ArticlesBoolExp
   , CommentsBoolExp
+  , LikesBoolExp
+  , ProfileBoolExp
   , TagsBoolExp
+  , UsersBoolExp
+  , ArticlesIncInput
   , ArticlesSetInput
   , ArticlesPkColumnsInput
+  , FollowsOnConflict
   , FollowsInsertInput
   , CommentsOnConflict
   , CommentsInsertInput
+  , ProfileInsertInput
+  , TagsOnConflict
   , TagsInsertInput
+  , LikesOnConflict
   , LikesInsertInput
   , ArticlesOnConflict
   , ArticlesInsertInput
   , FollowsBoolExp
+  , CommentsIncInput
   , CommentsSetInput
   , CommentsPkColumnsInput
+  , FollowsIncInput
+  , FollowsSetInput
+  , FollowsPkColumnsInput
+  , LikesIncInput
+  , LikesSetInput
+  , LikesPkColumnsInput
+  , ProfileIncInput
+  , ProfileSetInput
+  , TagsIncInput
+  , TagsSetInput
+  , TagsPkColumnsInput
+  , UsersIncInput
   , UsersSetInput
   , UsersPkColumnsInput
-  , UsersBoolExp
   ) as Api.InputObject
+import Type.Row (type (+))
+import Api.Scopes
+  ( Scope__Users
+  , Scope__Articles
+  , Scope__ArticlesMutationResponse
+  , Scope__Comments
+  , Scope__CommentsMutationResponse
+  , Scope__Follows
+  , Scope__LikesMutationResponse
+  , Scope__Likes
+  , Scope__ProfileMutationResponse
+  , Scope__TagsMutationResponse
+  , Scope__Tags
+  , Scope__UsersMutationResponse
+  , Scope__FollowsMutationResponse
+  , Scope__Profile
+  , Scope__TokenResponse
+  , Scope__UnlikeResponse
+  )
+import Data.Maybe (Maybe)
+
+type CreateUserInputRowOptional r = ( on_conflict :: Optional
+                                                     Api.InputObject.UsersOnConflict
+                                    | r
+                                    )
+
+type CreateUserInputRowRequired r = ( object :: Api.InputObject.UsersInsertInput
+                                    | r
+                                    )
+
+type CreateUserInput = {
+| CreateUserInputRowOptional + CreateUserInputRowRequired + ()
+}
+
+create_user :: forall r . CreateUserInput -> SelectionSet
+                                             Scope__Users
+                                             r -> SelectionSet
+                                                  Scope__RootMutation
+                                                  (Maybe
+                                                   r)
+create_user input = selectionForCompositeField
+                    "create_user"
+                    (toGraphQLArguments
+                     input)
+                    graphqlDefaultResponseFunctorOrScalarDecoderTransformer
 
 type DeleteArticleInputRowRequired r = ( id :: Int | r )
 
@@ -131,6 +180,58 @@ delete_follows_by_pk input = selectionForCompositeField
                               input)
                              graphqlDefaultResponseFunctorOrScalarDecoderTransformer
 
+type DeleteLikesInputRowRequired r = ( "where" :: Api.InputObject.LikesBoolExp
+                                     | r
+                                     )
+
+type DeleteLikesInput = { | DeleteLikesInputRowRequired + () }
+
+delete_likes :: forall r . DeleteLikesInput -> SelectionSet
+                                               Scope__LikesMutationResponse
+                                               r -> SelectionSet
+                                                    Scope__RootMutation
+                                                    (Maybe
+                                                     r)
+delete_likes input = selectionForCompositeField
+                     "delete_likes"
+                     (toGraphQLArguments
+                      input)
+                     graphqlDefaultResponseFunctorOrScalarDecoderTransformer
+
+type DeleteLikesByPkInputRowRequired r = ( id :: Int | r )
+
+type DeleteLikesByPkInput = { | DeleteLikesByPkInputRowRequired + () }
+
+delete_likes_by_pk :: forall r . DeleteLikesByPkInput -> SelectionSet
+                                                         Scope__Likes
+                                                         r -> SelectionSet
+                                                              Scope__RootMutation
+                                                              (Maybe
+                                                               r)
+delete_likes_by_pk input = selectionForCompositeField
+                           "delete_likes_by_pk"
+                           (toGraphQLArguments
+                            input)
+                           graphqlDefaultResponseFunctorOrScalarDecoderTransformer
+
+type DeleteProfileInputRowRequired r = ( "where" :: Api.InputObject.ProfileBoolExp
+                                       | r
+                                       )
+
+type DeleteProfileInput = { | DeleteProfileInputRowRequired + () }
+
+delete_profile :: forall r . DeleteProfileInput -> SelectionSet
+                                                   Scope__ProfileMutationResponse
+                                                   r -> SelectionSet
+                                                        Scope__RootMutation
+                                                        (Maybe
+                                                         r)
+delete_profile input = selectionForCompositeField
+                       "delete_profile"
+                       (toGraphQLArguments
+                        input)
+                       graphqlDefaultResponseFunctorOrScalarDecoderTransformer
+
 type DeleteTagsInputRowRequired r = ( "where" :: Api.InputObject.TagsBoolExp
                                     | r
                                     )
@@ -165,7 +266,43 @@ delete_tags_by_pk input = selectionForCompositeField
                            input)
                           graphqlDefaultResponseFunctorOrScalarDecoderTransformer
 
-type EditArticleInputRowOptional r = ( "_set" :: Optional
+type DeleteUsersInputRowRequired r = ( "where" :: Api.InputObject.UsersBoolExp
+                                     | r
+                                     )
+
+type DeleteUsersInput = { | DeleteUsersInputRowRequired + () }
+
+delete_users :: forall r . DeleteUsersInput -> SelectionSet
+                                               Scope__UsersMutationResponse
+                                               r -> SelectionSet
+                                                    Scope__RootMutation
+                                                    (Maybe
+                                                     r)
+delete_users input = selectionForCompositeField
+                     "delete_users"
+                     (toGraphQLArguments
+                      input)
+                     graphqlDefaultResponseFunctorOrScalarDecoderTransformer
+
+type DeleteUsersByPkInputRowRequired r = ( id :: Int | r )
+
+type DeleteUsersByPkInput = { | DeleteUsersByPkInputRowRequired + () }
+
+delete_users_by_pk :: forall r . DeleteUsersByPkInput -> SelectionSet
+                                                         Scope__Users
+                                                         r -> SelectionSet
+                                                              Scope__RootMutation
+                                                              (Maybe
+                                                               r)
+delete_users_by_pk input = selectionForCompositeField
+                           "delete_users_by_pk"
+                           (toGraphQLArguments
+                            input)
+                           graphqlDefaultResponseFunctorOrScalarDecoderTransformer
+
+type EditArticleInputRowOptional r = ( "_inc" :: Optional
+                                                 Api.InputObject.ArticlesIncInput
+                                     , "_set" :: Optional
                                                  Api.InputObject.ArticlesSetInput
                                      | r
                                      )
@@ -190,11 +327,18 @@ edit_article input = selectionForCompositeField
                       input)
                      graphqlDefaultResponseFunctorOrScalarDecoderTransformer
 
+type FollowAuthorInputRowOptional r = ( on_conflict :: Optional
+                                                       Api.InputObject.FollowsOnConflict
+                                      | r
+                                      )
+
 type FollowAuthorInputRowRequired r = ( object :: Api.InputObject.FollowsInsertInput
                                       | r
                                       )
 
-type FollowAuthorInput = { | FollowAuthorInputRowRequired + () }
+type FollowAuthorInput = {
+| FollowAuthorInputRowOptional + FollowAuthorInputRowRequired + ()
+}
 
 follow_author :: forall r . FollowAuthorInput -> SelectionSet
                                                  Scope__Follows
@@ -208,12 +352,19 @@ follow_author input = selectionForCompositeField
                        input)
                       graphqlDefaultResponseFunctorOrScalarDecoderTransformer
 
+type FollowAuthorsInputRowOptional r = ( on_conflict :: Optional
+                                                        Api.InputObject.FollowsOnConflict
+                                       | r
+                                       )
+
 type FollowAuthorsInputRowRequired r = ( objects :: Array
                                                     Api.InputObject.FollowsInsertInput
                                        | r
                                        )
 
-type FollowAuthorsInput = { | FollowAuthorsInputRowRequired + () }
+type FollowAuthorsInput = {
+| FollowAuthorsInputRowOptional + FollowAuthorsInputRowRequired + ()
+}
 
 follow_authors :: forall r . FollowAuthorsInput -> SelectionSet
                                                    Scope__FollowsMutationResponse
@@ -253,11 +404,55 @@ insert_comments input = selectionForCompositeField
                          input)
                         graphqlDefaultResponseFunctorOrScalarDecoderTransformer
 
+type InsertProfileInputRowRequired r = ( objects :: Array
+                                                    Api.InputObject.ProfileInsertInput
+                                       | r
+                                       )
+
+type InsertProfileInput = { | InsertProfileInputRowRequired + () }
+
+insert_profile :: forall r . InsertProfileInput -> SelectionSet
+                                                   Scope__ProfileMutationResponse
+                                                   r -> SelectionSet
+                                                        Scope__RootMutation
+                                                        (Maybe
+                                                         r)
+insert_profile input = selectionForCompositeField
+                       "insert_profile"
+                       (toGraphQLArguments
+                        input)
+                       graphqlDefaultResponseFunctorOrScalarDecoderTransformer
+
+type InsertProfileOneInputRowRequired r = ( object :: Api.InputObject.ProfileInsertInput
+                                          | r
+                                          )
+
+type InsertProfileOneInput = { | InsertProfileOneInputRowRequired + () }
+
+insert_profile_one :: forall r . InsertProfileOneInput -> SelectionSet
+                                                          Scope__Profile
+                                                          r -> SelectionSet
+                                                               Scope__RootMutation
+                                                               (Maybe
+                                                                r)
+insert_profile_one input = selectionForCompositeField
+                           "insert_profile_one"
+                           (toGraphQLArguments
+                            input)
+                           graphqlDefaultResponseFunctorOrScalarDecoderTransformer
+
+type InsertTagInputRowOptional r = ( on_conflict :: Optional
+                                                    Api.InputObject.TagsOnConflict
+                                   | r
+                                   )
+
 type InsertTagInputRowRequired r = ( object :: Api.InputObject.TagsInsertInput
                                    | r
                                    )
 
-type InsertTagInput = { | InsertTagInputRowRequired + () }
+type InsertTagInput = {
+| InsertTagInputRowOptional + InsertTagInputRowRequired + ()
+}
 
 insert_tag :: forall r . InsertTagInput -> SelectionSet
                                            Scope__Tags
@@ -271,12 +466,19 @@ insert_tag input = selectionForCompositeField
                     input)
                    graphqlDefaultResponseFunctorOrScalarDecoderTransformer
 
+type InsertTagsInputRowOptional r = ( on_conflict :: Optional
+                                                     Api.InputObject.TagsOnConflict
+                                    | r
+                                    )
+
 type InsertTagsInputRowRequired r = ( objects :: Array
                                                  Api.InputObject.TagsInsertInput
                                     | r
                                     )
 
-type InsertTagsInput = { | InsertTagsInputRowRequired + () }
+type InsertTagsInput = {
+| InsertTagsInputRowOptional + InsertTagsInputRowRequired + ()
+}
 
 insert_tags :: forall r . InsertTagsInput -> SelectionSet
                                              Scope__TagsMutationResponse
@@ -290,11 +492,44 @@ insert_tags input = selectionForCompositeField
                      input)
                     graphqlDefaultResponseFunctorOrScalarDecoderTransformer
 
+type InsertUsersInputRowOptional r = ( on_conflict :: Optional
+                                                      Api.InputObject.UsersOnConflict
+                                     | r
+                                     )
+
+type InsertUsersInputRowRequired r = ( objects :: Array
+                                                  Api.InputObject.UsersInsertInput
+                                     | r
+                                     )
+
+type InsertUsersInput = {
+| InsertUsersInputRowOptional + InsertUsersInputRowRequired + ()
+}
+
+insert_users :: forall r . InsertUsersInput -> SelectionSet
+                                               Scope__UsersMutationResponse
+                                               r -> SelectionSet
+                                                    Scope__RootMutation
+                                                    (Maybe
+                                                     r)
+insert_users input = selectionForCompositeField
+                     "insert_users"
+                     (toGraphQLArguments
+                      input)
+                     graphqlDefaultResponseFunctorOrScalarDecoderTransformer
+
+type LikeArticleInputRowOptional r = ( on_conflict :: Optional
+                                                      Api.InputObject.LikesOnConflict
+                                     | r
+                                     )
+
 type LikeArticleInputRowRequired r = ( object :: Api.InputObject.LikesInsertInput
                                      | r
                                      )
 
-type LikeArticleInput = { | LikeArticleInputRowRequired + () }
+type LikeArticleInput = {
+| LikeArticleInputRowOptional + LikeArticleInputRowRequired + ()
+}
 
 like_article :: forall r . LikeArticleInput -> SelectionSet
                                                Scope__Likes
@@ -308,12 +543,19 @@ like_article input = selectionForCompositeField
                       input)
                      graphqlDefaultResponseFunctorOrScalarDecoderTransformer
 
+type LikeArticlesInputRowOptional r = ( on_conflict :: Optional
+                                                       Api.InputObject.LikesOnConflict
+                                      | r
+                                      )
+
 type LikeArticlesInputRowRequired r = ( objects :: Array
                                                    Api.InputObject.LikesInsertInput
                                       | r
                                       )
 
-type LikeArticlesInput = { | LikeArticlesInputRowRequired + () }
+type LikeArticlesInput = {
+| LikeArticlesInputRowOptional + LikeArticlesInputRowRequired + ()
+}
 
 like_articles :: forall r . LikeArticlesInput -> SelectionSet
                                                  Scope__LikesMutationResponse
@@ -470,7 +712,9 @@ unlike_article input = selectionForCompositeField
                         input)
                        graphqlDefaultResponseFunctorOrScalarDecoderTransformer
 
-type UpdateArticlesInputRowOptional r = ( "_set" :: Optional
+type UpdateArticlesInputRowOptional r = ( "_inc" :: Optional
+                                                    Api.InputObject.ArticlesIncInput
+                                        , "_set" :: Optional
                                                     Api.InputObject.ArticlesSetInput
                                         | r
                                         )
@@ -495,7 +739,9 @@ update_articles input = selectionForCompositeField
                          input)
                         graphqlDefaultResponseFunctorOrScalarDecoderTransformer
 
-type UpdateCommentInputRowOptional r = ( "_set" :: Optional
+type UpdateCommentInputRowOptional r = ( "_inc" :: Optional
+                                                   Api.InputObject.CommentsIncInput
+                                       , "_set" :: Optional
                                                    Api.InputObject.CommentsSetInput
                                        | r
                                        )
@@ -520,7 +766,9 @@ update_comment input = selectionForCompositeField
                         input)
                        graphqlDefaultResponseFunctorOrScalarDecoderTransformer
 
-type UpdateCommentsInputRowOptional r = ( "_set" :: Optional
+type UpdateCommentsInputRowOptional r = ( "_inc" :: Optional
+                                                    Api.InputObject.CommentsIncInput
+                                        , "_set" :: Optional
                                                     Api.InputObject.CommentsSetInput
                                         | r
                                         )
@@ -545,7 +793,198 @@ update_comments input = selectionForCompositeField
                          input)
                         graphqlDefaultResponseFunctorOrScalarDecoderTransformer
 
-type UpdateUserInputRowOptional r = ( "_set" :: Optional
+type UpdateFollowsInputRowOptional r = ( "_inc" :: Optional
+                                                   Api.InputObject.FollowsIncInput
+                                       , "_set" :: Optional
+                                                   Api.InputObject.FollowsSetInput
+                                       | r
+                                       )
+
+type UpdateFollowsInputRowRequired r = ( "where" :: Api.InputObject.FollowsBoolExp
+                                       | r
+                                       )
+
+type UpdateFollowsInput = {
+| UpdateFollowsInputRowOptional + UpdateFollowsInputRowRequired + ()
+}
+
+update_follows :: forall r . UpdateFollowsInput -> SelectionSet
+                                                   Scope__FollowsMutationResponse
+                                                   r -> SelectionSet
+                                                        Scope__RootMutation
+                                                        (Maybe
+                                                         r)
+update_follows input = selectionForCompositeField
+                       "update_follows"
+                       (toGraphQLArguments
+                        input)
+                       graphqlDefaultResponseFunctorOrScalarDecoderTransformer
+
+type UpdateFollowsByPkInputRowOptional r = ( "_inc" :: Optional
+                                                       Api.InputObject.FollowsIncInput
+                                           , "_set" :: Optional
+                                                       Api.InputObject.FollowsSetInput
+                                           | r
+                                           )
+
+type UpdateFollowsByPkInputRowRequired r = ( pk_columns :: Api.InputObject.FollowsPkColumnsInput
+                                           | r
+                                           )
+
+type UpdateFollowsByPkInput = {
+| UpdateFollowsByPkInputRowOptional + UpdateFollowsByPkInputRowRequired + ()
+}
+
+update_follows_by_pk :: forall r . UpdateFollowsByPkInput -> SelectionSet
+                                                             Scope__Follows
+                                                             r -> SelectionSet
+                                                                  Scope__RootMutation
+                                                                  (Maybe
+                                                                   r)
+update_follows_by_pk input = selectionForCompositeField
+                             "update_follows_by_pk"
+                             (toGraphQLArguments
+                              input)
+                             graphqlDefaultResponseFunctorOrScalarDecoderTransformer
+
+type UpdateLikesInputRowOptional r = ( "_inc" :: Optional
+                                                 Api.InputObject.LikesIncInput
+                                     , "_set" :: Optional
+                                                 Api.InputObject.LikesSetInput
+                                     | r
+                                     )
+
+type UpdateLikesInputRowRequired r = ( "where" :: Api.InputObject.LikesBoolExp
+                                     | r
+                                     )
+
+type UpdateLikesInput = {
+| UpdateLikesInputRowOptional + UpdateLikesInputRowRequired + ()
+}
+
+update_likes :: forall r . UpdateLikesInput -> SelectionSet
+                                               Scope__LikesMutationResponse
+                                               r -> SelectionSet
+                                                    Scope__RootMutation
+                                                    (Maybe
+                                                     r)
+update_likes input = selectionForCompositeField
+                     "update_likes"
+                     (toGraphQLArguments
+                      input)
+                     graphqlDefaultResponseFunctorOrScalarDecoderTransformer
+
+type UpdateLikesByPkInputRowOptional r = ( "_inc" :: Optional
+                                                     Api.InputObject.LikesIncInput
+                                         , "_set" :: Optional
+                                                     Api.InputObject.LikesSetInput
+                                         | r
+                                         )
+
+type UpdateLikesByPkInputRowRequired r = ( pk_columns :: Api.InputObject.LikesPkColumnsInput
+                                         | r
+                                         )
+
+type UpdateLikesByPkInput = {
+| UpdateLikesByPkInputRowOptional + UpdateLikesByPkInputRowRequired + ()
+}
+
+update_likes_by_pk :: forall r . UpdateLikesByPkInput -> SelectionSet
+                                                         Scope__Likes
+                                                         r -> SelectionSet
+                                                              Scope__RootMutation
+                                                              (Maybe
+                                                               r)
+update_likes_by_pk input = selectionForCompositeField
+                           "update_likes_by_pk"
+                           (toGraphQLArguments
+                            input)
+                           graphqlDefaultResponseFunctorOrScalarDecoderTransformer
+
+type UpdateProfileInputRowOptional r = ( "_inc" :: Optional
+                                                   Api.InputObject.ProfileIncInput
+                                       , "_set" :: Optional
+                                                   Api.InputObject.ProfileSetInput
+                                       | r
+                                       )
+
+type UpdateProfileInputRowRequired r = ( "where" :: Api.InputObject.ProfileBoolExp
+                                       | r
+                                       )
+
+type UpdateProfileInput = {
+| UpdateProfileInputRowOptional + UpdateProfileInputRowRequired + ()
+}
+
+update_profile :: forall r . UpdateProfileInput -> SelectionSet
+                                                   Scope__ProfileMutationResponse
+                                                   r -> SelectionSet
+                                                        Scope__RootMutation
+                                                        (Maybe
+                                                         r)
+update_profile input = selectionForCompositeField
+                       "update_profile"
+                       (toGraphQLArguments
+                        input)
+                       graphqlDefaultResponseFunctorOrScalarDecoderTransformer
+
+type UpdateTagsInputRowOptional r = ( "_inc" :: Optional
+                                                Api.InputObject.TagsIncInput
+                                    , "_set" :: Optional
+                                                Api.InputObject.TagsSetInput
+                                    | r
+                                    )
+
+type UpdateTagsInputRowRequired r = ( "where" :: Api.InputObject.TagsBoolExp
+                                    | r
+                                    )
+
+type UpdateTagsInput = {
+| UpdateTagsInputRowOptional + UpdateTagsInputRowRequired + ()
+}
+
+update_tags :: forall r . UpdateTagsInput -> SelectionSet
+                                             Scope__TagsMutationResponse
+                                             r -> SelectionSet
+                                                  Scope__RootMutation
+                                                  (Maybe
+                                                   r)
+update_tags input = selectionForCompositeField
+                    "update_tags"
+                    (toGraphQLArguments
+                     input)
+                    graphqlDefaultResponseFunctorOrScalarDecoderTransformer
+
+type UpdateTagsByPkInputRowOptional r = ( "_inc" :: Optional
+                                                    Api.InputObject.TagsIncInput
+                                        , "_set" :: Optional
+                                                    Api.InputObject.TagsSetInput
+                                        | r
+                                        )
+
+type UpdateTagsByPkInputRowRequired r = ( pk_columns :: Api.InputObject.TagsPkColumnsInput
+                                        | r
+                                        )
+
+type UpdateTagsByPkInput = {
+| UpdateTagsByPkInputRowOptional + UpdateTagsByPkInputRowRequired + ()
+}
+
+update_tags_by_pk :: forall r . UpdateTagsByPkInput -> SelectionSet
+                                                       Scope__Tags
+                                                       r -> SelectionSet
+                                                            Scope__RootMutation
+                                                            (Maybe
+                                                             r)
+update_tags_by_pk input = selectionForCompositeField
+                          "update_tags_by_pk"
+                          (toGraphQLArguments
+                           input)
+                          graphqlDefaultResponseFunctorOrScalarDecoderTransformer
+
+type UpdateUserInputRowOptional r = ( "_inc" :: Optional
+                                                Api.InputObject.UsersIncInput
+                                    , "_set" :: Optional
                                                 Api.InputObject.UsersSetInput
                                     | r
                                     )
@@ -570,7 +1009,9 @@ update_user input = selectionForCompositeField
                      input)
                     graphqlDefaultResponseFunctorOrScalarDecoderTransformer
 
-type UpdateUsersInputRowOptional r = ( "_set" :: Optional
+type UpdateUsersInputRowOptional r = ( "_inc" :: Optional
+                                                 Api.InputObject.UsersIncInput
+                                     , "_set" :: Optional
                                                  Api.InputObject.UsersSetInput
                                      | r
                                      )

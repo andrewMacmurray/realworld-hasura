@@ -13,7 +13,8 @@ import GraphQLClient
   )
 
 -- | original name - users_update_column
-data UsersUpdateColumn = Bio | Email | ProfileImage | Username
+data UsersUpdateColumn
+  = Bio | Email | Id | PasswordHash | ProfileImage | Username
 
 derive instance genericUsersUpdateColumn :: Generic UsersUpdateColumn _
 
@@ -27,6 +28,8 @@ derive instance ordUsersUpdateColumn :: Ord UsersUpdateColumn
 fromToMap :: Array (Tuple String UsersUpdateColumn)
 fromToMap = [ Tuple "bio" Bio
             , Tuple "email" Email
+            , Tuple "id" Id
+            , Tuple "password_hash" PasswordHash
             , Tuple "profile_image" ProfileImage
             , Tuple "username" Username
             ]
@@ -43,5 +46,7 @@ instance usersUpdateColumnToGraphQLArgumentValue :: ToGraphQLArgumentValue
     case _ of
       Bio -> ArgumentValueEnum "bio"
       Email -> ArgumentValueEnum "email"
+      Id -> ArgumentValueEnum "id"
+      PasswordHash -> ArgumentValueEnum "password_hash"
       ProfileImage -> ArgumentValueEnum "profile_image"
       Username -> ArgumentValueEnum "username"

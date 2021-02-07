@@ -1,67 +1,106 @@
 module Main where
 
 import Prelude
-import Api.Object.Articles as Articles
-import Api.Object.Users as User
-import Api.Query as Query
-import Api.Scopes (Scope__Articles)
+import Api.Mutation (LoginInput, SignupInput)
+import Crypto.Bcrypt as Bcyrypt
+import Crypto.Jwt (Jwt)
 import Data.Either (Either(..))
-import Data.Maybe (Maybe)
+import Data.Nullable (Nullable, null)
 import Effect (Effect)
-import Effect.Aff (Aff, launchAff_)
-import Effect.Class (liftEffect)
-import Effect.Class.Console (logShow)
-import Effect.Console (log)
-import GraphQLClient (GraphQLError, Scope__RootQuery, SelectionSet, defaultInput, defaultRequestOptions, graphqlQueryRequest)
+import Effect.Aff (Aff)
+import Payload.Headers as Headers
+import Payload.ResponseTypes (Response(..))
+import Payload.Server as Payload
+import Payload.Spec (Routes, Spec(Spec), POST)
+import Token as Token
+import Users as Users
 
-query :: SelectionSet Scope__RootQuery (Array Article)
-query =
-  Query.articles defaultInput
-    ( { id: _, about: _, title: _, author: _ }
-        <$> Articles.id
-        <*> Articles.about
-        <*> Articles.title
-        <*> authorSelection
-    )
-
-authorSelection :: SelectionSet Scope__Articles Author
-authorSelection =
-  Articles.author
-    ( { id: _, username: _, profileImage: _ }
-        <$> User.id
-        <*> User.username
-        <*> User.profile_image
-    )
-
-type Response
-  = Array Article
-
-type Article
-  = { id :: Int
-    , about :: String
-    , title :: String
-    , author :: Author
+type ActionRequest a
+  = { input :: a
     }
 
-type Author
-  = { id :: Int
+type TokenResponse
+  = { token :: Jwt
+    , user_id :: Int
     , username :: String
-    , profileImage :: Maybe String
+    , email :: String
+    , bio :: Nullable String
+    , profile_image :: Nullable String
     }
+
+type Api
+  = Spec { api :: Routes "/api" Api_ }
+
+type Api_
+  = { login ::
+        POST "/login"
+          { body :: ActionRequest LoginInput
+          , response :: TokenResponse
+          }
+    , signup ::
+        POST "/signup"
+          { body :: ActionRequest SignupInput
+          , response :: TokenResponse
+          }
+    }
+
+spec :: Api
+spec = Spec
+
+login :: { body :: ActionRequest LoginInput } -> Aff TokenResponse
+login { body: { input } } =
+  pure
+    { token: Token.generate { id: 1, username: input.username }
+    , user_id: 1
+    , username: input.username
+    , email: "a@b.com"
+    , bio: null
+    , profile_image: null
+    }
+
+signup :: { body :: ActionRequest SignupInput } -> Aff (Either ActionError TokenResponse)
+signup { body: { input } } = do
+  user <-
+    Users.create
+      { username: input.username
+      , email: input.email
+      , password_hash: Bcyrypt.hash input.password
+      }
+  case user of
+    Right u ->
+      pure
+        ( Right
+            { token: Token.generate u
+            , user_id: u.id
+            , username: u.username
+            , email: u.email
+            , bio: null
+            , profile_image: null
+            }
+        )
+    Left err -> pure (actionError 400 "user create error")
 
 main :: Effect Unit
 main =
-  launchAff_
-    $ do
-        res :: ApiResponse Response <- hasuraRequest query
-        liftEffect
-          ( case res of
-              Right x -> logShow x
-              Left err -> log "something went wrong :("
-          )
+  Payload.launch spec
+    { api:
+        { login
+        , signup
+        }
+    }
 
-type ApiResponse decoded
-  = Either (GraphQLError decoded) decoded
+actionError :: forall a. Int -> String -> Either ActionError a
+actionError code reason =
+  Left
+    ( Response
+        { body: { message: reason, code: show code }
+        , headers: Headers.empty
+        , status: { code, reason }
+        }
+    )
 
-hasuraRequest :: forall decoded. SelectionSet Scope__RootQuery decoded -> Aff (ApiResponse decoded)
-hasuraRequest = graphqlQueryRequest "http://localhost:8080/v1/graphql" defaultRequestOptions
+type ActionError
+  = Response
+      { message :: String
+      , code :: String
+      }

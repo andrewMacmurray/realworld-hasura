@@ -14,9 +14,14 @@ import Api.InputObject
   (ArticlesOrderBy, ArticlesBoolExp, FollowsOrderBy, FollowsBoolExp) as Api.InputObject
 import Type.Row (type (+))
 import Api.Scopes
-  (Scope__Articles, Scope__Users, Scope__ArticlesAggregate, Scope__Follows)
-import Api.Enum.FollowsSelectColumn (FollowsSelectColumn)
+  ( Scope__Articles
+  , Scope__Users
+  , Scope__ArticlesAggregate
+  , Scope__Follows
+  , Scope__FollowsAggregate
+  )
 import Data.Maybe (Maybe)
+import Api.Enum.FollowsSelectColumn (FollowsSelectColumn)
 
 type ArticlesInputRowOptional r = ( distinct_on :: Optional
                                                    (Array
@@ -71,6 +76,12 @@ articles_aggregate input = selectionForCompositeField
                             input)
                            graphqlDefaultResponseFunctorOrScalarDecoderTransformer
 
+bio :: SelectionSet Scope__Users (Maybe String)
+bio = selectionForField "bio" [] graphqlDefaultResponseScalarDecoder
+
+email :: SelectionSet Scope__Users String
+email = selectionForField "email" [] graphqlDefaultResponseScalarDecoder
+
 type FollowsInputRowOptional r = ( distinct_on :: Optional
                                                   (Array
                                                    FollowsSelectColumn)
@@ -98,8 +109,40 @@ follows input = selectionForCompositeField
                  input)
                 graphqlDefaultResponseFunctorOrScalarDecoderTransformer
 
+type FollowsAggregateInputRowOptional r = ( distinct_on :: Optional
+                                                           (Array
+                                                            FollowsSelectColumn)
+                                          , limit :: Optional Int
+                                          , offset :: Optional Int
+                                          , order_by :: Optional
+                                                        (Array
+                                                         Api.InputObject.FollowsOrderBy)
+                                          , "where" :: Optional
+                                                       Api.InputObject.FollowsBoolExp
+                                          | r
+                                          )
+
+type FollowsAggregateInput = { | FollowsAggregateInputRowOptional + () }
+
+follows_aggregate :: forall r . FollowsAggregateInput -> SelectionSet
+                                                         Scope__FollowsAggregate
+                                                         r -> SelectionSet
+                                                              Scope__Users
+                                                              r
+follows_aggregate input = selectionForCompositeField
+                          "follows_aggregate"
+                          (toGraphQLArguments
+                           input)
+                          graphqlDefaultResponseFunctorOrScalarDecoderTransformer
+
 id :: SelectionSet Scope__Users Int
 id = selectionForField "id" [] graphqlDefaultResponseScalarDecoder
+
+password_hash :: SelectionSet Scope__Users String
+password_hash = selectionForField
+                "password_hash"
+                []
+                graphqlDefaultResponseScalarDecoder
 
 profile_image :: SelectionSet Scope__Users (Maybe String)
 profile_image = selectionForField

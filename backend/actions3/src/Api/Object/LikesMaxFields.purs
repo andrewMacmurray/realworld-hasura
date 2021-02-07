@@ -11,5 +11,8 @@ article_id = selectionForField
              []
              graphqlDefaultResponseScalarDecoder
 
+id :: SelectionSet Scope__LikesMaxFields (Maybe Int)
+id = selectionForField "id" [] graphqlDefaultResponseScalarDecoder
+
 user_id :: SelectionSet Scope__LikesMaxFields (Maybe Int)
 user_id = selectionForField "user_id" [] graphqlDefaultResponseScalarDecoder

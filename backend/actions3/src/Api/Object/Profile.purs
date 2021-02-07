@@ -9,7 +9,7 @@ import GraphQLClient
   , toGraphQLArguments
   , graphqlDefaultResponseFunctorOrScalarDecoderTransformer
   )
-import Api.Scopes (Scope__Profile, Scope__Follows)
+import Api.Scopes (Scope__Profile, Scope__Follows, Scope__FollowsAggregate)
 import Data.Maybe (Maybe)
 import Api.Enum.FollowsSelectColumn (FollowsSelectColumn)
 import Api.InputObject (FollowsOrderBy, FollowsBoolExp) as Api.InputObject
@@ -47,6 +47,32 @@ follows input = selectionForCompositeField
                 (toGraphQLArguments
                  input)
                 graphqlDefaultResponseFunctorOrScalarDecoderTransformer
+
+type FollowsAggregateInputRowOptional r = ( distinct_on :: Optional
+                                                           (Array
+                                                            FollowsSelectColumn)
+                                          , limit :: Optional Int
+                                          , offset :: Optional Int
+                                          , order_by :: Optional
+                                                        (Array
+                                                         Api.InputObject.FollowsOrderBy)
+                                          , "where" :: Optional
+                                                       Api.InputObject.FollowsBoolExp
+                                          | r
+                                          )
+
+type FollowsAggregateInput = { | FollowsAggregateInputRowOptional + () }
+
+follows_aggregate :: forall r . FollowsAggregateInput -> SelectionSet
+                                                         Scope__FollowsAggregate
+                                                         r -> SelectionSet
+                                                              Scope__Profile
+                                                              r
+follows_aggregate input = selectionForCompositeField
+                          "follows_aggregate"
+                          (toGraphQLArguments
+                           input)
+                          graphqlDefaultResponseFunctorOrScalarDecoderTransformer
 
 profile_image :: SelectionSet Scope__Profile (Maybe String)
 profile_image = selectionForField

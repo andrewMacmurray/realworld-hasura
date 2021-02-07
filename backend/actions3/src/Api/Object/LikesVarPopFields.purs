@@ -11,5 +11,8 @@ article_id = selectionForField
              []
              graphqlDefaultResponseScalarDecoder
 
+id :: SelectionSet Scope__LikesVarPopFields (Maybe Number)
+id = selectionForField "id" [] graphqlDefaultResponseScalarDecoder
+
 user_id :: SelectionSet Scope__LikesVarPopFields (Maybe Number)
 user_id = selectionForField "user_id" [] graphqlDefaultResponseScalarDecoder

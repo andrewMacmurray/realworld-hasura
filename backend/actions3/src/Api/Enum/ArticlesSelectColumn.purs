@@ -13,7 +13,7 @@ import GraphQLClient
   )
 
 -- | original name - articles_select_column
-data ArticlesSelectColumn = About | Content | CreatedAt | Id | Title
+data ArticlesSelectColumn = About | AuthorId | Content | CreatedAt | Id | Title
 
 derive instance genericArticlesSelectColumn :: Generic ArticlesSelectColumn _
 
@@ -26,6 +26,7 @@ derive instance ordArticlesSelectColumn :: Ord ArticlesSelectColumn
 
 fromToMap :: Array (Tuple String ArticlesSelectColumn)
 fromToMap = [ Tuple "about" About
+            , Tuple "author_id" AuthorId
             , Tuple "content" Content
             , Tuple "created_at" CreatedAt
             , Tuple "id" Id
@@ -43,6 +44,7 @@ instance articlesSelectColumnToGraphQLArgumentValue :: ToGraphQLArgumentValue
   toGraphQLArgumentValue =
     case _ of
       About -> ArgumentValueEnum "about"
+      AuthorId -> ArgumentValueEnum "author_id"
       Content -> ArgumentValueEnum "content"
       CreatedAt -> ArgumentValueEnum "created_at"
       Id -> ArgumentValueEnum "id"

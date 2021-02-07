@@ -9,6 +9,9 @@ import Api.Scalars (Timestamptz)
 about :: SelectionSet Scope__ArticlesMaxFields (Maybe String)
 about = selectionForField "about" [] graphqlDefaultResponseScalarDecoder
 
+author_id :: SelectionSet Scope__ArticlesMaxFields (Maybe Int)
+author_id = selectionForField "author_id" [] graphqlDefaultResponseScalarDecoder
+
 content :: SelectionSet Scope__ArticlesMaxFields (Maybe String)
 content = selectionForField "content" [] graphqlDefaultResponseScalarDecoder
 

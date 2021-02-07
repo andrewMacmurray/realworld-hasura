@@ -13,7 +13,7 @@ import GraphQLClient
   )
 
 -- | original name - tags_select_column
-data TagsSelectColumn = Tag
+data TagsSelectColumn = ArticleId | Id | Tag
 
 derive instance genericTagsSelectColumn :: Generic TagsSelectColumn _
 
@@ -25,7 +25,7 @@ derive instance eqTagsSelectColumn :: Eq TagsSelectColumn
 derive instance ordTagsSelectColumn :: Ord TagsSelectColumn
 
 fromToMap :: Array (Tuple String TagsSelectColumn)
-fromToMap = [ Tuple "tag" Tag ]
+fromToMap = [ Tuple "article_id" ArticleId, Tuple "id" Id, Tuple "tag" Tag ]
 
 instance tagsSelectColumnGraphQLDefaultResponseScalarDecoder :: GraphQLDefaultResponseScalarDecoder
                                                                 TagsSelectColumn where
@@ -35,4 +35,6 @@ instance tagsSelectColumnToGraphQLArgumentValue :: ToGraphQLArgumentValue
                                                    TagsSelectColumn where
   toGraphQLArgumentValue =
     case _ of
+      ArticleId -> ArgumentValueEnum "article_id"
+      Id -> ArgumentValueEnum "id"
       Tag -> ArgumentValueEnum "tag"

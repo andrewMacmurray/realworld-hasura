@@ -13,12 +13,17 @@ import Api.Scopes
   ( Scope__Articles
   , Scope__ArticlesAggregate
   , Scope__Comments
+  , Scope__CommentsAggregate
   , Scope__Follows
+  , Scope__FollowsAggregate
   , Scope__Likes
   , Scope__LikesAggregate
   , Scope__Profile
+  , Scope__ProfileAggregate
   , Scope__Tags
+  , Scope__TagsAggregate
   , Scope__Users
+  , Scope__UsersAggregate
   )
 import Data.Maybe (Maybe)
 import Api.Enum.ArticlesSelectColumn (ArticlesSelectColumn)
@@ -141,6 +146,32 @@ comments input = selectionForCompositeField
                   input)
                  graphqlDefaultResponseFunctorOrScalarDecoderTransformer
 
+type CommentsAggregateInputRowOptional r = ( distinct_on :: Optional
+                                                            (Array
+                                                             CommentsSelectColumn)
+                                           , limit :: Optional Int
+                                           , offset :: Optional Int
+                                           , order_by :: Optional
+                                                         (Array
+                                                          Api.InputObject.CommentsOrderBy)
+                                           , "where" :: Optional
+                                                        Api.InputObject.CommentsBoolExp
+                                           | r
+                                           )
+
+type CommentsAggregateInput = { | CommentsAggregateInputRowOptional + () }
+
+comments_aggregate :: forall r . CommentsAggregateInput -> SelectionSet
+                                                           Scope__CommentsAggregate
+                                                           r -> SelectionSet
+                                                                Scope__RootSubscription
+                                                                r
+comments_aggregate input = selectionForCompositeField
+                           "comments_aggregate"
+                           (toGraphQLArguments
+                            input)
+                           graphqlDefaultResponseFunctorOrScalarDecoderTransformer
+
 type CommentsByPkInputRowRequired r = ( id :: Int | r )
 
 type CommentsByPkInput = { | CommentsByPkInputRowRequired + () }
@@ -183,6 +214,32 @@ follows input = selectionForCompositeField
                 (toGraphQLArguments
                  input)
                 graphqlDefaultResponseFunctorOrScalarDecoderTransformer
+
+type FollowsAggregateInputRowOptional r = ( distinct_on :: Optional
+                                                           (Array
+                                                            FollowsSelectColumn)
+                                          , limit :: Optional Int
+                                          , offset :: Optional Int
+                                          , order_by :: Optional
+                                                        (Array
+                                                         Api.InputObject.FollowsOrderBy)
+                                          , "where" :: Optional
+                                                       Api.InputObject.FollowsBoolExp
+                                          | r
+                                          )
+
+type FollowsAggregateInput = { | FollowsAggregateInputRowOptional + () }
+
+follows_aggregate :: forall r . FollowsAggregateInput -> SelectionSet
+                                                         Scope__FollowsAggregate
+                                                         r -> SelectionSet
+                                                              Scope__RootSubscription
+                                                              r
+follows_aggregate input = selectionForCompositeField
+                          "follows_aggregate"
+                          (toGraphQLArguments
+                           input)
+                          graphqlDefaultResponseFunctorOrScalarDecoderTransformer
 
 type FollowsByPkInputRowRequired r = ( id :: Int | r )
 
@@ -296,6 +353,32 @@ profile input = selectionForCompositeField
                  input)
                 graphqlDefaultResponseFunctorOrScalarDecoderTransformer
 
+type ProfileAggregateInputRowOptional r = ( distinct_on :: Optional
+                                                           (Array
+                                                            ProfileSelectColumn)
+                                          , limit :: Optional Int
+                                          , offset :: Optional Int
+                                          , order_by :: Optional
+                                                        (Array
+                                                         Api.InputObject.ProfileOrderBy)
+                                          , "where" :: Optional
+                                                       Api.InputObject.ProfileBoolExp
+                                          | r
+                                          )
+
+type ProfileAggregateInput = { | ProfileAggregateInputRowOptional + () }
+
+profile_aggregate :: forall r . ProfileAggregateInput -> SelectionSet
+                                                         Scope__ProfileAggregate
+                                                         r -> SelectionSet
+                                                              Scope__RootSubscription
+                                                              r
+profile_aggregate input = selectionForCompositeField
+                          "profile_aggregate"
+                          (toGraphQLArguments
+                           input)
+                          graphqlDefaultResponseFunctorOrScalarDecoderTransformer
+
 type TagInputRowRequired r = ( id :: Int | r )
 
 type TagInput = { | TagInputRowRequired + () }
@@ -335,6 +418,32 @@ tags input = selectionForCompositeField
              (toGraphQLArguments
               input)
              graphqlDefaultResponseFunctorOrScalarDecoderTransformer
+
+type TagsSummaryInputRowOptional r = ( distinct_on :: Optional
+                                                      (Array
+                                                       TagsSelectColumn)
+                                     , limit :: Optional Int
+                                     , offset :: Optional Int
+                                     , order_by :: Optional
+                                                   (Array
+                                                    Api.InputObject.TagsOrderBy)
+                                     , "where" :: Optional
+                                                  Api.InputObject.TagsBoolExp
+                                     | r
+                                     )
+
+type TagsSummaryInput = { | TagsSummaryInputRowOptional + () }
+
+tags_summary :: forall r . TagsSummaryInput -> SelectionSet
+                                               Scope__TagsAggregate
+                                               r -> SelectionSet
+                                                    Scope__RootSubscription
+                                                    r
+tags_summary input = selectionForCompositeField
+                     "tags_summary"
+                     (toGraphQLArguments
+                      input)
+                     graphqlDefaultResponseFunctorOrScalarDecoderTransformer
 
 type UserInputRowRequired r = ( id :: Int | r )
 
@@ -378,3 +487,29 @@ users input = selectionForCompositeField
               (toGraphQLArguments
                input)
               graphqlDefaultResponseFunctorOrScalarDecoderTransformer
+
+type UsersAggregateInputRowOptional r = ( distinct_on :: Optional
+                                                         (Array
+                                                          UsersSelectColumn)
+                                        , limit :: Optional Int
+                                        , offset :: Optional Int
+                                        , order_by :: Optional
+                                                      (Array
+                                                       Api.InputObject.UsersOrderBy)
+                                        , "where" :: Optional
+                                                     Api.InputObject.UsersBoolExp
+                                        | r
+                                        )
+
+type UsersAggregateInput = { | UsersAggregateInputRowOptional + () }
+
+users_aggregate :: forall r . UsersAggregateInput -> SelectionSet
+                                                     Scope__UsersAggregate
+                                                     r -> SelectionSet
+                                                          Scope__RootSubscription
+                                                          r
+users_aggregate input = selectionForCompositeField
+                        "users_aggregate"
+                        (toGraphQLArguments
+                         input)
+                        graphqlDefaultResponseFunctorOrScalarDecoderTransformer

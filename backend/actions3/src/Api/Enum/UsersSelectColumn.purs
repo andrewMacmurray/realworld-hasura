@@ -13,7 +13,8 @@ import GraphQLClient
   )
 
 -- | original name - users_select_column
-data UsersSelectColumn = Id | ProfileImage | Username
+data UsersSelectColumn
+  = Bio | Email | Id | PasswordHash | ProfileImage | Username
 
 derive instance genericUsersSelectColumn :: Generic UsersSelectColumn _
 
@@ -25,7 +26,10 @@ derive instance eqUsersSelectColumn :: Eq UsersSelectColumn
 derive instance ordUsersSelectColumn :: Ord UsersSelectColumn
 
 fromToMap :: Array (Tuple String UsersSelectColumn)
-fromToMap = [ Tuple "id" Id
+fromToMap = [ Tuple "bio" Bio
+            , Tuple "email" Email
+            , Tuple "id" Id
+            , Tuple "password_hash" PasswordHash
             , Tuple "profile_image" ProfileImage
             , Tuple "username" Username
             ]
@@ -40,6 +44,9 @@ instance usersSelectColumnToGraphQLArgumentValue :: ToGraphQLArgumentValue
                                                     UsersSelectColumn where
   toGraphQLArgumentValue =
     case _ of
+      Bio -> ArgumentValueEnum "bio"
+      Email -> ArgumentValueEnum "email"
       Id -> ArgumentValueEnum "id"
+      PasswordHash -> ArgumentValueEnum "password_hash"
       ProfileImage -> ArgumentValueEnum "profile_image"
       Username -> ArgumentValueEnum "username"

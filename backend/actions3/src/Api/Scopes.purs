@@ -30,11 +30,59 @@ data Scope__ArticlesVarianceFields
 
 data Scope__Comments
 
+data Scope__CommentsAggregate
+
+data Scope__CommentsAggregateFields
+
+data Scope__CommentsAvgFields
+
+data Scope__CommentsMaxFields
+
+data Scope__CommentsMinFields
+
 data Scope__CommentsMutationResponse
+
+data Scope__CommentsStddevFields
+
+data Scope__CommentsStddevPopFields
+
+data Scope__CommentsStddevSampFields
+
+data Scope__CommentsSumFields
+
+data Scope__CommentsVarPopFields
+
+data Scope__CommentsVarSampFields
+
+data Scope__CommentsVarianceFields
 
 data Scope__Follows
 
+data Scope__FollowsAggregate
+
+data Scope__FollowsAggregateFields
+
+data Scope__FollowsAvgFields
+
+data Scope__FollowsMaxFields
+
+data Scope__FollowsMinFields
+
 data Scope__FollowsMutationResponse
+
+data Scope__FollowsStddevFields
+
+data Scope__FollowsStddevPopFields
+
+data Scope__FollowsStddevSampFields
+
+data Scope__FollowsSumFields
+
+data Scope__FollowsVarPopFields
+
+data Scope__FollowsVarSampFields
+
+data Scope__FollowsVarianceFields
 
 data Scope__Likes
 
@@ -66,9 +114,59 @@ data Scope__LikesVarianceFields
 
 data Scope__Profile
 
+data Scope__ProfileAggregate
+
+data Scope__ProfileAggregateFields
+
+data Scope__ProfileAvgFields
+
+data Scope__ProfileMaxFields
+
+data Scope__ProfileMinFields
+
+data Scope__ProfileMutationResponse
+
+data Scope__ProfileStddevFields
+
+data Scope__ProfileStddevPopFields
+
+data Scope__ProfileStddevSampFields
+
+data Scope__ProfileSumFields
+
+data Scope__ProfileVarPopFields
+
+data Scope__ProfileVarSampFields
+
+data Scope__ProfileVarianceFields
+
 data Scope__Tags
 
+data Scope__TagsAggregate
+
+data Scope__TagsAggregateFields
+
+data Scope__TagsAvgFields
+
+data Scope__TagsMaxFields
+
+data Scope__TagsMinFields
+
 data Scope__TagsMutationResponse
+
+data Scope__TagsStddevFields
+
+data Scope__TagsStddevPopFields
+
+data Scope__TagsStddevSampFields
+
+data Scope__TagsSumFields
+
+data Scope__TagsVarPopFields
+
+data Scope__TagsVarSampFields
+
+data Scope__TagsVarianceFields
 
 data Scope__TokenResponse
 
@@ -76,4 +174,28 @@ data Scope__UnlikeResponse
 
 data Scope__Users
 
+data Scope__UsersAggregate
+
+data Scope__UsersAggregateFields
+
+data Scope__UsersAvgFields
+
+data Scope__UsersMaxFields
+
+data Scope__UsersMinFields
+
 data Scope__UsersMutationResponse
+
+data Scope__UsersStddevFields
+
+data Scope__UsersStddevPopFields
+
+data Scope__UsersStddevSampFields
+
+data Scope__UsersSumFields
+
+data Scope__UsersVarPopFields
+
+data Scope__UsersVarSampFields
+
+data Scope__UsersVarianceFields
