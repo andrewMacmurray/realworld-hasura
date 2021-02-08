@@ -2,7 +2,7 @@ actions:
 - name: login
   definition:
     kind: synchronous
-    handler: '{{ACTIONS_BASE_URL}}/login'
+    handler: '{{NEW_ACTIONS_BASE_URL}}/login'
     headers:
     - name: actions-secret
       value_from_env: ACTIONS_SECRET
