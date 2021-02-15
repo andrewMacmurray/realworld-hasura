@@ -5,14 +5,7 @@ module Users
   ) where
 
 import Prelude
-import Api.InputObject
-  ( StringComparisonExp(..)
-  , UsersBoolExp(..)
-  , UsersBoolExp_
-  , UsersInsertInput(UsersInsertInput)
-  , UsersInsertInput_
-  , StringComparisonExp_
-  )
+import Api.InputObject (StringComparisonExp(..), UsersBoolExp(..), UsersBoolExp_, UsersInsertInput(UsersInsertInput), UsersInsertInput_, StringComparisonExp_)
 import Api.Mutation (CreateUserInput)
 import Api.Mutation as Mutation
 import Api.Object.Users as Users
@@ -22,15 +15,8 @@ import Api.Scopes (Scope__Users)
 import Crypto.Bcrypt (Hash)
 import Data.Array as Array
 import Data.Maybe (Maybe)
-import Data.Newtype (unwrap)
-import GraphQLClient
-  ( Optional(..)
-  , Scope__RootMutation
-  , Scope__RootQuery
-  , SelectionSet
-  , defaultInput
-  , nonNullOrFail
-  )
+import Data.Newtype (unwrap, wrap)
+import GraphQLClient (Optional(..), Scope__RootMutation, Scope__RootQuery, SelectionSet, defaultInput, nonNullOrFail)
 import Hasura as Hasura
 
 type ToCreate
@@ -43,6 +29,7 @@ type User
   = { id :: Int
     , username :: String
     , email :: String
+    , password_hash :: Hash
     , bio :: Maybe String
     , profile_image :: Maybe String
     }
@@ -98,10 +85,11 @@ toCreateInput toCreate =
 -- User Selection
 userSelection :: SelectionSet Scope__Users User
 userSelection =
-  ( { id: _, username: _, email: _, bio: _, profile_image: _ }
+  ( { id: _, username: _, email: _, password_hash: _, bio: _, profile_image: _ }
       <$> Users.id
       <*> Users.username
       <*> Users.email
+      <*> (wrap <$> Users.password_hash)
       <*> Users.bio
       <*> Users.profile_image
   )
