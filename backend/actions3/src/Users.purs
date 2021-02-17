@@ -5,15 +5,18 @@ module Users
   ) where
 
 import Prelude
-import Api.InputObject (StringComparisonExp(..), UsersBoolExp(..), UsersBoolExp_, UsersInsertInput(UsersInsertInput), UsersInsertInput_, StringComparisonExp_)
+import Api.InputObject (StringComparisonExp(..), StringComparisonExp_, UsersBoolExp(..), UsersBoolExp_, UsersInsertInput(..), UsersInsertInput_)
 import Api.Mutation (CreateUserInput)
 import Api.Mutation as Mutation
 import Api.Object.Users as Users
 import Api.Query (UsersInput)
 import Api.Query as Query
 import Api.Scopes (Scope__Users)
+import Control.Monad.Except (except)
 import Crypto.Bcrypt (Hash)
 import Data.Array as Array
+import Data.Either (Either)
+import Data.Either as Either
 import Data.Maybe (Maybe)
 import Data.Newtype (unwrap, wrap)
 import GraphQLClient (Optional(..), Scope__RootMutation, Scope__RootQuery, SelectionSet, defaultInput, nonNullOrFail)
@@ -36,13 +39,15 @@ type User
 
 -- Find
 find :: String -> Hasura.Response User
-find = Hasura.query <<< findUserQuery
+find username = do
+  user <- Hasura.query (findUserQuery username)
+  except (handleNotFound user)
 
-findUserQuery :: String -> SelectionSet Scope__RootQuery User
-findUserQuery username =
-  Query.users (toFindInput username) userSelection
-    # map Array.head
-    # nonNullOrFail
+handleNotFound :: Maybe User -> Either String User
+handleNotFound = Either.note "user not found"
+
+findUserQuery :: String -> SelectionSet Scope__RootQuery (Maybe User)
+findUserQuery username = Array.head <$> Query.users (toFindInput username) userSelection
 
 toFindInput :: String -> UsersInput
 toFindInput username =
@@ -50,13 +55,11 @@ toFindInput username =
     { "where" =
       Present
         ( UsersBoolExp
-            usersBool
+            usersBoolInput
               { username =
                 Present
                   ( StringComparisonExp
-                      compareString
-                        { "_eq" = Present username
-                        }
+                      compareStringInput { "_eq" = Present username }
                   )
               }
         )
@@ -101,8 +104,8 @@ userInsert = defaultInput
 usersInput :: UsersInput
 usersInput = defaultInput
 
-usersBool :: UsersBoolExp_
-usersBool = defaultInput
+usersBoolInput :: UsersBoolExp_
+usersBoolInput = defaultInput
 
-compareString :: StringComparisonExp_
-compareString = defaultInput
+compareStringInput :: StringComparisonExp_
+compareStringInput = defaultInput

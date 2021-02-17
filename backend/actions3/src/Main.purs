@@ -3,11 +3,14 @@ module Main where
 import Prelude
 import Action as Action
 import Api.Mutation (LoginInput, SignupInput)
-import Crypto.Bcrypt as Bcyrypt
+import Control.Monad.Except (ExceptT, except, runExceptT)
 import Crypto.Jwt (Jwt)
 import Data.Bifunctor (bimap)
+import Data.Either (Either)
 import Data.Nullable (Nullable, toNullable)
 import Effect (Effect)
+import Effect.Aff (Aff)
+import Password as Password
 import Payload.Server as Payload
 import Payload.Spec (Routes, Spec(Spec), POST)
 import Token as Token
@@ -53,33 +56,34 @@ type TokenResponse
     , profile_image :: Nullable String
     }
 
+-- Login
 login :: { body :: Action.Request LoginInput } -> Action.Response TokenResponse
-login { body: { input } } = do
+login { body: { input } } = toTokenResponse <$> runExceptT (handleLogin input)
+
+handleLogin :: LoginInput -> ExceptT String Aff User
+handleLogin input = do
   user <- Users.find input.username
-  pure
-    ( bimap
-        (error "user not found")
-        tokenResponse
-        user
-    )
+  except (Password.check input.password user)
 
+--  Signup
 signup :: { body :: Action.Request SignupInput } -> Action.Response TokenResponse
-signup { body: { input } } = do
-  user <-
-    Users.create
-      { username: input.username
-      , email: input.email
-      , password_hash: Bcyrypt.hash input.password
-      }
-  pure
-    ( bimap
-        (error "error creating user")
-        tokenResponse
-        user
-    )
+signup { body: { input } } = toTokenResponse <$> runExceptT (handleSignup input)
 
-error :: forall a. String -> a -> Action.Error
-error = const <<< Action.error 400
+handleSignup :: SignupInput -> ExceptT String Aff User
+handleSignup input = do
+  hash <- except (Password.hash input.password)
+  Users.create
+    { username: input.username
+    , email: input.email
+    , password_hash: hash
+    }
+
+-- Helpers
+toTokenResponse :: Either String User -> Either Action.Error TokenResponse
+toTokenResponse = bimap error tokenResponse
+
+error :: String -> Action.Error
+error = Action.error 400
 
 tokenResponse :: User -> TokenResponse
 tokenResponse u =
