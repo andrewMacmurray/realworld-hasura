@@ -12,7 +12,7 @@ import Api.Object.Users as Users
 import Api.Query (UsersInput)
 import Api.Query as Query
 import Api.Scopes (Scope__Users)
-import Control.Monad.Except (except)
+import Control.Monad.Except (except, withExceptT)
 import Crypto.Bcrypt (Hash)
 import Data.Array as Array
 import Data.Either (Either)
@@ -44,7 +44,7 @@ find username = do
   except (handleNotFound user)
 
 handleNotFound :: Maybe User -> Either String User
-handleNotFound = Either.note "user not found"
+handleNotFound = Either.note "Invalid username / password combination"
 
 findUserQuery :: String -> SelectionSet Scope__RootQuery (Maybe User)
 findUserQuery username = Array.head <$> Query.users (toFindInput username) userSelection
@@ -67,10 +67,17 @@ toFindInput username =
 
 -- Create
 create :: ToCreate -> Hasura.Response User
-create = Hasura.mutation <<< createUserMutation
+create = createUserMutation >>> Hasura.mutation >>> (withExceptT handleExistingUser)
+
+handleExistingUser :: Hasura.Error -> Hasura.Error
+handleExistingUser err =
+  if Hasura.isUniquenessError err then
+    "User already exists"
+  else
+    "Unknown error " <> err
 
 createUserMutation :: ToCreate -> SelectionSet Scope__RootMutation User
-createUserMutation toCreate = nonNullOrFail (Mutation.create_user (toCreateInput toCreate) userSelection)
+createUserMutation toCreate = nonNullOrFail $ Mutation.create_user (toCreateInput toCreate) userSelection
 
 toCreateInput :: ToCreate -> CreateUserInput
 toCreateInput toCreate =

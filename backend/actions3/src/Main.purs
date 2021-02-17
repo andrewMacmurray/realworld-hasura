@@ -46,19 +46,9 @@ main =
         }
     }
 
--- Handlers
-type TokenResponse
-  = { token :: Jwt
-    , user_id :: Int
-    , username :: String
-    , email :: String
-    , bio :: Nullable String
-    , profile_image :: Nullable String
-    }
-
 -- Login
 login :: { body :: Action.Request LoginInput } -> Action.Response TokenResponse
-login { body: { input } } = toTokenResponse <$> runExceptT (handleLogin input)
+login request = toTokenResponse <$> runExceptT (handleLogin request.body.input)
 
 handleLogin :: LoginInput -> ExceptT String Aff User
 handleLogin input = do
@@ -67,7 +57,7 @@ handleLogin input = do
 
 --  Signup
 signup :: { body :: Action.Request SignupInput } -> Action.Response TokenResponse
-signup { body: { input } } = toTokenResponse <$> runExceptT (handleSignup input)
+signup request = toTokenResponse <$> runExceptT (handleSignup request.body.input)
 
 handleSignup :: SignupInput -> ExceptT String Aff User
 handleSignup input = do
@@ -78,12 +68,18 @@ handleSignup input = do
     , password_hash: hash
     }
 
--- Helpers
+-- Token Response
+type TokenResponse
+  = { token :: Jwt
+    , user_id :: Int
+    , username :: String
+    , email :: String
+    , bio :: Nullable String
+    , profile_image :: Nullable String
+    }
+
 toTokenResponse :: Either String User -> Either Action.Error TokenResponse
 toTokenResponse = bimap error tokenResponse
-
-error :: String -> Action.Error
-error = Action.error 400
 
 tokenResponse :: User -> TokenResponse
 tokenResponse u =
@@ -94,3 +90,6 @@ tokenResponse u =
   , bio: toNullable u.bio
   , profile_image: toNullable u.profile_image
   }
+
+error :: String -> Action.Error
+error = Action.error 400
