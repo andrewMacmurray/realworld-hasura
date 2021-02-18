@@ -2,6 +2,7 @@ module Users
   ( find
   , create
   , User
+  , Id
   ) where
 
 import Prelude
@@ -29,13 +30,16 @@ type ToCreate
     }
 
 type User
-  = { id :: Int
+  = { id :: Id
     , username :: String
     , email :: String
     , password_hash :: Hash
     , bio :: Maybe String
     , profile_image :: Maybe String
     }
+
+type Id
+  = Int
 
 -- Find
 find :: String -> Hasura.Response User

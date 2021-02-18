@@ -2,7 +2,9 @@ module Main where
 
 import Prelude
 import Action as Action
-import Api.Mutation (LoginInput, SignupInput)
+import Api.Mutation (LoginInput, SignupInput, UnlikeArticleInput)
+import Articles (ArticleId)
+import Articles as Articles
 import Control.Monad.Except (ExceptT, except, runExceptT)
 import Crypto.Jwt (Jwt)
 import Data.Bifunctor (bimap)
@@ -32,6 +34,11 @@ type Api_
           { body :: Action.Request SignupInput
           , response :: TokenResponse
           }
+    , unlike ::
+        POST "/unlike"
+          { body :: Action.UserRequest UnlikeArticleInput
+          , response :: UnlikeResponse
+          }
     }
 
 spec :: Api
@@ -43,6 +50,7 @@ main =
     { api:
         { login
         , signup
+        , unlike
         }
     }
 
@@ -67,6 +75,23 @@ handleSignup input = do
     , email: input.email
     , password_hash: hash
     }
+
+-- Unlike
+type UnlikeResponse
+  = { article_id :: Int }
+
+unlike :: { body :: Action.UserRequest UnlikeArticleInput } -> Action.Response UnlikeResponse
+unlike request = toUnlikeResponse <$> runExceptT (handleUnlike request.body)
+
+handleUnlike :: Action.UserRequest UnlikeArticleInput -> ExceptT String Aff ArticleId
+handleUnlike body = do
+  Articles.unlike
+    { articleId: body.input.article_id
+    , userId: Action.userId body
+    }
+
+toUnlikeResponse :: Either String ArticleId -> Either Action.Error UnlikeResponse
+toUnlikeResponse = bimap error { article_id: _ }
 
 -- Token Response
 type TokenResponse

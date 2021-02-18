@@ -21,17 +21,19 @@ import GraphQLClient (class DefaultInput, class ToGraphQLArgumentValue, Optional
 
 -- | original name - Int_comparison_exp
 newtype IntComparisonExp
-  = IntComparisonExp
-  { "_eq" :: Optional Int
-  , "_gt" :: Optional Int
-  , "_gte" :: Optional Int
-  , "_in" :: Optional (Array Int)
-  , "_is_null" :: Optional Boolean
-  , "_lt" :: Optional Int
-  , "_lte" :: Optional Int
-  , "_neq" :: Optional Int
-  , "_nin" :: Optional (Array Int)
-  }
+  = IntComparisonExp IntComparisonExp_
+
+type IntComparisonExp_
+  = { "_eq" :: Optional Int
+    , "_gt" :: Optional Int
+    , "_gte" :: Optional Int
+    , "_in" :: Optional (Array Int)
+    , "_is_null" :: Optional Boolean
+    , "_lt" :: Optional Int
+    , "_lte" :: Optional Int
+    , "_neq" :: Optional Int
+    , "_nin" :: Optional (Array Int)
+    }
 
 derive instance genericIntComparisonExp :: Generic IntComparisonExp _
 
@@ -1535,28 +1537,30 @@ instance toGraphQLArgumentValueLikesAvgOrderBy ::
 
 -- | original name - likes_bool_exp
 newtype LikesBoolExp
-  = LikesBoolExp
-  { "_and" ::
-      Optional
-        ( Array
-            ( Maybe
-                LikesBoolExp
-            )
-        )
-  , "_not" :: Optional LikesBoolExp
-  , "_or" ::
-      Optional
-        ( Array
-            ( Maybe
-                LikesBoolExp
-            )
-        )
-  , article :: Optional ArticlesBoolExp
-  , article_id :: Optional IntComparisonExp
-  , id :: Optional IntComparisonExp
-  , user :: Optional UsersBoolExp
-  , user_id :: Optional IntComparisonExp
-  }
+  = LikesBoolExp LikesBoolExp_
+
+type LikesBoolExp_
+  = { "_and" ::
+        Optional
+          ( Array
+              ( Maybe
+                  LikesBoolExp
+              )
+          )
+    , "_not" :: Optional LikesBoolExp
+    , "_or" ::
+        Optional
+          ( Array
+              ( Maybe
+                  LikesBoolExp
+              )
+          )
+    , article :: Optional ArticlesBoolExp
+    , article_id :: Optional IntComparisonExp
+    , id :: Optional IntComparisonExp
+    , user :: Optional UsersBoolExp
+    , user_id :: Optional IntComparisonExp
+    }
 
 derive instance genericLikesBoolExp :: Generic LikesBoolExp _
 
