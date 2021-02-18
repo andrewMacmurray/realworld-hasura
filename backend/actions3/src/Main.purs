@@ -8,20 +8,38 @@ import Articles as Articles
 import Control.Monad.Except (ExceptT, except, runExceptT)
 import Crypto.Jwt (Jwt)
 import Data.Bifunctor (bimap)
-import Data.Either (Either)
+import Data.Either (Either(..))
+import Data.Maybe (Maybe, maybe)
 import Data.Nullable (Nullable, toNullable)
 import Effect (Effect)
 import Effect.Aff (Aff)
+import Effect.Aff as Aff
+import Env as Env
+import Node.HTTP as HTTP
 import Password as Password
+import Payload.Headers as Headers
 import Payload.Server as Payload
-import Payload.Spec (Routes, Spec(Spec), POST)
+import Payload.Server.Guards (headers)
+import Payload.Spec (type (:), Guards, Nil, POST, Routes, Spec(Spec))
 import Token as Token
 import Users (User)
 import Users as Users
 
 -- Api
 type Api
-  = Spec { api :: Routes "/api" Api_ }
+  = Spec
+      { routes :: ApiRoutes_
+      , guards :: Guards_
+      }
+
+type ApiRoutes_
+  = { api :: Routes "/api" Api_
+    , guards :: Guards ("secured" : Nil)
+    }
+
+type Guards_
+  = { secured :: Unit
+    }
 
 type Api_
   = { login ::
@@ -46,16 +64,23 @@ spec = Spec
 
 main :: Effect Unit
 main =
-  Payload.launch spec
-    { api:
-        { login
-        , signup
-        , unlike
+  Aff.launchAff_
+    ( Payload.startGuarded_ spec
+        { guards:
+            { secured
+            }
+        , handlers:
+            { api:
+                { login
+                , signup
+                , unlike
+                }
+            }
         }
-    }
+    )
 
 -- Login
-login :: { body :: Action.Request LoginInput } -> Action.Response TokenResponse
+login :: forall r. { body :: Action.Request LoginInput | r } -> Action.Response TokenResponse
 login request = toTokenResponse <$> runExceptT (handleLogin request.body.input)
 
 handleLogin :: LoginInput -> ExceptT String Aff User
@@ -64,7 +89,7 @@ handleLogin input = do
   except (Password.check input.password user)
 
 --  Signup
-signup :: { body :: Action.Request SignupInput } -> Action.Response TokenResponse
+signup :: forall r. { body :: Action.Request SignupInput | r } -> Action.Response TokenResponse
 signup request = toTokenResponse <$> runExceptT (handleSignup request.body.input)
 
 handleSignup :: SignupInput -> ExceptT String Aff User
@@ -80,7 +105,7 @@ handleSignup input = do
 type UnlikeResponse
   = { article_id :: Int }
 
-unlike :: { body :: Action.UserRequest UnlikeArticleInput } -> Action.Response UnlikeResponse
+unlike :: forall r. { body :: Action.UserRequest UnlikeArticleInput | r } -> Action.Response UnlikeResponse
 unlike request = toUnlikeResponse <$> runExceptT (handleUnlike request.body)
 
 handleUnlike :: Action.UserRequest UnlikeArticleInput -> ExceptT String Aff ArticleId
@@ -118,3 +143,17 @@ tokenResponse u =
 
 error :: String -> Action.Error
 error = Action.error 400
+
+-- Guards
+secured :: HTTP.Request -> Aff (Either String Unit)
+secured req = checkSecret <$> Headers.lookup "actions-secret" <$> headers req
+
+checkSecret :: Maybe String -> Either String Unit
+checkSecret = maybe (Left "missing secret") checkSecret_
+
+checkSecret_ :: String -> Either String Unit
+checkSecret_ secret =
+  if secret == Env.actionsSecret then
+    Right unit
+  else
+    Left "invalid secret"
