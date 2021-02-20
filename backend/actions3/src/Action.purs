@@ -30,6 +30,9 @@ type UserRequest a
     , session_variables :: { "x-hasura-user-id" :: UserId }
     }
 
+newtype UserId
+  = UserId Int
+
 type Response a
   = Aff (Either Error a)
 
@@ -40,9 +43,6 @@ type Error
       }
 
 -- User Id
-newtype UserId
-  = UserId Int
-
 userId :: forall a. UserRequest a -> Int
 userId request = unwrap $ request.session_variables."x-hasura-user-id"
 
