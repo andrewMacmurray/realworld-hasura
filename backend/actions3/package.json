@@ -1,5 +1,5 @@
 {
-  "name": "actions3",
+  "name": "actions-server",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -7,12 +7,13 @@
     "test": "test"
   },
   "scripts": {
-    "client": "rm -rf src/Api && purescript-graphql-client-generator --input-url http://localhost:8080/v1/graphql --output src/Api --header 'x-hasura-admin-secret: ilovebread'"
+    "vercel-build": "spago bundle-app -t ./server.js"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Andrew MacMurray",
+  "license": "MIT",
   "devDependencies": {
-    "purescript-graphql-client": "git+https://github.com/purescript-graphql-client/purescript-graphql-client.git#fad4a2881153975870ef349a707c0b331f958572"
+    "purescript": "^0.13.8",
+    "spago": "^0.19.0"
   },
   "dependencies": {
     "bcrypt": "^5.0.0",

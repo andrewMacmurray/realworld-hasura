@@ -6,7 +6,7 @@ module Crypto.Bcrypt
 
 import Prelude
 import Data.Function.Uncurried (Fn2, runFn2)
-import Data.Newtype (class Newtype, unwrap)
+import Data.Newtype (class Newtype, unwrap, wrap)
 import Simple.JSON (class ReadForeign, class WriteForeign, readImpl, writeImpl)
 
 newtype Hash
@@ -21,7 +21,7 @@ instance writeHash :: WriteForeign Hash where
   writeImpl = unwrap >>> writeImpl
 
 hash :: String -> Hash
-hash = hash_ >>> Hash
+hash = hash_ >>> wrap
 
 compare :: String -> Hash -> Boolean
 compare password h = runFn2 compare_ password (unwrap h)
