@@ -1,20 +1,30 @@
 module Hasura
-  ( Response
-  , Error
+  ( Request
+  , Response
+  , Error(..)
   , isUniquenessError
-  , query
-  , mutation
+  , request
   ) where
 
 import Prelude
-import Affjax.RequestHeader (RequestHeader(RequestHeader))
-import Control.Monad.Except (ExceptT(..), withExceptT)
-import Data.Either (Either)
+import Affjax.RequestHeader (RequestHeader(..))
+import Control.Alt ((<|>))
+import Control.Monad.Except (ExceptT(..))
+import Data.Either (Either(..))
+import Data.Maybe (Maybe(..))
 import Data.String (Pattern(..), contains)
+import Data.String as String
 import Effect.Aff (Aff)
 import Env as Env
-import GraphQLClient (GraphQLError, RequestOptions, Scope__RootMutation, Scope__RootQuery, SelectionSet, defaultRequestOptions, graphqlMutationRequest, graphqlQueryRequest)
-import GraphQLClient as Graphql
+import Simple.Ajax (AjaxError)
+import Simple.Ajax as Ajax
+import Simple.JSON (class ReadForeign, class WriteForeign)
+import Simple.JSON as JSON
+
+type Request vars
+  = { query :: String
+    , variables :: vars
+    }
 
 type Response a
   = ExceptT Error Aff a
@@ -22,20 +32,28 @@ type Response a
 type Error
   = String
 
-query :: forall a. SelectionSet Scope__RootQuery a -> Response a
-query = graphqlQueryRequest Env.graphqlUrl options >>> toResponse
-
-mutation :: forall a. SelectionSet Scope__RootMutation a -> Response a
-mutation = graphqlMutationRequest Env.graphqlUrl options >>> toResponse
+request :: forall a b. ReadForeign a => WriteForeign b => Request b -> Response a
+request query = ExceptT (mapErrors <$> Ajax.postR { headers: [ adminSecret ] } Env.graphqlUrl (Just query))
 
 isUniquenessError :: Error -> Boolean
 isUniquenessError = contains (Pattern "Uniqueness violation")
 
-toResponse :: forall a. Aff (Either (GraphQLError a) a) -> Response a
-toResponse = ExceptT >>> withExceptT (Graphql.printGraphQLError >>> show)
+data RawResponse a
+  = Failure { errors :: Array { message :: String } }
+  | Success { data :: a }
 
-options :: RequestOptions
-options = defaultRequestOptions { headers = [ adminSecret ] }
+instance readGqlResponse :: ReadForeign a => ReadForeign (RawResponse a) where
+  readImpl f = (Failure <$> JSON.readImpl f) <|> (Success <$> JSON.readImpl f)
+
+mapErrors :: forall a. ReadForeign a => Either AjaxError (RawResponse a) -> Either Error a
+mapErrors res = case res of
+  Right (y :: RawResponse a) -> case y of
+    Success a -> Right a.data
+    Failure e -> Left (summarise e)
+  Left e -> Left (show e)
+
+summarise :: { errors :: Array { message :: String } } -> String
+summarise e = String.joinWith " " (map _.message e.errors)
 
 adminSecret :: RequestHeader
 adminSecret = RequestHeader "x-hasura-admin-secret" Env.adminSecret

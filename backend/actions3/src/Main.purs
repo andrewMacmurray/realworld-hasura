@@ -2,7 +2,6 @@ module Main where
 
 import Prelude
 import Action as Action
-import Api.Mutation (LoginInput, SignupInput, UnlikeArticleInput)
 import Articles (ArticleId)
 import Articles as Articles
 import Control.Monad.Except (ExceptT, except, runExceptT)
@@ -102,6 +101,9 @@ handleSignup input = do
     }
 
 -- Unlike
+type UnlikeArticleInput
+  = { article_id :: Int }
+
 type UnlikeResponse
   = { article_id :: Int }
 
@@ -111,14 +113,25 @@ unlike request = toUnlikeResponse <$> runExceptT (handleUnlike request.body)
 handleUnlike :: Action.UserRequest UnlikeArticleInput -> ExceptT String Aff ArticleId
 handleUnlike body = do
   Articles.unlike
-    { articleId: body.input.article_id
-    , userId: Action.userId body
+    { article_id: body.input.article_id
+    , user_id: Action.userId body
     }
 
 toUnlikeResponse :: Either String ArticleId -> Either Action.Error UnlikeResponse
 toUnlikeResponse = bimap error { article_id: _ }
 
--- Token Response
+-- Auth Request Response
+type LoginInput
+  = { username :: String
+    , password :: String
+    }
+
+type SignupInput
+  = { username :: String
+    , email :: String
+    , password :: String
+    }
+
 type TokenResponse
   = { token :: Jwt
     , user_id :: Int

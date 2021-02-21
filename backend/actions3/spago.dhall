@@ -1,12 +1,12 @@
-{ name = "my-project"
+{ name = "realworld-actions"
 , dependencies =
   [ "console"
   , "effect"
-  , "graphql-client"
   , "nullable"
   , "payload"
   , "prelude"
   , "psci-support"
+  , "simple-ajax"
   , "strings"
   ]
 , packages = ./packages.dhall

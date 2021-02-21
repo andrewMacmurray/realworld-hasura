@@ -6,21 +6,12 @@ module Users
   ) where
 
 import Prelude
-import Api.InputObject (StringComparisonExp(..), StringComparisonExp_, UsersBoolExp(..), UsersBoolExp_, UsersInsertInput(..), UsersInsertInput_)
-import Api.Mutation (CreateUserInput)
-import Api.Mutation as Mutation
-import Api.Object.Users as Users
-import Api.Query (UsersInput)
-import Api.Query as Query
-import Api.Scopes (Scope__Users)
 import Control.Monad.Except (except, withExceptT)
 import Crypto.Bcrypt (Hash)
 import Data.Array as Array
 import Data.Either (Either)
 import Data.Either as Either
 import Data.Maybe (Maybe)
-import Data.Newtype (unwrap, wrap)
-import GraphQLClient (Optional(..), Scope__RootMutation, Scope__RootQuery, SelectionSet, defaultInput, nonNullOrFail)
 import Hasura as Hasura
 
 type ToCreate
@@ -44,34 +35,37 @@ type Id
 -- Find
 find :: String -> Hasura.Response User
 find username = do
-  user <- Hasura.query (findUserQuery username)
-  except (handleNotFound user)
+  response <- Hasura.request { query: getUserQuery, variables: { username } }
+  except (toSelection response)
 
-handleNotFound :: Maybe User -> Either String User
+handleNotFound :: Maybe User -> Either Hasura.Error User
 handleNotFound = Either.note "Invalid username / password combination"
 
-findUserQuery :: String -> SelectionSet Scope__RootQuery (Maybe User)
-findUserQuery username = Array.head <$> Query.users (toFindInput username) userSelection
+toSelection :: { users :: Array User } -> Either Hasura.Error User
+toSelection = _.users >>> Array.head >>> handleNotFound
 
-toFindInput :: String -> UsersInput
-toFindInput username =
-  usersInput
-    { "where" =
-      Present
-        ( UsersBoolExp
-            usersBoolInput
-              { username =
-                Present
-                  ( StringComparisonExp
-                      compareStringInput { "_eq" = Present username }
-                  )
-              }
-        )
+getUserQuery :: String
+getUserQuery =
+  """
+  query FindUser($username: String!) {
+    users(where: { username: { _eq: $username } }) {
+      id
+      profile_image
+      username
+      email
+      bio
+      password_hash
     }
+  }
+"""
 
 -- Create
 create :: ToCreate -> Hasura.Response User
-create = createUserMutation >>> Hasura.mutation >>> (withExceptT handleExistingUser)
+create toCreate = do
+  toCreateSelection <$> withExceptT handleExistingUser (Hasura.request { query: createUserMutation, variables: toCreate })
+
+toCreateSelection :: { create_user :: User } -> User
+toCreateSelection = _.create_user
 
 handleExistingUser :: Hasura.Error -> Hasura.Error
 handleExistingUser err =
@@ -80,43 +74,17 @@ handleExistingUser err =
   else
     "Unknown error " <> err
 
-createUserMutation :: ToCreate -> SelectionSet Scope__RootMutation User
-createUserMutation toCreate = nonNullOrFail $ Mutation.create_user (toCreateInput toCreate) userSelection
-
-toCreateInput :: ToCreate -> CreateUserInput
-toCreateInput toCreate =
-  { object:
-      UsersInsertInput
-        ( userInsert
-            { username = Present toCreate.username
-            , email = Present toCreate.email
-            , password_hash = Present (unwrap toCreate.password_hash)
-            }
-        )
-  , on_conflict: defaultInput
+createUserMutation :: String
+createUserMutation =
+  """
+  mutation CreateUser($email: String, $password_hash: String, $username: String) {
+    create_user(object: {password_hash: $password_hash, username: $username, email: $email}) {
+      id
+      email
+      bio
+      password_hash
+      profile_image
+      username
+    }
   }
-
--- User Selection
-userSelection :: SelectionSet Scope__Users User
-userSelection =
-  ( { id: _, username: _, email: _, password_hash: _, bio: _, profile_image: _ }
-      <$> Users.id
-      <*> Users.username
-      <*> Users.email
-      <*> (wrap <$> Users.password_hash)
-      <*> Users.bio
-      <*> Users.profile_image
-  )
-
--- Defaults
-userInsert :: UsersInsertInput_
-userInsert = defaultInput
-
-usersInput :: UsersInput
-usersInput = defaultInput
-
-usersBoolInput :: UsersBoolExp_
-usersBoolInput = defaultInput
-
-compareStringInput :: StringComparisonExp_
-compareStringInput = defaultInput
+"""
