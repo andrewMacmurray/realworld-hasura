@@ -1,1 +1,1 @@
-module.exports = require("./server.js").main();
+module.exports = require("./server").main();
