@@ -15,6 +15,7 @@ jobs:
           node-version: 12.x
       - run: ls -a
       - run: cd ./frontend
+      - run: ls -a
       - run: npm ci
       - run: npm run build
       - run: cd ../backend/actions
