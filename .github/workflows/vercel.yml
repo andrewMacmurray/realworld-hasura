@@ -13,15 +13,12 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 12.x
-      - run: ls -a
-      - run: cd ./frontend
-      - run: ls -a
-      - run: npm ci
-      - run: npm run build
-      - run: cd ../backend/actions
-      - run: npm ci && npm run build
-      - run: cd ../
-      - uses: amondnet/vercel-action@v19
+      - working-directory: ./frontend
+        run: npm ci && npm run build
+      - working-directory: ./backend/actions3
+        run: npm ci && npm run build
+      - working-directory: ./
+        uses: amondnet/vercel-action@v19
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
