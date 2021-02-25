@@ -5,10 +5,10 @@
   },
   "builds": [
     { "src": "./frontend/dist/**", "use": "@vercel/static" },
-    { "src": "./backend/actions3/**", "use": "@vercel/node" }
+    { "src": "./backend/actions3/api/**", "use": "@vercel/node" }
   ],
   "routes": [
-    { "src": "/api/(.*)", "dest": "/backend/actions3/index" },
+    { "src": "/api/(.*)", "dest": "/backend/actions3/api/index" },
     { "src": "/(.*)", "dest": "frontend/dist/$1" }
   ]
 }

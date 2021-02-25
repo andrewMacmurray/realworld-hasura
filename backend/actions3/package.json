@@ -7,7 +7,7 @@
     "test": "test"
   },
   "scripts": {
-    "vercel-build": "spago bundle-app -t ./server.js"
+    "vercel-build": "spago bundle-app -t ./api/server.js"
   },
   "author": "Andrew MacMurray",
   "license": "MIT",
