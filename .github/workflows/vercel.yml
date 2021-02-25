@@ -1,0 +1,27 @@
+name: CD
+
+on:
+  push:
+    branches:
+      - ps-actions
+
+jobs:
+  do-thing:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - run: cd frontend
+      - run: npm ci && npm run build
+      - run: cd ../backend/actions
+      - run: npm ci && npm run build
+      - run: cd ../
+      - uses: amondnet/vercel-action@v19
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: "--prod"

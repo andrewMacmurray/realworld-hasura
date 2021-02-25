@@ -1,5 +1,14 @@
 {
   "version": 2,
-  "builds": [{ "src": "./frontend/dist/**", "use": "@vercel/static" }],
-  "routes": [{ "src": "/(.*)", "dest": "frontend/dist/$1" }]
+  "github": {
+    "enabled": false
+  },
+  "builds": [
+    { "src": "./frontend/dist/**", "use": "@vercel/static" },
+    { "src": "./backend/actions3/**", "use": "@vercel/node" }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/backend/actions3/index" },
+    { "src": "/(.*)", "dest": "frontend/dist/$1" }
+  ]
 }
