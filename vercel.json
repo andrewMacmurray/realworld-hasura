@@ -4,7 +4,7 @@
     "enabled": false
   },
   "builds": [
-    { "src": "/backend/actions3/api/index.js", "use": "@vercel/node" },
+    { "src": "/backend/actions3/api/*.js", "use": "@vercel/node" },
     { "src": "/frontend/dist/**", "use": "@vercel/static" }
   ],
   "routes": [
