@@ -16,7 +16,7 @@ jobs:
       - working-directory: ./frontend
         run: npm ci && npm run build
       - working-directory: ./backend/actions3
-        run: npm ci && npm run vercel-build
+        run: npm ci && npm run build
       - uses: amondnet/vercel-action@v19
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
