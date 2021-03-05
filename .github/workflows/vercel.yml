@@ -10,13 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 12.x
-      - working-directory: ./frontend
-        run: npm ci && npm run build
-      - working-directory: ./backend/actions3
-        run: npm ci && npm run build
       - uses: amondnet/vercel-action@v19
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
