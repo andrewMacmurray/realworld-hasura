@@ -6,7 +6,21 @@ on:
       - ps-actions
 
 jobs:
-  do-thing:
+  migrate-hasura:
+    runs-on: ubuntu-latest
+    env:
+      HASURA_ENDPOINT: ${{ secrets.HASURA_ENDPOINT }}
+      HASURA_ADMIN_SECRET: ${{ secrets.HASURA_ADMIN_SECRET }}
+      HASURA_WORKDIR: ./backend/hasura
+    steps:
+      - uses: actions/checkout@master
+      - uses: tibotiber/hasura-action@master
+        with:
+          args: migrate apply
+      - uses: tibotiber/hasura-action@master
+        with:
+          args: metadata apply
+  vercel-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

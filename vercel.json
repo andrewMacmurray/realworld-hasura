@@ -4,11 +4,11 @@
     "enabled": false
   },
   "builds": [
-    { "src": "/backend/actions3/api/*.js", "use": "@vercel/node" },
+    { "src": "/backend/actions/api/*.js", "use": "@vercel/node" },
     { "src": "/frontend/dist/**", "use": "@vercel/static" }
   ],
   "routes": [
-    { "src": "/api/(.*)", "dest": "/backend/actions3/api/index.js" },
+    { "src": "/api/(.*)", "dest": "/backend/actions/api/index.js" },
     { "src": "/(.*)", "dest": "/frontend/dist/$1" }
   ]
 }
