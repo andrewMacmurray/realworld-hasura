@@ -1,7 +1,0 @@
-mutation UnlikeArticleMutation($userId: Int!, $articleId: Int!) {
-    delete_likes(where: {user_id: {_eq: $userId}, article_id: {_eq: $articleId}}) {
-        returning {
-            article_id
-        }
-    }
-}

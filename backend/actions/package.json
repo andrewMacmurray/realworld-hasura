@@ -1,0 +1,23 @@
+{
+  "name": "actions-server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "vercel-build": "npm install && spago bundle-app -m Main -t ./api/server.js",
+    "test": "spago test"
+  },
+  "author": "Andrew MacMurray",
+  "license": "MIT",
+  "devDependencies": {
+    "purescript": "^0.13.8",
+    "spago": "^0.19.0"
+  },
+  "dependencies": {
+    "bcrypt": "^5.0.0",
+    "jsonwebtoken": "^8.5.1",
+    "xhr2": "^0.2.1"
+  }
+}
