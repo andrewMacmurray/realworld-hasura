@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       HASURA_ENDPOINT: ${{ secrets.HASURA_ENDPOINT }}
-      HASURA_ADMIN_SECRET: ${{ secrets.HASURA_ADMIN_SECRET }}
+      HASURA_ADMIN_SECRET: ${{ secrets.HASURA_GRAPHQL_ADMIN_SECRET }}
       HASURA_WORKDIR: ./backend/hasura
     steps:
       - uses: actions/checkout@master
