@@ -8,3 +8,5 @@ dist
 .idea
 
 src/elm/Constants.elm
+src/elm/Hasura
+src/elm/Main

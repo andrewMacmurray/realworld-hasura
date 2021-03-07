@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       HASURA_ENDPOINT: ${{ secrets.HASURA_ENDPOINT }}
-      HASURA_ADMIN_SECRET: ${{ secrets.HASURA_ADMIN_SECRET }}
+      HASURA_ADMIN_SECRET: ${{ secrets.HASURA_GRAPHQL_ADMIN_SECRET }}
       HASURA_WORKDIR: ./backend/hasura
     steps:
       - uses: actions/checkout@master
@@ -21,10 +21,20 @@ jobs:
         with:
           args: metadata apply
   vercel-deploy:
+    needs: [migrate-hasura]
     runs-on: ubuntu-latest
     env:
       HASURA_GRAPHQL_URL: ${{ secrets.HASURA_GRAPHQL_URL }}
+      HASURA_GRAPHQL_ADMIN_SECRET: ${{ secrets.HASURA_GRAPHQL_ADMIN_SECRET }}
     steps:
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.elm
+            ~/.npm
+            **/elm-stuff
+            **/node_modules
+          key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
       - uses: actions/checkout@v2
       - working-directory: ./frontend
         run: npm ci && npm run build
