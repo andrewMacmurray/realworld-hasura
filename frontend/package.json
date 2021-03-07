@@ -4,9 +4,9 @@
   "description": "Frontend for realworld hasura app",
   "scripts": {
     "vercel-build": "npm run build",
-    "dev": "elm-typescript-interop && elm-constants -p .env.local && npm run schema && parcel src/index.html",
-    "build": "elm-constants && npm run schema && parcel build src/index.html",
-    "schema": "elm-graphql ${HASURA_GRAPHQL_URL:-http://localhost:8080/v1/graphql} --base Hasura --header 'x-hasura-role: user' --header \"x-hasura-admin-secret: ${HASURA_ADMIN_SECRET:-ilovebread}\" --output src/elm",
+    "dev": "elm-typescript-interop && elm-constants -p .env.local && parcel src/index.html",
+    "build": "elm-constants && parcel build src/index.html",
+    "schema": "elm-graphql http://localhost:8080/v1/graphql --base Hasura --header 'x-hasura-role: user' --header 'x-hasura-admin-secret: ilovebread' --output src/elm",
     "test": "elm-constants -p .env.local && elm-test"
   },
   "license": "MIT",
