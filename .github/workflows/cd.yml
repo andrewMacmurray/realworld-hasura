@@ -22,6 +22,8 @@ jobs:
           args: metadata apply
   vercel-deploy:
     runs-on: ubuntu-latest
+    env:
+      HASURA_GRAPHQL_URL: ${{ secrets.HASURA_GRAPHQL_URL }}
     steps:
       - uses: actions/checkout@v2
       - working-directory: ./frontend
@@ -32,4 +34,8 @@ jobs:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: "--prod"
+          vercel-args: |-
+            --prod --env HASURA_GRAPHQL_URL=${{ secrets.HASURA_GRAPHQL_URL }}\
+                   --env HASURA_GRAPHQL_ADMIN_SECRET=${{ secrets.HASURA_GRAPHQL_ADMIN_SECRET }}\
+                   --env HASURA_GRAPHQL_JWT_SECRET=${{ secrets.HASURA_GRAPHQL_JWT_SECRET }}\
+                   --env ACTIONS_SECRET=${{ secrets.HASURA_ACTIONS_SECRET }}

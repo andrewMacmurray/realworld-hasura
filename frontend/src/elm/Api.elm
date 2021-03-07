@@ -196,4 +196,4 @@ prepend str s =
 
 endpoint : String
 endpoint =
-    Constants.apiUrl
+    Constants.hasuraGraphqlUrl
