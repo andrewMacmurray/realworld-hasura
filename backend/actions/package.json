@@ -7,6 +7,7 @@
   },
   "scripts": {
     "vercel-build": "npm install && spago bundle-app -m Main -t ./api/server.js",
+    "dev": "spago run",
     "test": "spago test"
   },
   "author": "Andrew MacMurray",

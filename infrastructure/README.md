@@ -6,7 +6,7 @@ Terraform configuration for provisioning infrastructure pieces for realworld app
 
 ### Pieces
 
-- The configuration manages 1 heroku instance (`actions server`) and 1 aws RDS instance
+- The configuration manages 1 heroku instance (`hasura server`) and 1 aws RDS instance
 - Deployment of Docker image to the instance is handled separately
 
 ### Running plans and applies

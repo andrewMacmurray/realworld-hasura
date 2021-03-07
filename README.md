@@ -4,15 +4,11 @@
 
 ## What?
 
-A Realworld inspired blogging platform using `Hasura` + `Kotlin` + `Elm`
+A Realworld inspired blogging platform using `Hasura` + `Purescript` + `Elm`
 
 'Inspired' as it doesn't follow the frontend or backend spec for the official `Realworld` example apps (https://github.com/gothinkster/realworld) but tries to replicate the features as closely as possible.
 
 <img width="1265" alt="Screenshot 2020-10-17 at 19 00 02" src="https://user-images.githubusercontent.com/14013616/96349987-0092ba00-10ab-11eb-8355-c50ddd28e94c.png">
-
-### Performance Caveats
-
-- The backend is running on free infrastructure (hasura cloud free and a free heroku dyno), it will very likely topple over if put under load!
 
 ### Some notable differences to reference Realworld
 
@@ -31,12 +27,12 @@ The project is a monorepo split into `frontend`, `backend` and `infrastructure` 
 
 ### Frontend
 
-- A single page Elm app (deployed on `surge.sh` https://surge.sh/)
+- A single page Elm app (deployed on `vercel` https://vercel.com)
 
 ### Backend
 
-- Configuration and migrations for `Hasura` (deployed on `hasura cloud` https://hasura.io/cloud/)
-- A `Kotlin` http api that handles authentication and custom application logic, communicates with Hasura as an actions server https://hasura.io/docs/1.0/graphql/core/actions/index.html (deployed on `heroku`)
+- A Hasura instance is deployed on Heroku
+- A `Purescript` serverless http api that handles authentication and custom application logic, communicates with Hasura as an actions server https://hasura.io/docs/1.0/graphql/core/actions/index.html (deployed on `vercel`)
 
 ### Infrastructure
 
