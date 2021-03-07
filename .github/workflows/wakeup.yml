@@ -1,0 +1,13 @@
+name: Wakeup Hasura
+
+on:
+  schedule:
+    - cron: "0/10 * * * *"
+
+jobs:
+  wakeup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: wei/curl@master
+        with:
+          args: ${{ secrets.HASURA_HEALTH_CHECK }}

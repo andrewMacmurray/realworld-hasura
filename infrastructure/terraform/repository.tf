@@ -27,9 +27,13 @@ resource "github_actions_secret" "graphql_url" {
 }
 
 resource "github_actions_secret" "hasura_endpoint" {
-  plaintext_value = heroku_app.hasura.web_url
+  plaintext_value = local.hasura_url
   repository      = local.repository
   secret_name     = "HASURA_ENDPOINT"
 }
 
-
+resource "github_actions_secret" "hasura_health_check" {
+  plaintext_value = local.hasura_health_check
+  repository      = local.repository
+  secret_name     = "HASURA_HEALTH_CHECK"
+}
