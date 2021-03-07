@@ -6,7 +6,8 @@
     "test": "test"
   },
   "scripts": {
-    "vercel-build": "npm install && spago bundle-app -m Main -t ./api/server.js"
+    "vercel-build": "npm install && spago bundle-app -m Main -t ./api/server.js",
+    "test": "spago test"
   },
   "author": "Andrew MacMurray",
   "license": "MIT",

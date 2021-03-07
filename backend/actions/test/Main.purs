@@ -10,4 +10,3 @@ main :: Effect Unit
 main =
   runTest do
     Password.suite
-    Login.suite
