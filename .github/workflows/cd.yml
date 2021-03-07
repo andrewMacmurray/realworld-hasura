@@ -34,8 +34,4 @@ jobs:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: |-
-            --prod --env HASURA_GRAPHQL_URL=${{ secrets.HASURA_GRAPHQL_URL }}\
-                   --env HASURA_GRAPHQL_ADMIN_SECRET=${{ secrets.HASURA_GRAPHQL_ADMIN_SECRET }}\
-                   --env HASURA_GRAPHQL_JWT_SECRET=${{ secrets.HASURA_GRAPHQL_JWT_SECRET }}\
-                   --env ACTIONS_SECRET=${{ secrets.HASURA_ACTIONS_SECRET }}
+          vercel-args: --env HASURA_GRAPHQL_URL=${{ secrets.HASURA_GRAPHQL_URL }} --env HASURA_GRAPHQL_ADMIN_SECRET=${{ secrets.HASURA_GRAPHQL_ADMIN_SECRET }} --env HASURA_GRAPHQL_JWT_SECRET=${{ secrets.HASURA_GRAPHQL_JWT_SECRET }} --env ACTIONS_SECRET=${{ secrets.HASURA_ACTIONS_SECRET }} --prod
