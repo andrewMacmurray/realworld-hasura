@@ -10,3 +10,4 @@
 /.spago
 
 server.js
+server.min.js
