@@ -460,7 +460,7 @@ articleSummary article =
     linkToArticle article
         (column [ spacing Scale.small ]
             [ paragraph [] [ Text.subtitle [] (Article.title article) ]
-            , Text.text [] (Article.about article)
+            , paragraph [] [ Text.text [] (Article.about article) ]
             ]
         )
 

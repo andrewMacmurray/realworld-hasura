@@ -293,7 +293,7 @@ followButton user article =
 
 tags : Text.Option -> Article -> Element msg
 tags textOption article =
-    row [ spacing Scale.small ] (List.map (viewTag textOption) <| Article.tags article)
+    wrappedRow [ spacing Scale.small ] (List.map (viewTag textOption) <| Article.tags article)
 
 
 viewTag : Text.Option -> Tag -> Element msg
@@ -303,7 +303,7 @@ viewTag textOption tag =
 
 headline : Article -> Element msg
 headline article =
-    paragraph [] [ headline_ article ]
+    paragraph [ width fill ] [ headline_ article ]
 
 
 headline_ : Article -> Element msg
