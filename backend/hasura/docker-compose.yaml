@@ -5,6 +5,8 @@ services:
     restart: always
     ports:
       - "65432:5432"
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
   graphql-engine:
     image: hasura/graphql-engine:v1.3.2
     ports:

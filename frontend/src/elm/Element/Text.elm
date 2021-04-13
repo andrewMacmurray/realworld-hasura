@@ -255,6 +255,7 @@ toElement properties content =
               , weight properties
               , letterSpacing properties
               , fontFamily properties
+              , wordBreak
               ]
             , showPointer properties
             , anchor properties
@@ -440,3 +441,8 @@ openSans =
         [ Font.typeface "Open Sans"
         , Font.sansSerif
         ]
+
+
+wordBreak : Attribute msg
+wordBreak =
+    Element.htmlAttribute (Html.Attributes.style "word-break" "break-word")
