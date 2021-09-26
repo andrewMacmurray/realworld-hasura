@@ -32,7 +32,7 @@ resource "aws_db_instance" "hasura-db" {
   name                   = "hasura"
   identifier             = "hasura-db"
   engine                 = "postgres"
-  engine_version         = "12.5"
+  engine_version         = "12.7"
   password               = random_password.database_password.result
   username               = "postgres"
   publicly_accessible    = true

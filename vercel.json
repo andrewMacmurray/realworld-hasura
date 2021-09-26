@@ -10,10 +10,5 @@
   "routes": [
     { "src": "/api/(.*)", "dest": "/backend/actions/api/index.js" },
     { "src": "/(.*)", "dest": "/frontend/dist/$1" }
-  ],
-  "functions": {
-    "backend/actions/api/index.js": {
-      "memory": 1024
-    }
-  }
+  ]
 }
