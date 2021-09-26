@@ -19,7 +19,7 @@ import Password as Password
 import Payload.Headers as Headers
 import Payload.Server as Payload
 import Payload.Server.Guards (headers)
-import Payload.Spec (type (:), Guards, Nil, POST, Routes, Spec(Spec))
+import Payload.Spec (type (:), Guards, Nil, POST, Routes, Spec(Spec), GET)
 import Token as Token
 import Users (User)
 import Users as Users
@@ -41,7 +41,11 @@ type Guards_
     }
 
 type Api_
-  = { login ::
+  = { health ::
+        GET "/"
+          { response :: String
+          }
+    , login ::
         POST "/login"
           { body :: Action.Request LoginInput
           , response :: TokenResponse
@@ -70,13 +74,17 @@ main =
             }
         , handlers:
             { api:
-                { login
+                { health
+                , login
                 , signup
                 , unlike
                 }
             }
         }
     )
+
+health :: forall r. r -> Aff (String)
+health _ = pure "OK"
 
 -- Login
 login :: forall r. { body :: Action.Request LoginInput | r } -> Action.Response TokenResponse

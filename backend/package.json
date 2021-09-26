@@ -7,7 +7,7 @@
     "migrate:metadata": "cd hasura && hasura metadata apply",
     "console": "npm run load-env && cd hasura && hasura console",
     "hasura": "cd hasura && docker-compose up",
-    "actions": "npm run load-env && cd actions && ./gradlew run -q",
+    "actions": "cd actions && npm run dev",
     "load-env": "set -o allexport && source .env.local"
   }
 }

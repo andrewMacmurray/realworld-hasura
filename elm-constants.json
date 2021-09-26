@@ -1,5 +1,5 @@
 {
-  "path": "./src/elm",
+  "path": "./frontend/src/elm",
   "moduleName": "Constants",
   "values": ["HASURA_GRAPHQL_URL"]
 }

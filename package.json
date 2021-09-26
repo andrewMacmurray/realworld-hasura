@@ -1,0 +1,25 @@
+{
+  "name": "realworld-hasura",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "elm-constants && vite",
+    "build": "elm-constants && vite build",
+    "schema": "elm-graphql http://localhost:8080/v1/graphql --base Hasura --header 'x-hasura-role: user' --header 'x-hasura-admin-secret: ilovebread' --output frontend/src/elm",
+    "test": "elm-constants && elm-test"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "bcrypt": "^5.0.1",
+    "jsonwebtoken": "^8.5.1",
+    "xhr2": "^0.2.1"
+  },
+  "devDependencies": {
+    "@dillonkearns/elm-graphql": "^4.0.2",
+    "elm": "^0.19.1-5",
+    "elm-constants": "^1.0.0",
+    "elm-test": "^0.19.1-revision7",
+    "typescript": "^4.6.4",
+    "vite": "^2.9.9",
+    "vite-plugin-elm": "^2.6.1"
+  }
+}

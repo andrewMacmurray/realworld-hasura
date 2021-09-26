@@ -1,1 +1,1 @@
-module.exports = require("./server.min.js");
+module.exports = require("../server.min.js");

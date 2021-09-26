@@ -1,0 +1,54 @@
+table:
+  schema: public
+  name: tags
+configuration:
+  custom_root_fields:
+    select_aggregate: tags_summary
+    insert_one: insert_tag
+    select_by_pk: tag
+  column_config: {}
+  custom_column_names: {}
+object_relationships:
+  - name: article
+    using:
+      foreign_key_constraint_on: article_id
+computed_fields:
+  - name: count
+    definition:
+      function:
+        schema: public
+        name: tag_count
+    comment: ""
+insert_permissions:
+  - role: user
+    permission:
+      check:
+        article:
+          author_id:
+            _eq: X-Hasura-User-Id
+      columns:
+        - article_id
+        - tag
+      backend_only: false
+select_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - tag
+      computed_fields:
+        - count
+      filter: {}
+  - role: user
+    permission:
+      columns:
+        - tag
+      computed_fields:
+        - count
+      filter: {}
+delete_permissions:
+  - role: user
+    permission:
+      filter:
+        article:
+          author_id:
+            _eq: X-Hasura-User-Id

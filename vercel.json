@@ -1,19 +1,6 @@
 {
-  "version": 2,
-  "github": {
-    "enabled": false
-  },
-  "builds": [
-    { "src": "/backend/actions/api/*.js", "use": "@vercel/node" },
-    { "src": "/frontend/dist/**", "use": "@vercel/static" }
-  ],
-  "routes": [
-    { "src": "/api/(.*)", "dest": "/backend/actions/api/index.js" },
-    { "src": "/(.*)", "dest": "/frontend/dist/$1" }
-  ],
-  "functions": {
-    "backend/actions/api/index.js": {
-      "memory": 1024
-    }
-  }
+  "rewrites": [
+    { "source": "/api/:path", "destination": "/api" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }

@@ -1,6 +1,6 @@
 locals {
   actions_server_url  = "https://realworld-hasura.vercel.app/api"
-  hasura_db_url       = "postgres://${aws_db_instance.hasura-db.username}:${aws_db_instance.hasura-db.password}@${aws_db_instance.hasura-db.endpoint}/hasura"
+  hasura_db_url       = "postgres://${var.database_username}:${var.database_password}@${var.database_host}:${var.database_port}/hasura"
   hasura_url          = heroku_app.hasura.web_url
   hasura_graphql_url  = "${local.hasura_url}/v1/graphql"
   hasura_health_check = "${local.hasura_url}/healthz"

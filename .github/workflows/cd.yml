@@ -16,22 +16,7 @@ jobs:
       - uses: actions/checkout@master
       - uses: tibotiber/hasura-action@master
         with:
-          args: migrate apply
+          args: migrate apply --database-name default
       - uses: tibotiber/hasura-action@master
         with:
           args: metadata apply
-  vercel-deploy:
-    runs-on: ubuntu-latest
-    env:
-      HASURA_GRAPHQL_URL: ${{ secrets.HASURA_GRAPHQL_URL }}
-    steps:
-      - uses: actions/checkout@v2
-      - working-directory: ./frontend
-        run: npm ci && npm run build
-      - uses: amondnet/vercel-action@v19
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: --env HASURA_GRAPHQL_URL=${{ secrets.HASURA_GRAPHQL_URL }} --env HASURA_GRAPHQL_ADMIN_SECRET=${{ secrets.HASURA_GRAPHQL_ADMIN_SECRET }} --env HASURA_GRAPHQL_JWT_SECRET=${{ secrets.HASURA_GRAPHQL_JWT_SECRET }} --env ACTIONS_SECRET=${{ secrets.HASURA_ACTIONS_SECRET }} --prod

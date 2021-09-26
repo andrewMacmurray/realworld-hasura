@@ -1,2 +1,5 @@
 .terraform
 .idea
+
+.terraform.lock.hcl
+terraform.tfvars

@@ -13,8 +13,18 @@ resource "random_password" "actions_secret" {
   special = true
 }
 
-resource "random_password" "database_password" {
-  length  = 64
-  special = false
-  number  = true
+variable "database_password" {
+  type = string
+}
+
+variable "database_username" {
+  type = string
+}
+
+variable "database_host" {
+  type = string
+}
+
+variable "database_port" {
+  type = string
 }

@@ -1,0 +1,56 @@
+actions:
+  - name: login
+    definition:
+      kind: synchronous
+      handler: '{{ACTIONS_BASE_URL}}/login'
+      headers:
+        - name: actions-secret
+          value_from_env: ACTIONS_SECRET
+    permissions:
+      - role: anonymous
+      - role: user
+  - name: signup
+    definition:
+      kind: synchronous
+      handler: '{{ACTIONS_BASE_URL}}/signup'
+      headers:
+        - name: actions-secret
+          value_from_env: ACTIONS_SECRET
+    permissions:
+      - role: anonymous
+      - role: user
+  - name: unlike_article
+    definition:
+      kind: synchronous
+      handler: '{{ACTIONS_BASE_URL}}/unlike'
+      forward_client_headers: true
+      headers:
+        - name: actions-secret
+          value_from_env: ACTIONS_SECRET
+    permissions:
+      - role: user
+custom_types:
+  enums: []
+  input_objects: []
+  objects:
+    - name: TokenResponse
+      relationships:
+        - remote_table:
+            schema: public
+            name: follows
+          name: follows
+          source: default
+          type: array
+          field_mapping:
+            user_id: user_id
+    - name: UnlikeResponse
+      relationships:
+        - remote_table:
+            schema: public
+            name: articles
+          name: article
+          source: default
+          type: object
+          field_mapping:
+            article_id: id
+  scalars: []

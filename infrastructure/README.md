@@ -13,4 +13,3 @@ Terraform configuration for provisioning infrastructure pieces for realworld app
 
 - Terraform State and secrets for the project are stored in `Terraform Cloud` (https://app.terraform.io/app/andrewmacmurray/workspaces)
 - Terraform plans are run via a github actions workflow (`.github/workflows/infrastructure.yml`) - triggered on a PR to the `main` branch
-- Terraform auto apply is run on merge / push to `main` via github actions

@@ -15,6 +15,8 @@ import Data.Maybe (Maybe(..))
 import Data.String (Pattern(..), contains)
 import Data.String as String
 import Effect.Aff (Aff)
+import Effect.Aff.Class (liftAff)
+import Effect.Class.Console as Console
 import Env as Env
 import Simple.Ajax (AjaxError)
 import Simple.Ajax as Ajax
