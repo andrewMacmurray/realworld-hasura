@@ -6,21 +6,19 @@
     "test": "test"
   },
   "scripts": {
-    "vercel-build": "spago bundle-app -m Main -t ./api/server.js && npm run compress && rm api/server.js",
-    "compress": "google-closure-compiler --js=api/server.js --js_output_file=api/server.min.js",
+    "build": "spago bundle-app --to server.min.js && npm run compress",
+    "compress": "uglifyjs --compress --mangle --output server.min.js -- server.min.js",
     "dev": "spago run",
     "test": "spago test"
   },
   "author": "Andrew MacMurray",
   "license": "MIT",
-  "devDependencies": {
-    "google-closure-compiler": "^20210302.0.0",
-    "purescript": "^0.13.8",
-    "spago": "^0.19.0"
-  },
   "dependencies": {
-    "bcrypt": "^5.0.0",
+    "bcrypt": "^5.0.1",
     "jsonwebtoken": "^8.5.1",
     "xhr2": "^0.2.1"
+  },
+  "devDependencies": {
+    "uglify-js": "^3.15.5"
   }
 }

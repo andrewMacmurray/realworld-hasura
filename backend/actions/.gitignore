@@ -8,6 +8,3 @@
 /.purs*
 /.psa*
 /.spago
-
-server.js
-server.min.js
