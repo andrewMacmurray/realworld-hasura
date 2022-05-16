@@ -1,39 +1,34 @@
 type Mutation {
-  login (
+  login(
     username: String!
     password: String!
   ): TokenResponse!
 }
 
-
 type Mutation {
-  signup (
+  signup(
     email: String!
     username: String!
     password: String!
   ): TokenResponse!
 }
 
-
 type Mutation {
-  unlike_article (
+  unlike_article(
     article_id: Int!
   ): UnlikeResponse!
 }
 
-
-
-
 type TokenResponse {
-  token : String!
-  user_id : Int!
-  username : String!
-  email : String!
-  bio : String
-  profile_image : String
+  token: String!
+  user_id: Int!
+  username: String!
+  email: String!
+  bio: String
+  profile_image: String
 }
 
 type UnlikeResponse {
-  article_id : Int
+  article_id: Int
 }
 

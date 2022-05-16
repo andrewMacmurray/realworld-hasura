@@ -1,0 +1,87 @@
+table:
+  schema: public
+  name: articles
+configuration:
+  custom_root_fields:
+    insert: publish_articles
+    insert_one: publish_article
+    select_by_pk: article
+    delete_by_pk: delete_article
+    update_by_pk: edit_article
+  column_config: {}
+  custom_column_names: {}
+object_relationships:
+  - name: author
+    using:
+      foreign_key_constraint_on: author_id
+array_relationships:
+  - name: comments
+    using:
+      foreign_key_constraint_on:
+        column: article_id
+        table:
+          schema: public
+          name: comments
+  - name: likes
+    using:
+      foreign_key_constraint_on:
+        column: article_id
+        table:
+          schema: public
+          name: likes
+  - name: tags
+    using:
+      foreign_key_constraint_on:
+        column: article_id
+        table:
+          schema: public
+          name: tags
+insert_permissions:
+  - role: user
+    permission:
+      check: {}
+      set:
+        author_id: x-hasura-User-Id
+      columns:
+        - about
+        - content
+        - title
+      backend_only: false
+select_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - about
+        - content
+        - created_at
+        - id
+        - title
+      filter: {}
+      allow_aggregations: true
+  - role: user
+    permission:
+      columns:
+        - about
+        - content
+        - created_at
+        - id
+        - title
+      filter: {}
+      allow_aggregations: true
+update_permissions:
+  - role: user
+    permission:
+      columns:
+        - about
+        - content
+        - title
+      filter:
+        author_id:
+          _eq: X-Hasura-User-Id
+      check: null
+delete_permissions:
+  - role: user
+    permission:
+      filter:
+        author_id:
+          _eq: X-Hasura-User-Id

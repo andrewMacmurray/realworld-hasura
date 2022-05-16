@@ -1,0 +1,7 @@
+- "!include public_articles.yaml"
+- "!include public_comments.yaml"
+- "!include public_follows.yaml"
+- "!include public_likes.yaml"
+- "!include public_profile.yaml"
+- "!include public_tags.yaml"
+- "!include public_users.yaml"
