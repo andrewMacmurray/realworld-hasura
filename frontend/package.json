@@ -4,10 +4,10 @@
   "description": "Frontend for realworld hasura app",
   "scripts": {
     "vercel-build": "npm run build",
-    "dev": "elm-constants -p .env.local && parcel src/index.html",
+    "dev": "elm-constants && parcel src/index.html",
     "build": "elm-constants && parcel build src/index.html",
     "schema": "elm-graphql http://localhost:8080/v1/graphql --base Hasura --header 'x-hasura-role: user' --header 'x-hasura-admin-secret: ilovebread' --output src/elm",
-    "test": "elm-constants -p .env.local && elm-test"
+    "test": "elm-constants && elm-test"
   },
   "license": "MIT",
   "devDependencies": {
