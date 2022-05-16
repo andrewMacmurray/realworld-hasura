@@ -4,8 +4,8 @@
   "description": "Frontend for realworld hasura app",
   "scripts": {
     "vercel-build": "npm run build",
-    "dev": "elm-constants && parcel src/index.html",
-    "build": "elm-constants && parcel build src/index.html",
+    "dev": "elm-constants && vite",
+    "build": "elm-constants && vite build",
     "schema": "elm-graphql http://localhost:8080/v1/graphql --base Hasura --header 'x-hasura-role: user' --header 'x-hasura-admin-secret: ilovebread' --output src/elm",
     "test": "elm-constants && elm-test"
   },
@@ -14,10 +14,9 @@
     "@dillonkearns/elm-graphql": "^4.0.2",
     "elm": "^0.19.1-5",
     "elm-constants": "^1.0.0",
-    "elm-hot": "^1.1.4",
     "elm-test": "^0.19.1-revision7",
-    "node-elm-compiler": "^5.0.5",
-    "parcel-bundler": "^1.12.4",
-    "typescript": "^3.9.2"
+    "typescript": "^4.6.4",
+    "vite": "^2.9.9",
+    "vite-plugin-elm": "^2.6.1"
   }
 }

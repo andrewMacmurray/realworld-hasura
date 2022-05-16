@@ -1,4 +1,4 @@
-import { Elm } from "./elm/Main";
+import { Elm } from "./elm/Main.elm";
 import * as User from "./ts/user";
 
 const app = Elm.Main.init({
