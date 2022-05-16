@@ -8,10 +8,6 @@ terraform {
   }
 }
 
-provider "heroku" {
-  version = "~> 2.6.1"
-}
+provider "heroku" {}
 
-provider "github" {
-  owner = "andrewMacmurray"
-}
+provider "github" {}

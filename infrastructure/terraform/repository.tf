@@ -1,5 +1,5 @@
 locals {
-  repository = "realworld-hasura"
+  repository = "andrewMacmurray/realworld-hasura"
 }
 
 resource "github_actions_secret" "jwt_secret" {

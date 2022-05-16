@@ -15,5 +15,6 @@ pkgs.mkShell {
     easy-ps.purs-0_13_8
     easy-ps.spago
     easy-ps.purty
+    pkgs.terraform
   ];
 }
