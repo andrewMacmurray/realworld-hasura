@@ -32,6 +32,7 @@ The project is a monorepo split into `frontend`, `backend` (separate READMEs in 
 ### Backend
 
 - A Hasura instance is deployed on Heroku
+- A [YugabyteDB Managed](https://www.yugabyte.com/managed/) instance
 - A `Purescript` serverless http api that handles authentication and custom application logic, communicates with Hasura as an actions server https://hasura.io/docs/1.0/graphql/core/actions/index.html (deployed on `vercel`)
 
 ### Github Actions (CI/CD/Infra)
