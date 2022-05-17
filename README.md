@@ -1,6 +1,6 @@
 # Realworld Hasura
 
-![CI](https://github.com/andrewMacmurray/realworld-hasura/workflows/CI/badge.svg) ![INFRA](https://github.com/andrewMacmurray/realworld-hasura/workflows/Infrastructure/badge.svg) ![CD](https://github.com/andrewMacmurray/realworld-hasura/workflows/CD/badge.svg)
+![CI](https://github.com/andrewMacmurray/realworld-hasura/workflows/CI/badge.svg) ![CD](https://github.com/andrewMacmurray/realworld-hasura/workflows/CD/badge.svg)
 
 ## What?
 
@@ -23,7 +23,7 @@ Why not? 🤷‍♀️🐲 I wanted to try out Hasura on a 'real' project and co
 
 ## How?
 
-The project is a monorepo split into `frontend`, `backend` and `infrastructure` (separate READMEs in each directory)
+The project is a monorepo split into `frontend`, `backend` (separate READMEs in each directory)
 
 ### Frontend
 
@@ -34,12 +34,7 @@ The project is a monorepo split into `frontend`, `backend` and `infrastructure` 
 - A Hasura instance is deployed on Heroku
 - A `Purescript` serverless http api that handles authentication and custom application logic, communicates with Hasura as an actions server https://hasura.io/docs/1.0/graphql/core/actions/index.html (deployed on `vercel`)
 
-### Infrastructure
-
-- Terraform configuration for provisioning the actions server, database and secrets https://www.terraform.io/
-
 ### Github Actions (CI/CD/Infra)
 
 - Automated tests run on each pull request
-- A terraform plan is posted to each pull request
 - A full build and deploy of each service happens on merge to `main`
