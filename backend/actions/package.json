@@ -19,6 +19,8 @@
     "xhr2": "^0.2.1"
   },
   "devDependencies": {
+    "purescript": "^0.13.8",
+    "spago": "^0.19.2",
     "uglify-js": "^3.15.5"
   }
 }
