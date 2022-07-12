@@ -5,7 +5,15 @@
     "dev": "elm-constants && vite",
     "build": "elm-constants && vite build",
     "schema": "elm-graphql http://localhost:8080/v1/graphql --base Hasura --header 'x-hasura-role: user' --header 'x-hasura-admin-secret: ilovebread' --output frontend/src/elm",
-    "test": "elm-constants && elm-test"
+    "test": "elm-constants && elm-test",
+    "seeds": "cd hasura && hasura seeds apply",
+    "migrate": "npm run migrate:db && npm run migrate:metadata",
+    "migrate:db": "cd backend/hasura && hasura migrate apply",
+    "migrate:metadata": "cd backend/hasura && hasura metadata apply",
+    "console": "npm run load-env && cd backend/hasura && hasura console",
+    "hasura": "cd backend/hasura && docker-compose up",
+    "actions": "cd backend/actions && npm run dev",
+    "load-env": "set -o allexport && source .env.local"
   },
   "license": "MIT",
   "dependencies": {
@@ -18,6 +26,7 @@
     "elm": "^0.19.1-5",
     "elm-constants": "^1.0.0",
     "elm-test": "^0.19.1-revision7",
+    "hasura-cli": "^2.4.0",
     "typescript": "^4.6.4",
     "vite": "^2.9.9",
     "vite-plugin-elm": "^2.6.1"

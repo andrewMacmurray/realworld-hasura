@@ -17,10 +17,6 @@ A Realworld inspired blogging platform using `Hasura` + `Purescript` + `Elm`
 - Mobile responsive
 - Modified Layout and design
 
-## Why?
-
-Why not? 🤷‍♀️🐲 I wanted to try out Hasura on a 'real' project and combine it with a number of nice patterns and techniques I've been using in Elm on a work project.
-
 ## How?
 
 The project is a monorepo split into `frontend`, `backend` (separate READMEs in each directory)
@@ -39,3 +35,37 @@ The project is a monorepo split into `frontend`, `backend` (separate READMEs in 
 
 - Automated tests run on each pull request
 - A full build and deploy of each service happens on merge to `main`
+
+## Run it Locally
+
+Make sure you have `docker` and `node` installed
+
+Install dependencies:
+
+```sh
+npm install
+```
+
+Start Hasura and Postgres:
+
+```sh
+npm run hasura
+```
+
+Run the migrations
+
+```sh
+npm run migrate
+```
+
+Start the frontend
+
+```sh
+npm run dev
+```
+
+Start the actions server
+
+```sh
+npm run actions
+```

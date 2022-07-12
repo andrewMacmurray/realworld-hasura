@@ -1,4 +1,5 @@
 .vercel
+.idea
 dist
 
 node_modules
