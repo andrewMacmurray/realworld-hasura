@@ -28,7 +28,7 @@
     "elm-test": "^0.19.1-revision7",
     "hasura-cli": "^2.4.0",
     "typescript": "^4.6.4",
-    "vite": "^2.9.9",
+    "vite": "^2.9.13",
     "vite-plugin-elm": "^2.6.1"
   }
 }
