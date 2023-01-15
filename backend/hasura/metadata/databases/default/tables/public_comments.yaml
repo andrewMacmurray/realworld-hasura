@@ -1,61 +1,60 @@
 table:
-  schema: public
   name: comments
+  schema: public
 configuration:
-  custom_root_fields:
-    insert_one: post_comment
-    delete_by_pk: delete_comment
-    update_by_pk: update_comment
   column_config: {}
   custom_column_names: {}
+  custom_root_fields:
+    delete_by_pk: delete_comment
+    insert_one: post_comment
+    update_by_pk: update_comment
 object_relationships:
-  - name: article
-    using:
-      foreign_key_constraint_on: article_id
-  - name: user
-    using:
-      foreign_key_constraint_on: user_id
+- name: article
+  using:
+    foreign_key_constraint_on: article_id
+- name: user
+  using:
+    foreign_key_constraint_on: user_id
 insert_permissions:
-  - role: user
-    permission:
-      check:
-        comment:
-          _ne: ""
-      set:
-        user_id: x-hasura-User-Id
-      columns:
-        - article_id
-        - comment
-      backend_only: false
+- permission:
+    check:
+      comment:
+        _ne: ""
+    columns:
+    - article_id
+    - comment
+    set:
+      user_id: x-hasura-User-Id
+  role: user
 select_permissions:
-  - role: anonymous
-    permission:
-      columns:
-        - comment
-        - created_at
-        - id
-      filter: {}
-  - role: user
-    permission:
-      columns:
-        - comment
-        - created_at
-        - id
-      filter: {}
+- permission:
+    columns:
+    - comment
+    - created_at
+    - id
+    filter: {}
+  role: anonymous
+- permission:
+    columns:
+    - comment
+    - created_at
+    - id
+    filter: {}
+  role: user
 update_permissions:
-  - role: user
-    permission:
-      columns:
-        - comment
-      filter:
-        user_id:
-          _eq: X-Hasura-User-Id
-      check:
-        comment:
-          _ne: ""
+- permission:
+    check:
+      comment:
+        _ne: ""
+    columns:
+    - comment
+    filter:
+      user_id:
+        _eq: X-Hasura-User-Id
+  role: user
 delete_permissions:
-  - role: user
-    permission:
-      filter:
-        user_id:
-          _eq: X-Hasura-User-Id
+- permission:
+    filter:
+      user_id:
+        _eq: X-Hasura-User-Id
+  role: user

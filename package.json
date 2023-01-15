@@ -10,15 +10,14 @@
     "migrate": "npm run migrate:db && npm run migrate:metadata",
     "migrate:db": "cd backend/hasura && hasura migrate apply",
     "migrate:metadata": "cd backend/hasura && hasura metadata apply",
-    "console": "npm run load-env && cd backend/hasura && hasura console",
+    "console": "cd backend/hasura && hasura console",
     "hasura": "cd backend/hasura && docker-compose up",
-    "actions": "cd backend/actions && npm run dev",
-    "load-env": "set -o allexport && source .env.local"
+    "actions": "cd backend/actions && npm run dev"
   },
   "license": "MIT",
   "dependencies": {
     "bcrypt": "^5.0.1",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "xhr2": "^0.2.1"
   },
   "devDependencies": {

@@ -1,52 +1,52 @@
 table:
-  schema: public
   name: users
+  schema: public
 configuration:
+  column_config: {}
+  custom_column_names: {}
   custom_root_fields:
     insert_one: create_user
     select_by_pk: user
     update_by_pk: update_user
-  column_config: {}
-  custom_column_names: {}
 array_relationships:
-  - name: articles
-    using:
-      foreign_key_constraint_on:
-        column: author_id
-        table:
-          schema: public
-          name: articles
-  - name: follows
-    using:
-      foreign_key_constraint_on:
-        column: user_id
-        table:
-          schema: public
-          name: follows
+- name: articles
+  using:
+    foreign_key_constraint_on:
+      column: author_id
+      table:
+        name: articles
+        schema: public
+- name: follows
+  using:
+    foreign_key_constraint_on:
+      column: user_id
+      table:
+        name: follows
+        schema: public
 select_permissions:
-  - role: anonymous
-    permission:
-      columns:
-        - id
-        - profile_image
-        - username
-      filter: {}
-  - role: user
-    permission:
-      columns:
-        - id
-        - profile_image
-        - username
-      filter: {}
+- permission:
+    columns:
+    - id
+    - profile_image
+    - username
+    filter: {}
+  role: anonymous
+- permission:
+    columns:
+    - id
+    - profile_image
+    - username
+    filter: {}
+  role: user
 update_permissions:
-  - role: user
-    permission:
-      columns:
-        - bio
-        - email
-        - profile_image
-        - username
-      filter:
-        id:
-          _eq: X-Hasura-User-Id
-      check: null
+- permission:
+    check: null
+    columns:
+    - bio
+    - email
+    - profile_image
+    - username
+    filter:
+      id:
+        _eq: X-Hasura-User-Id
+  role: user

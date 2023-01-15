@@ -1,87 +1,86 @@
 table:
-  schema: public
   name: articles
+  schema: public
 configuration:
+  column_config: {}
+  custom_column_names: {}
   custom_root_fields:
+    delete_by_pk: delete_article
     insert: publish_articles
     insert_one: publish_article
     select_by_pk: article
-    delete_by_pk: delete_article
     update_by_pk: edit_article
-  column_config: {}
-  custom_column_names: {}
 object_relationships:
-  - name: author
-    using:
-      foreign_key_constraint_on: author_id
+- name: author
+  using:
+    foreign_key_constraint_on: author_id
 array_relationships:
-  - name: comments
-    using:
-      foreign_key_constraint_on:
-        column: article_id
-        table:
-          schema: public
-          name: comments
-  - name: likes
-    using:
-      foreign_key_constraint_on:
-        column: article_id
-        table:
-          schema: public
-          name: likes
-  - name: tags
-    using:
-      foreign_key_constraint_on:
-        column: article_id
-        table:
-          schema: public
-          name: tags
+- name: comments
+  using:
+    foreign_key_constraint_on:
+      column: article_id
+      table:
+        name: comments
+        schema: public
+- name: likes
+  using:
+    foreign_key_constraint_on:
+      column: article_id
+      table:
+        name: likes
+        schema: public
+- name: tags
+  using:
+    foreign_key_constraint_on:
+      column: article_id
+      table:
+        name: tags
+        schema: public
 insert_permissions:
-  - role: user
-    permission:
-      check: {}
-      set:
-        author_id: x-hasura-User-Id
-      columns:
-        - about
-        - content
-        - title
-      backend_only: false
+- permission:
+    check: {}
+    columns:
+    - about
+    - content
+    - title
+    set:
+      author_id: x-hasura-User-Id
+  role: user
 select_permissions:
-  - role: anonymous
-    permission:
-      columns:
-        - about
-        - content
-        - created_at
-        - id
-        - title
-      filter: {}
-      allow_aggregations: true
-  - role: user
-    permission:
-      columns:
-        - about
-        - content
-        - created_at
-        - id
-        - title
-      filter: {}
-      allow_aggregations: true
+- permission:
+    allow_aggregations: true
+    columns:
+    - about
+    - content
+    - created_at
+    - id
+    - title
+    filter: {}
+  role: anonymous
+- permission:
+    allow_aggregations: true
+    columns:
+    - about
+    - content
+    - created_at
+    - id
+    - title
+    filter: {}
+  role: user
 update_permissions:
-  - role: user
-    permission:
-      columns:
-        - about
-        - content
-        - title
-      filter:
-        author_id:
-          _eq: X-Hasura-User-Id
-      check: null
+- permission:
+    check: null
+    columns:
+    - about
+    - content
+    - title
+    filter:
+      author_id:
+        _eq: X-Hasura-User-Id
+  role: user
 delete_permissions:
-  - role: user
-    permission:
-      filter:
-        author_id:
-          _eq: X-Hasura-User-Id
+- permission:
+    filter:
+      author_id:
+        _eq: X-Hasura-User-Id
+  role: user

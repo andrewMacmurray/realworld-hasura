@@ -1,40 +1,39 @@
 table:
-  schema: public
   name: likes
+  schema: public
 configuration:
+  column_config: {}
+  custom_column_names: {}
   custom_root_fields:
     insert: like_articles
     insert_one: like_article
-  column_config: {}
-  custom_column_names: {}
 object_relationships:
-  - name: article
-    using:
-      foreign_key_constraint_on: article_id
-  - name: user
-    using:
-      foreign_key_constraint_on: user_id
+- name: article
+  using:
+    foreign_key_constraint_on: article_id
+- name: user
+  using:
+    foreign_key_constraint_on: user_id
 insert_permissions:
-  - role: user
-    permission:
-      check: {}
-      set:
-        user_id: x-hasura-User-Id
-      columns:
-        - article_id
-      backend_only: false
+- permission:
+    check: {}
+    columns:
+    - article_id
+    set:
+      user_id: x-hasura-User-Id
+  role: user
 select_permissions:
-  - role: anonymous
-    permission:
-      columns:
-        - article_id
-        - user_id
-      filter: {}
-      allow_aggregations: true
-  - role: user
-    permission:
-      columns:
-        - article_id
-        - user_id
-      filter: {}
-      allow_aggregations: true
+- permission:
+    allow_aggregations: true
+    columns:
+    - article_id
+    - user_id
+    filter: {}
+  role: anonymous
+- permission:
+    allow_aggregations: true
+    columns:
+    - article_id
+    - user_id
+    filter: {}
+  role: user

@@ -16,6 +16,7 @@ services:
     restart: always
     environment:
       DATABASE_URL: "postgres://postgres:@postgres:5432/postgres"
+      HASURA_GRAPHQL_METADATA_DATABASE_URL: "postgres://postgres:@postgres:5432/postgres"
       HASURA_GRAPHQL_ENABLE_CONSOLE: "true"
       HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
       HASURA_GRAPHQL_ADMIN_SECRET: ilovebread
